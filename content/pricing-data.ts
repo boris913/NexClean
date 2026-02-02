@@ -13,7 +13,7 @@ export const pricingParticuliers: PricingOption[] = [
     id: "studio",
     name: "Studio",
     surface: "< 30m²",
-    pricePonctuel: "8 000 - 10 000 FCFA",
+    pricePonctuel: "8 000 FCFA",
     priceAbonnement: "30 000 FCFA/mois",
     features: [
       "Nettoyage complet",
@@ -23,11 +23,11 @@ export const pricingParticuliers: PricingOption[] = [
     ]
   },
   {
-    id: "2-chambres",
-    name: "2 Chambres",
+    id: "1-chambre salon",
+    name: "1 Chambre + Salon",
     surface: "30-60m²",
-    pricePonctuel: "12 000 - 15 000 FCFA",
-    priceAbonnement: "45 000 FCFA/mois",
+    pricePonctuel: "10 000 FCFA",
+    priceAbonnement: "35 000 FCFA/mois",
     features: [
       "Nettoyage complet",
       "Toutes les pièces",
@@ -37,24 +37,25 @@ export const pricingParticuliers: PricingOption[] = [
     popular: true
   },
   {
-    id: "3-chambres",
-    name: "3 Chambres",
+    id: "2-chambres salon",
+    name: "2 Chambres + Salon",
     surface: "60-100m²",
-    pricePonctuel: "15 000 - 20 000 FCFA",
-    priceAbonnement: "60 000 FCFA/mois",
+    pricePonctuel: "13 000 FCFA",
+    priceAbonnement: "50 000 FCFA/mois",
     features: [
       "Nettoyage complet",
       "Grande maison",
       "Toutes les surfaces",
       "2 heures d'intervention"
-    ]
+    ],
+    popular: true
   },
   {
-    id: "villa",
-    name: "Villa/Grande Maison",
+    id: "3-chambres salon",
+    name: "3 Chambres + Salon",
     surface: "> 100m²",
-    pricePonctuel: "20 000 - 35 000 FCFA",
-    priceAbonnement: "80 000 FCFA/mois",
+    pricePonctuel: "16 000 FCFA",
+    priceAbonnement: "60 000 FCFA/mois",
     features: [
       "Nettoyage complet",
       "Espaces extérieurs",
@@ -69,8 +70,8 @@ export const pricingProfessionnels: PricingOption[] = [
     id: "petit-bureau",
     name: "Petit Bureau",
     surface: "< 50m²",
-    pricePonctuel: "15 000 - 20 000 FCFA",
-    priceAbonnement: "55 000 FCFA/mois",
+    pricePonctuel: "15 000 FCFA",
+    priceAbonnement: "50 000 FCFA/mois",
     features: [
       "2 passages/semaine",
       "Espaces de travail",
@@ -82,8 +83,8 @@ export const pricingProfessionnels: PricingOption[] = [
     id: "bureau-moyen",
     name: "Bureau Moyen",
     surface: "50-100m²",
-    pricePonctuel: "20 000 - 30 000 FCFA",
-    priceAbonnement: "80 000 FCFA/mois",
+    pricePonctuel: "20 000 FCFA",
+    priceAbonnement: "75 000 FCFA/mois",
     features: [
       "2 passages/semaine",
       "Plusieurs bureaux",
@@ -96,14 +97,15 @@ export const pricingProfessionnels: PricingOption[] = [
     id: "commerce",
     name: "Commerce/Boutique",
     surface: "Variable",
-    pricePonctuel: "15 000 - 40 000 FCFA",
-    priceAbonnement: "70 000 FCFA/mois",
+    pricePonctuel: "Sur devis",
+    priceAbonnement: "À partir de 70 000 FCFA/mois",
     features: [
       "Planning flexible",
       "Vitrine incluse",
       "Zone client",
       "Intervention rapide"
-    ]
+    ],
+    popular: true
   },
   {
     id: "grande-structure",
