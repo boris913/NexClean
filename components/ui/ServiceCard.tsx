@@ -1,4 +1,5 @@
 import * as LucideIcons from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { Service } from '@/content/services-data';
 import { getWhatsAppLink } from '@/lib/constants';
 import Button from './Button';
@@ -8,7 +9,12 @@ interface ServiceCardProps {
 }
 
 export default function ServiceCard({ service }: ServiceCardProps) {
-  const IconComponent = (LucideIcons as Record<string, LucideIcons.LucideIcon>)[service.icon] || LucideIcons.Sparkles;
+  // On convertit l'objet LucideIcons (qui contient aussi des utilitaires) en un Record
+  // de noms d'icônes vers des composants LucideIcon.
+  const Icons = LucideIcons as any as Record<string, LucideIcon>;
+
+  // On récupère l'icône demandée, avec Sparkles comme fallback si le nom n'existe pas.
+  const IconComponent = Icons[service.icon] || LucideIcons.Sparkles;
 
   return (
     <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300">
