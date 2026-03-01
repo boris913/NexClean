@@ -1,46 +1,42 @@
-import React from 'react';
-import { Quote } from 'lucide-react';
+import SectionLabel from '@/components/ui/SectionLabel';
 import TestimonialCard from '@/components/ui/TestimonialCard';
 import { testimonials } from '@/content/testimonials-data';
 
+const stats = [
+  { value: '100+', label: 'Clients satisfaits' },
+  { value: '500+', label: 'Prestations réalisées' },
+  { value: '4.9/5', label: 'Note moyenne' },
+  { value: '98%', label: 'Taux de satisfaction' },
+];
+
 export default function TestimonialsSection() {
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-light">
-      <div className="container mx-auto px-4">
-        {/* Section Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-secondary/10 text-secondary px-4 py-2 rounded-full mb-4">
-            <Quote className="w-5 h-5" />
-            <span className="font-semibold">Témoignages</span>
-          </div>
-          <h2 className="text-4xl md:text-5xl font-black text-dark mb-4">
-            Ils Nous Font Confiance
+    <section id="temoignages" className="py-24 bg-slate-50">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-14">
+          <SectionLabel className="mb-4">Témoignages</SectionLabel>
+          <h2 className="font-display text-3xl sm:text-4xl text-slate-900 mb-3">
+            Ils nous font confiance
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Découvrez ce que nos clients disent de nos services
+          <p className="text-slate-500 max-w-md mx-auto">
+            Découvrez l'expérience de nos clients à Douala.
           </p>
         </div>
-        
-        {/* Testimonials Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {testimonials.map((testimonial) => (
-            <TestimonialCard key={testimonial.id} testimonial={testimonial} />
+
+        {/* Cards */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-16">
+          {testimonials.map((t) => (
+            <TestimonialCard key={t.id} testimonial={t} />
           ))}
         </div>
-        
+
         {/* Stats */}
-        <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8">
-          {[
-            { value: '100+', label: 'Clients Satisfaits' },
-            { value: '500+', label: 'Prestations Réalisées' },
-            { value: '4.9/5', label: 'Note Moyenne' },
-            { value: '98%', label: 'Taux de Satisfaction' },
-          ].map((stat, index) => (
-            <div key={index} className="text-center">
-              <div className="text-4xl md:text-5xl font-black bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
-                {stat.value}
-              </div>
-              <div className="text-gray-600 font-semibold">{stat.label}</div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pt-12 border-t border-slate-200">
+          {stats.map((s) => (
+            <div key={s.label} className="text-center">
+              <p className="text-3xl sm:text-4xl font-bold text-primary mb-1">{s.value}</p>
+              <p className="text-sm text-slate-500">{s.label}</p>
             </div>
           ))}
         </div>

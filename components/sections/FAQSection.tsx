@@ -1,79 +1,70 @@
 'use client';
 
-import React, { useState } from 'react';
-import { HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
-import { FAQ } from '@/lib/constants';
+import { useState } from 'react';
+import { ChevronDown } from 'lucide-react';
+import SectionLabel from '@/components/ui/SectionLabel';
+import { FAQ, getWhatsAppLink } from '@/lib/constants';
 
 export default function FAQSection() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-  
-  const toggleFAQ = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
-  
+  const [open, setOpen] = useState<number | null>(0);
+
   return (
-    <section className="py-20 bg-light">
-      <div className="container mx-auto px-4">
-        {/* Section Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-4">
-            <HelpCircle className="w-5 h-5" />
-            <span className="font-semibold">Questions Fréquentes</span>
-          </div>
-          <h2 className="text-4xl md:text-5xl font-black text-dark mb-4">
-            Vous Avez Des Questions ?
+    <section id="faq" className="py-24 bg-white">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <SectionLabel className="mb-4">FAQ</SectionLabel>
+          <h2 className="font-display text-3xl sm:text-4xl text-slate-900 mb-3">
+            Questions fréquentes
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Retrouvez les réponses aux questions les plus courantes
+          <p className="text-slate-500">
+            Retrouvez les réponses aux questions les plus courantes.
           </p>
         </div>
-        
-        {/* FAQ Accordion */}
-        <div className="max-w-3xl mx-auto space-y-4">
-          {FAQ.map((faq, index) => (
-            <div 
+
+        {/* Accordion */}
+        <div className="space-y-1.5">
+          {FAQ.map((item, index) => (
+            <div
               key={index}
-              className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 transition-all duration-300 hover:shadow-xl"
+              className="border border-slate-100 rounded-xl overflow-hidden"
             >
               <button
-                onClick={() => toggleFAQ(index)}
-                className="w-full px-6 py-5 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                onClick={() => setOpen(open === index ? null : index)}
+                className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-slate-50 transition-colors duration-150 group"
+                aria-expanded={open === index}
               >
-                <span className="font-bold text-lg text-dark pr-8">{faq.question}</span>
-                <div className="flex-shrink-0 bg-primary/10 p-2 rounded-full">
-                  {openIndex === index ? (
-                    <ChevronUp className="w-5 h-5 text-primary" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-primary" />
-                  )}
-                </div>
+                <span className={`text-sm font-medium pr-6 transition-colors ${open === index ? 'text-primary' : 'text-slate-800'}`}>
+                  {item.question}
+                </span>
+                <ChevronDown
+                  className={`w-4 h-4 flex-shrink-0 text-slate-400 transition-transform duration-200 ${
+                    open === index ? 'rotate-180 text-primary' : ''
+                  }`}
+                />
               </button>
-              
-              <div 
-                className={`overflow-hidden transition-all duration-300 ${
-                  openIndex === index ? 'max-h-96' : 'max-h-0'
-                }`}
-              >
-                <div className="px-6 pb-5 text-gray-700 leading-relaxed">
-                  {faq.answer}
+
+              {open === index && (
+                <div className="px-5 pb-4 bg-slate-50">
+                  <p className="text-sm text-slate-600 leading-relaxed">{item.answer}</p>
                 </div>
-              </div>
+              )}
             </div>
           ))}
         </div>
-        
-        {/* Additional Help */}
-        <div className="text-center mt-12">
-          <p className="text-lg text-gray-600 mb-2">
-            Vous ne trouvez pas la réponse à votre question ?
-          </p>
-          <a 
-            href={`https://wa.me/237682434962`}
-            className="text-primary font-bold hover:underline text-lg"
+
+        {/* Footer link */}
+        <p className="text-center text-sm text-slate-500 mt-10">
+          Une autre question ?{' '}
+          <a
+            href={getWhatsAppLink('Bonjour, j\'ai une question')}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary font-medium hover:underline"
           >
-            Contactez-nous directement sur WhatsApp →
+            Contactez-nous sur WhatsApp →
           </a>
-        </div>
+        </p>
       </div>
     </section>
   );

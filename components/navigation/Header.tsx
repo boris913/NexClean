@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, X, Phone } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { CONTACT } from '@/lib/constants';
@@ -9,108 +9,111 @@ import Image from 'next/image';
 const navLinks = [
   { name: 'Accueil', href: '#' },
   { name: 'Services', href: '#services' },
+  // { name: 'Réalisations', href: '#realisations' },
   { name: 'Tarifs', href: '#tarifs' },
-  { name: 'Témoignages', href: '#temoignages' },
   { name: 'Contact', href: '#contact' },
 ];
 
 export default function Header() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
-  
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
+
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled ? 'bg-white shadow-lg' : 'bg-white/95 backdrop-blur-sm'
-    }`}>
-      <div className="container mx-auto px-4">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? 'bg-white/95 backdrop-blur-md shadow-[0_1px_0_0_#e2e8f0]'
+          : 'bg-white/90 backdrop-blur-sm'
+      }`}
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Logo avec texte inclus */}
-          <a href="#" className="flex items-center group">
-            <div className="group-hover:scale-105 transition-transform">
-              <div className="relative w-48 h-12 md:w-56 md:h-14">
-                <Image 
-                  src="/images/nexclean-logo-1.png" 
-                  alt="NexClean - La propreté nouvelle génération" 
-                  fill
-                  className="object-contain"
-                  priority
-                />
-              </div>
+          {/* Logo */}
+          <a href="#" className="flex-shrink-0 group">
+            <div className="relative w-40 h-10 md:w-48 md:h-12">
+              <Image
+                src="/images/nexclean-logo-1.png"
+                alt="NexClean"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
           </a>
-          
-          {/* Desktop Navigation */}
+
+          {/* Desktop nav - centered */}
           <nav className="hidden lg:flex items-center gap-8">
             {navLinks.map((link) => (
               <a
                 key={link.name}
                 href={link.href}
-                className="text-dark font-semibold hover:text-primary transition-colors relative group"
+                className="relative text-sm font-medium text-slate-700 hover:text-primary transition-colors duration-150 group"
               >
                 {link.name}
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+                <span className="absolute -bottom-0.5 left-0 h-[1.5px] w-0 bg-primary group-hover:w-full transition-all duration-300" />
               </a>
             ))}
           </nav>
-          
+
           {/* Desktop CTA */}
-          <div className="hidden lg:block">
-            <Button 
+          <div className="hidden lg:flex items-center gap-3">
+            <a
               href={`tel:${CONTACT.phone}`}
-              variant="primary"
-              size="md"
-              icon={Phone}
+              className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
             >
-              Obtenez un devis gratuit
+              {CONTACT.phone}
+            </a>
+            <Button href={`tel:${CONTACT.phone}`} variant="primary" size="sm" icon={Phone}>
+              Devis gratuit
             </Button>
           </div>
-          
-          {/* Mobile Menu Button */}
+
+          {/* Mobile toggle */}
           <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="lg:hidden p-2 -mr-2 rounded-lg hover:bg-slate-100 transition-colors"
+            aria-label={menuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
           >
-            {isMobileMenuOpen ? (
-              <X className="w-6 h-6 text-dark" />
-            ) : (
-              <Menu className="w-6 h-6 text-dark" />
-            )}
+            {menuOpen ? <X className="w-5 h-5 text-slate-900" /> : <Menu className="w-5 h-5 text-slate-900" />}
           </button>
         </div>
       </div>
-      
-      {/* Mobile Menu - Navigation centrée */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden bg-white border-t border-gray-200 animate-slide-up">
-          <div className="flex flex-col items-center px-4 py-8 space-y-6">
+
+      {/* Mobile menu overlay */}
+      {menuOpen && (
+        <div className="lg:hidden bg-white border-t border-slate-100 animate-slide-down">
+          <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col gap-1">
             {navLinks.map((link) => (
               <a
                 key={link.name}
                 href={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-dark font-semibold hover:text-primary transition-colors py-2 text-lg w-full text-center"
+                onClick={() => setMenuOpen(false)}
+                className="py-3 px-4 rounded-lg text-sm font-medium text-slate-700 hover:text-primary hover:bg-slate-50 transition-colors"
               >
                 {link.name}
               </a>
             ))}
-            <div className="w-full max-w-xs mt-4">
-              <Button 
+            <div className="mt-4 pt-4 border-t border-slate-100">
+              <Button
                 href={`tel:${CONTACT.phone}`}
                 variant="primary"
                 size="md"
                 icon={Phone}
                 fullWidth
               >
-                Obtenez un devis gratuit
+                Obtenir un devis gratuit
               </Button>
             </div>
           </div>

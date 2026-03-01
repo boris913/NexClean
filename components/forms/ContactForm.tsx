@@ -1,195 +1,157 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Send, CheckCircle, Loader } from 'lucide-react';
+import { useState } from 'react';
+import { CheckCircle, Loader2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { getWhatsAppLink } from '@/lib/constants';
 
+const inputClass =
+  'w-full px-3 py-2.5 text-sm text-slate-900 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-slate-400';
+
 export default function ContactForm() {
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    service: '',
-    location: '',
-    date: '',
-    message: '',
-  });
-  
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  
+  const [form, setForm] = useState({ name: '', phone: '', service: '', location: '', date: '', message: '' });
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    
-    const message = `Bonjour NexClean,
+    setLoading(true);
 
-Nom: ${formData.name}
-Téléphone: ${formData.phone}
-Service: ${formData.service}
-Localisation: ${formData.location}
-Date souhaitée: ${formData.date}
+    const msg = `Bonjour NexClean,
 
-Message: ${formData.message}`;
-    
+Nom: ${form.name}
+Téléphone: ${form.phone}
+Service souhaité: ${form.service}
+Localisation: ${form.location}
+Date souhaitée: ${form.date || 'Non précisée'}
+${form.message ? `\nMessage: ${form.message}` : ''}`;
+
     setTimeout(() => {
-      window.open(getWhatsAppLink(encodeURIComponent(message)), '_blank');
-      setIsSubmitting(false);
-      setIsSuccess(true);
-      
+      window.open(getWhatsAppLink(msg), '_blank');
+      setLoading(false);
+      setSuccess(true);
       setTimeout(() => {
-        setFormData({
-          name: '',
-          phone: '',
-          service: '',
-          location: '',
-          date: '',
-          message: '',
-        });
-        setIsSuccess(false);
-      }, 3000);
-    }, 1000);
+        setForm({ name: '', phone: '', service: '', location: '', date: '', message: '' });
+        setSuccess(false);
+      }, 4000);
+    }, 800);
   };
-  
-  if (isSuccess) {
+
+  if (success) {
     return (
-      <div className="bg-secondary/10 border-2 border-secondary rounded-2xl p-12 text-center">
-        <CheckCircle className="w-20 h-20 text-secondary mx-auto mb-4" />
-        <h3 className="text-2xl font-bold text-dark mb-2">Message Envoyé !</h3>
-        <p className="text-gray-600">
-          Nous vous répondrons dans les plus brefs délais sur WhatsApp.
-        </p>
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <CheckCircle className="w-12 h-12 text-success mb-3" strokeWidth={1.5} />
+        <p className="font-semibold text-slate-900 mb-1">Demande envoyée !</p>
+        <p className="text-sm text-slate-500">Nous vous répondrons rapidement sur WhatsApp.</p>
       </div>
     );
   }
-  
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid md:grid-cols-2 gap-6">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Name + Phone */}
+      <div className="grid sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="name" className="block text-sm font-bold text-dark mb-2">
-            Nom Complet *
+          <label htmlFor="name" className="block text-xs font-medium text-slate-600 mb-1.5">
+            Nom complet <span className="text-accent">*</span>
           </label>
           <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none transition-colors"
+            id="name" name="name" type="text" required
+            value={form.name} onChange={handleChange}
             placeholder="Votre nom"
+            className={inputClass}
           />
         </div>
-        
         <div>
-          <label htmlFor="phone" className="block text-sm font-bold text-dark mb-2">
-            Téléphone *
+          <label htmlFor="phone" className="block text-xs font-medium text-slate-600 mb-1.5">
+            Téléphone <span className="text-accent">*</span>
           </label>
           <input
-            type="tel"
-            id="phone"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none transition-colors"
+            id="phone" name="phone" type="tel" required
+            value={form.phone} onChange={handleChange}
             placeholder="+237 6XX XXX XXX"
+            className={inputClass}
           />
         </div>
       </div>
-      
-      <div className="grid md:grid-cols-2 gap-6">
+
+      {/* Service + Location */}
+      <div className="grid sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="service" className="block text-sm font-bold text-dark mb-2">
-            Type de Service *
+          <label htmlFor="service" className="block text-xs font-medium text-slate-600 mb-1.5">
+            Type de service <span className="text-accent">*</span>
           </label>
           <select
-            id="service"
-            name="service"
-            value={formData.service}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none transition-colors"
+            id="service" name="service" required
+            value={form.service} onChange={handleChange}
+            className={inputClass}
           >
-            <option value="">Sélectionnez...</option>
+            <option value="">Sélectionnez…</option>
             <option value="Nettoyage Maison">Nettoyage Maison</option>
             <option value="Nettoyage Bureau">Nettoyage Bureau</option>
             <option value="Nettoyage Vitres">Nettoyage Vitres</option>
             <option value="Désinfection">Désinfection</option>
             <option value="Nettoyage Après Travaux">Nettoyage Après Travaux</option>
-            <option value="Abonnement">Abonnement Mensuel</option>
+            <option value="Abonnement Mensuel">Abonnement Mensuel</option>
             <option value="Autre">Autre</option>
           </select>
         </div>
-        
         <div>
-          <label htmlFor="location" className="block text-sm font-bold text-dark mb-2">
-            Quartier / Localisation *
+          <label htmlFor="location" className="block text-xs font-medium text-slate-600 mb-1.5">
+            Quartier <span className="text-accent">*</span>
           </label>
           <input
-            type="text"
-            id="location"
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none transition-colors"
-            placeholder="Ex: Bonapriso, Akwa..."
+            id="location" name="location" type="text" required
+            value={form.location} onChange={handleChange}
+            placeholder="Bonapriso, Akwa…"
+            className={inputClass}
           />
         </div>
       </div>
-      
+
+      {/* Date */}
       <div>
-        <label htmlFor="date" className="block text-sm font-bold text-dark mb-2">
-          Date Souhaitée
+        <label htmlFor="date" className="block text-xs font-medium text-slate-600 mb-1.5">
+          Date souhaitée
         </label>
         <input
-          type="date"
-          id="date"
-          name="date"
-          value={formData.date}
-          onChange={handleChange}
-          className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none transition-colors"
+          id="date" name="date" type="date"
+          value={form.date} onChange={handleChange}
+          className={inputClass}
         />
       </div>
-      
+
+      {/* Message */}
       <div>
-        <label htmlFor="message" className="block text-sm font-bold text-dark mb-2">
-          Message (Optionnel)
+        <label htmlFor="message" className="block text-xs font-medium text-slate-600 mb-1.5">
+          Message (optionnel)
         </label>
         <textarea
-          id="message"
-          name="message"
-          value={formData.message}
-          onChange={handleChange}
-          rows={4}
-          className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none transition-colors resize-none"
-          placeholder="Précisions supplémentaires..."
-        ></textarea>
+          id="message" name="message"
+          value={form.message} onChange={handleChange}
+          rows={3}
+          placeholder="Précisions, questions…"
+          className={`${inputClass} resize-none`}
+        />
       </div>
-      
-      <Button 
-        type="submit"
-        variant="primary"
-        size="lg"
-        fullWidth
-        icon={isSubmitting ? Loader : Send}
-        disabled={isSubmitting}
-        className={isSubmitting ? 'animate-pulse' : ''}
-      >
-        {isSubmitting ? 'Envoi en cours...' : 'Envoyer ma Demande'}
+
+      <Button type="submit" variant="primary" size="lg" fullWidth disabled={loading}>
+        {loading ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Envoi en cours…
+          </>
+        ) : (
+          'Envoyer ma demande'
+        )}
       </Button>
-      
-      <p className="text-sm text-gray-500 text-center">
-        En soumettant ce formulaire, vous serez redirigé vers WhatsApp
+
+      <p className="text-center text-xs text-slate-400">
+        Vous serez redirigé vers WhatsApp pour finaliser votre demande.
       </p>
     </form>
   );

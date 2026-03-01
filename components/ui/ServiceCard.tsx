@@ -1,35 +1,51 @@
-import React from 'react';
 import * as LucideIcons from 'lucide-react';
 import { Service } from '@/content/services-data';
+import { getWhatsAppLink } from '@/lib/constants';
+import Button from './Button';
 
 interface ServiceCardProps {
   service: Service;
 }
 
 export default function ServiceCard({ service }: ServiceCardProps) {
-  const IconComponent = (LucideIcons as any)[service.icon] || LucideIcons.Sparkles;
-  
+  const IconComponent = (LucideIcons as Record<string, LucideIcons.LucideIcon>)[service.icon] || LucideIcons.Sparkles;
+
   return (
-    <div className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100">
-      <div className="flex items-start gap-4">
-        <div className="bg-gradient-to-br from-primary to-secondary p-3 rounded-xl group-hover:scale-110 transition-transform duration-300">
-          <IconComponent className="w-8 h-8 text-white" />
-        </div>
-        <div className="flex-1">
-          <h3 className="text-xl font-bold text-dark mb-2">{service.name}</h3>
-          <p className="text-accent font-semibold text-lg mb-3">{service.priceRange}</p>
-        </div>
+    <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300">
+      {/* Icon */}
+      <div className="w-11 h-11 rounded-xl bg-primary-light flex items-center justify-center mb-5">
+        <IconComponent className="w-5 h-5 text-primary" strokeWidth={1.75} />
       </div>
-      
-      <p className="text-gray-600 mb-4 leading-relaxed">{service.description}</p>
-      
-      <div className="space-y-2">
-        {service.includes.map((item, index) => (
-          <div key={index} className="flex items-center gap-2 text-sm text-gray-700">
-            <LucideIcons.Check className="w-4 h-4 text-secondary flex-shrink-0" />
-            <span>{item}</span>
-          </div>
+
+      {/* Title & Price */}
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <h3 className="text-base font-semibold text-slate-900">{service.name}</h3>
+      </div>
+
+      <p className="text-sm text-slate-500 mb-5 leading-relaxed">{service.description}</p>
+
+      {/* Includes */}
+      <ul className="space-y-2 mb-6">
+        {service.includes.map((item, i) => (
+          <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
+            <LucideIcons.Check className="w-3.5 h-3.5 text-success flex-shrink-0" strokeWidth={2.5} />
+            {item}
+          </li>
         ))}
+      </ul>
+
+      {/* Price + CTA */}
+      <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+        <span className="text-xs text-slate-400 font-medium">{service.priceRange}</span>
+        <Button
+          href={getWhatsAppLink(`Je souhaite un devis pour ${service.name}`)}
+          variant="ghost"
+          size="sm"
+          icon={LucideIcons.ArrowRight}
+          iconPosition="right"
+        >
+          Devis
+        </Button>
       </div>
     </div>
   );

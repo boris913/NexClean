@@ -3,7 +3,7 @@ import { LucideIcon } from 'lucide-react';
 
 interface ButtonProps {
   children: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'outline' | 'whatsapp';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'whatsapp';
   size?: 'sm' | 'md' | 'lg';
   icon?: LucideIcon;
   iconPosition?: 'left' | 'right';
@@ -12,7 +12,7 @@ interface ButtonProps {
   className?: string;
   fullWidth?: boolean;
   type?: 'button' | 'submit' | 'reset';
-  disabled?: boolean; 
+  disabled?: boolean;
 }
 
 export default function Button({
@@ -28,44 +28,62 @@ export default function Button({
   type = 'button',
   disabled = false,
 }: ButtonProps) {
-  const baseClasses = 'inline-flex items-center justify-center font-semibold rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-75 disabled:cursor-not-allowed disabled:hover:scale-100';
-  
-  const variantClasses = {
-    primary: 'bg-primary text-white hover:bg-blue-700',
-    secondary: 'bg-secondary text-white hover:bg-green-600',
-    outline: 'border-2 border-primary text-primary hover:bg-primary hover:text-white',
-    whatsapp: 'bg-[#25D366] text-white hover:bg-[#20BD5A]',
+  const base =
+    'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+
+  const variants: Record<string, string> = {
+    primary:
+      'bg-primary text-white shadow-btn hover:bg-primary-dark hover:shadow-btn-hover focus-visible:ring-primary active:scale-[0.98]',
+    secondary:
+      'border border-slate-200 text-slate-800 bg-white hover:border-slate-300 hover:bg-slate-50 shadow-btn focus-visible:ring-slate-400 active:scale-[0.98]',
+    ghost:
+      'text-primary hover:text-primary-dark hover:bg-primary-light focus-visible:ring-primary active:scale-[0.98]',
+    whatsapp:
+      'bg-[#25D366] text-white hover:bg-[#20B858] shadow-btn focus-visible:ring-[#25D366] active:scale-[0.98]',
   };
-  
-  const sizeClasses = {
-    sm: 'px-4 py-2 text-sm',
-    md: 'px-6 py-3 text-base',
-    lg: 'px-8 py-4 text-lg',
+
+  const sizes: Record<string, string> = {
+    sm: 'px-4 py-2 text-sm gap-1.5',
+    md: 'px-5 py-2.5 text-sm gap-2',
+    lg: 'px-6 py-3 text-base gap-2',
   };
-  
-  const widthClass = fullWidth ? 'w-full' : '';
-  
-  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${widthClass} ${className}`;
-  
-  const content = (
+
+  const classes = [
+    base,
+    variants[variant],
+    sizes[size],
+    fullWidth ? 'w-full' : '',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const iconClass = 'w-4 h-4 flex-shrink-0';
+
+  const inner = (
     <>
-      {Icon && iconPosition === 'left' && <Icon className={`mr-2 ${type === 'submit' && className.includes('animate-spin') ? 'animate-spin' : ''}`} size={20} />}
+      {Icon && iconPosition === 'left' && <Icon className={iconClass} />}
       {children}
-      {Icon && iconPosition === 'right' && <Icon className="ml-2" size={20} />}
+      {Icon && iconPosition === 'right' && <Icon className={iconClass} />}
     </>
   );
-  
+
   if (href) {
     return (
-      <a href={href} className={classes} target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}>
-        {content}
+      <a
+        href={href}
+        className={classes}
+        target={href.startsWith('http') ? '_blank' : undefined}
+        rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+      >
+        {inner}
       </a>
     );
   }
-  
+
   return (
     <button type={type} onClick={onClick} className={classes} disabled={disabled}>
-      {content}
+      {inner}
     </button>
   );
 }

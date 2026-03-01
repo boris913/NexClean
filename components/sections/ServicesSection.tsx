@@ -1,49 +1,47 @@
-import React from 'react';
-import { Sparkles } from 'lucide-react';
-import ServiceCard from '@/components/ui/ServiceCard';
-import Button from '@/components/ui/Button';
 import { services } from '@/content/services-data';
+import ServiceCard from '@/components/ui/ServiceCard';
+import SectionLabel from '@/components/ui/SectionLabel';
+import Button from '@/components/ui/Button';
 import { getWhatsAppLink } from '@/lib/constants';
-import { FaWhatsapp } from "react-icons/fa";
+import { ArrowRight } from 'lucide-react';
 
 export default function ServicesSection() {
   return (
-    <section id="services" className="py-20 bg-gradient-to-b from-light to-white">
-      <div className="container mx-auto px-4">
-        {/* Section Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-4">
-            <Sparkles className="w-5 h-5" />
-            <span className="font-semibold">Nos Services</span>
+    <section
+      id="services"
+      className="py-24 bg-slate-50"
+      aria-label="Nos services de nettoyage"
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-14">
+          <SectionLabel className="mb-4">Nos Services</SectionLabel>
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+            <div>
+              <h2 className="font-display text-3xl sm:text-4xl text-slate-900 mb-3">
+                Des solutions adaptées<br />à chaque besoin
+              </h2>
+              <p className="text-slate-500 text-base max-w-lg">
+                Que vous soyez particulier ou professionnel, nous avons la formule qui vous correspond.
+              </p>
+            </div>
+            <Button
+              href={getWhatsAppLink('Bonjour NexClean, je souhaite un devis personnalisé')}
+              variant="secondary"
+              size="md"
+              icon={ArrowRight}
+              iconPosition="right"
+            >
+              Devis personnalisé
+            </Button>
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-dark mb-4">
-            Des Solutions pour Tous Vos Besoins
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Que vous soyez particulier ou professionnel, nous avons le service qu'il vous faut
-          </p>
         </div>
-        
-        {/* Services Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+
+        {/* Grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {services.map((service) => (
             <ServiceCard key={service.id} service={service} />
           ))}
-        </div>
-        
-        {/* CTA */}
-        <div className="text-center">
-          <p className="text-lg text-gray-600 mb-6">
-            Besoin d'un service personnalisé ? Contactez-nous pour un devis gratuit
-          </p>
-          <Button 
-            href={getWhatsAppLink('Bonjour, je souhaite obtenir un devis personnalisé')}
-            variant="primary"
-            size="lg"
-          >
-            <FaWhatsapp className="mr-2 text-xl" />
-            Demander un Devis Gratuit
-          </Button>
         </div>
       </div>
     </section>

@@ -1,106 +1,89 @@
-import React from 'react';
-import { MessageCircle, Calendar, Sparkles, CheckCircle } from 'lucide-react';
-import { FaWhatsapp } from "react-icons/fa";
+import SectionLabel from '@/components/ui/SectionLabel';
 import Button from '@/components/ui/Button';
 import { getWhatsAppLink } from '@/lib/constants';
+import { MessageCircle, Calendar, Sparkles, CheckCircle, ArrowRight } from 'lucide-react';
 
 const steps = [
   {
-    number: 1,
+    number: '01',
     icon: MessageCircle,
-    title: "Contactez-nous",
-    description: "Via WhatsApp, téléphone ou notre formulaire. Décrivez vos besoins.",
-    color: "from-primary to-blue-500"
+    title: 'Contactez-nous',
+    description: 'Via WhatsApp, téléphone ou formulaire. Décrivez vos besoins et obtenez un devis immédiat.',
   },
   {
-    number: 2,
+    number: '02',
     icon: Calendar,
-    title: "Planifiez",
-    description: "Choisissez la date et l'heure qui vous conviennent. Devis immédiat.",
-    color: "from-secondary to-green-500"
+    title: 'Planifiez',
+    description: "Choisissez la date et l'heure qui vous conviennent. Nous nous adaptons à votre planning.",
   },
   {
-    number: 3,
+    number: '03',
     icon: Sparkles,
-    title: "On nettoie",
-    description: "Notre équipe arrive à l'heure avec tout le matériel professionnel.",
-    color: "from-accent to-orange-500"
+    title: 'On intervient',
+    description: "Notre équipe arrive à l'heure avec tout le matériel professionnel nécessaire.",
   },
   {
-    number: 4,
+    number: '04',
     icon: CheckCircle,
-    title: "Vous validez",
-    description: "Inspection ensemble. Paiement seulement si vous êtes satisfait.",
-    color: "from-primary to-secondary"
-  }
+    title: 'Vous validez',
+    description: "Inspection ensemble. Paiement seulement si vous êtes entièrement satisfait.",
+  },
 ];
 
 export default function ProcessSection() {
   return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        {/* Section Header */}
+    <section className="py-24 bg-slate-50">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-black text-dark mb-4">
-            Comment Ça Marche ?
+          <SectionLabel className="mb-4">Comment ça marche</SectionLabel>
+          <h2 className="font-display text-3xl sm:text-4xl text-slate-900 mb-3">
+            Simple et efficace
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Un processus simple en 4 étapes pour une propreté garantie
+          <p className="text-slate-500 max-w-md mx-auto">
+            Un processus en 4 étapes pensé pour votre tranquillité.
           </p>
         </div>
-        
-        {/* Steps Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+
+        {/* Steps */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-14">
           {steps.map((step, index) => (
-            <div key={step.number} className="relative group">
-              {/* Connector Line (hidden on mobile, shown on desktop) */}
+            <div key={step.number} className="relative">
+              {/* Connector line on desktop */}
               {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-16 left-[60%] w-[80%] h-1 bg-gradient-to-r from-primary/30 to-transparent z-0"></div>
+                <div className="hidden lg:block absolute top-6 left-[calc(100%-12px)] right-[-12px] h-px bg-slate-200 z-0" />
               )}
-              
-              <div className="relative z-10 text-center">
-                {/* Icon Container */}
-                <div className={`inline-flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-br ${step.color} text-white mb-6 shadow-xl group-hover:scale-110 transition-transform duration-300`}>
-                  <step.icon className="w-16 h-16" />
+
+              <div className="relative z-10">
+                {/* Number + Icon */}
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-xs font-bold text-slate-300 font-mono tabular-nums">
+                    {step.number}
+                  </span>
+                  <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
+                    <step.icon className="w-5 h-5 text-primary" strokeWidth={1.75} />
+                  </div>
                 </div>
-                
-                {/* Step Number */}
-                <div className="absolute top-0 right-1/2 transform translate-x-1/2 -translate-y-2 bg-dark text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
-                  {step.number}
-                </div>
-                
-                {/* Content */}
-                <h3 className="text-2xl font-bold text-dark mb-3">{step.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{step.description}</p>
+
+                <h3 className="text-base font-semibold text-slate-900 mb-2">{step.title}</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">{step.description}</p>
               </div>
             </div>
           ))}
         </div>
-        
-        {/* CTA */}
-        <div className="text-center bg-gradient-to-r from-primary to-secondary rounded-2xl p-8 shadow-xl">
-          <h3 className="text-3xl font-bold text-white mb-4">
-            Prêt à Commencer ?
-          </h3>
-          <p className="text-xl text-white/90 mb-6">
-            Obtenez votre devis gratuit en moins de 2 minutes
-          </p>
-          <Button 
-            href={getWhatsAppLink()}
-            variant="whatsapp"
-            size="lg"
-            className="
-              bg-secondary text-secondary
-              hover:bg-secondary
-              hover:text-white
-              hover:border-secondary
-              transition-all duration-300 ease-out
-            "
-          >
-            <FaWhatsapp className="mr-2 text-xl" />
-            Démarrer Maintenant
-          </Button>
 
+        {/* CTA */}
+        <div className="text-center">
+          <Button
+            href={getWhatsAppLink()}
+            variant="primary"
+            size="lg"
+            icon={ArrowRight}
+            iconPosition="right"
+          >
+            Démarrer maintenant
+          </Button>
+          <p className="text-xs text-slate-400 mt-3">Devis gratuit · Réponse sous 1 heure</p>
         </div>
       </div>
     </section>

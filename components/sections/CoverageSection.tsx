@@ -1,86 +1,66 @@
-import React from 'react';
-import { MapPin, Check, Clock, Calendar } from 'lucide-react';
+import SectionLabel from '@/components/ui/SectionLabel';
 import { zones, activeZones, upcomingZones } from '@/content/zones-coverage';
+import { MapPin, Check, Clock } from 'lucide-react';
 
 export default function CoverageSection() {
   return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        {/* Section Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-2 rounded-full mb-4">
-            <MapPin className="w-5 h-5" />
-            <span className="font-semibold">Zone de Couverture</span>
-          </div>
-          <h2 className="text-4xl md:text-5xl font-black text-dark mb-4">
-            Où Intervenons-Nous ?
+    <section id="zones" className="py-20 bg-slate-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <SectionLabel className="mb-4">Zone de couverture</SectionLabel>
+          <h2 className="font-display text-3xl sm:text-4xl text-slate-900 mb-3">
+            Où intervenons-nous ?
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Nous couvrons les principaux quartiers de Douala
-          </p>
+          <p className="text-slate-500">Principaux quartiers de Douala couverts.</p>
         </div>
-        
-        <div className="max-w-4xl mx-auto">
-          {/* Active Zones */}
-          <div className="mb-12">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-secondary text-white p-2 rounded-lg">
-                <Check className="w-6 h-6" />
+
+        {/* Active */}
+        <div className="mb-10">
+          <div className="flex items-center gap-2 mb-4">
+            <Check className="w-4 h-4 text-success" />
+            <span className="text-sm font-semibold text-slate-700">Zones actives</span>
+            <span className="text-xs text-success bg-green-50 border border-green-100 px-2 py-0.5 rounded-full">
+              Intervention immédiate
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {activeZones.map((zone) => (
+              <div
+                key={zone.name}
+                className="flex items-center gap-1.5 bg-white border border-slate-200 text-sm text-slate-700 px-3 py-2 rounded-lg"
+              >
+                <MapPin className="w-3.5 h-3.5 text-primary" />
+                {zone.name}
               </div>
-              <h3 className="text-2xl font-bold text-dark">Zones Actives</h3>
-              <span className="bg-secondary/10 text-secondary px-3 py-1 rounded-full text-sm font-semibold">
-                Intervention immédiate
-              </span>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {activeZones.map((zone, index) => (
-                <div 
-                  key={index}
-                  className="bg-gradient-to-br from-secondary/5 to-secondary/10 border-2 border-secondary/20 rounded-xl p-4 text-center hover:border-secondary hover:shadow-lg transition-all duration-300"
-                >
-                  <MapPin className="w-6 h-6 text-secondary mx-auto mb-2" />
-                  <p className="font-semibold text-dark">{zone.name}</p>
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
-          
-          {/* Upcoming Zones */}
-          <div className="mb-12">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-accent text-white p-2 rounded-lg">
-                <Clock className="w-6 h-6" />
+        </div>
+
+        {/* Upcoming */}
+        <div className="mb-10">
+          <div className="flex items-center gap-2 mb-4">
+            <Clock className="w-4 h-4 text-accent" />
+            <span className="text-sm font-semibold text-slate-700">Bientôt disponibles</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {upcomingZones.map((zone) => (
+              <div
+                key={zone.name}
+                className="flex items-center gap-1.5 bg-white border border-dashed border-slate-200 text-sm text-slate-500 px-3 py-2 rounded-lg"
+              >
+                <Clock className="w-3.5 h-3.5 text-slate-300" />
+                {zone.name}
               </div>
-              <h3 className="text-2xl font-bold text-dark">Bientôt Disponibles</h3>
-              <span className="bg-accent/10 text-accent px-3 py-1 rounded-full text-sm font-semibold">
-                Prochainement
-              </span>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {upcomingZones.map((zone, index) => (
-                <div 
-                  key={index}
-                  className="bg-gradient-to-br from-accent/5 to-accent/10 border-2 border-accent/20 rounded-xl p-4 text-center hover:border-accent hover:shadow-lg transition-all duration-300"
-                >
-                  <Calendar className="w-6 h-6 text-accent mx-auto mb-2" />
-                  <p className="font-semibold text-dark">{zone.name}</p>
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
-          
-          {/* Info Box */}
-          <div className="bg-gradient-to-r from-primary to-secondary rounded-2xl p-8 text-white text-center">
-            <h4 className="text-2xl font-bold mb-3">Votre Quartier N'est Pas Listé ?</h4>
-            <p className="text-lg mb-4 text-white/90">
-              Contactez-nous ! Nous étudions toutes les demandes pour étendre notre zone de couverture.
-            </p>
-            <p className="text-sm text-white/80">
-              Des frais de déplacement peuvent s'appliquer pour les zones non listées
-            </p>
-          </div>
+        </div>
+
+        {/* Note */}
+        <div className="bg-primary text-white rounded-xl p-6 text-center">
+          <p className="font-semibold mb-1">Votre quartier n'est pas listé ?</p>
+          <p className="text-sm text-blue-100">
+            Contactez-nous — nous étudions toutes les demandes. Des frais de déplacement peuvent s'appliquer.
+          </p>
         </div>
       </div>
     </section>

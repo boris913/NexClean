@@ -1,164 +1,125 @@
-import React from 'react';
-import { Mail, Phone, MapPin, Clock, MessageCircle } from 'lucide-react';
-import { FaRegCalendarAlt, FaBolt, FaWhatsapp } from "react-icons/fa";
+import { Phone, Mail, MapPin, Clock } from 'lucide-react';
+import SectionLabel from '@/components/ui/SectionLabel';
 import ContactForm from '@/components/forms/ContactForm';
 import Button from '@/components/ui/Button';
 import { CONTACT, BUSINESS_HOURS, getWhatsAppLink } from '@/lib/constants';
 
 export default function ContactSection() {
   return (
-    <section id="contact" className="py-20 bg-gradient-to-b from-light to-white">
-      <div className="container mx-auto px-4">
-        {/* Section Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-4">
-            <MessageCircle className="w-5 h-5" />
-            <span className="font-semibold">Contact</span>
-          </div>
-          <h2 className="text-4xl md:text-5xl font-black text-dark mb-4">
-            Parlons de Votre Projet
+    <section id="contact" className="py-24 bg-slate-50">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-14">
+          <SectionLabel className="mb-4">Contact</SectionLabel>
+          <h2 className="font-display text-3xl sm:text-4xl text-slate-900 mb-3">
+            Parlons de votre projet
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Contactez-nous dès maintenant pour un devis gratuit et sans engagement
+          <p className="text-slate-500 max-w-md mx-auto">
+            Contactez-nous pour un devis gratuit et sans engagement.
           </p>
         </div>
-        
-        <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-          {/* Contact Info */}
-          <div className="space-y-8">
-            <div>
-              <h3 className="text-3xl font-bold text-dark mb-6">
-                Coordonnées
-              </h3>
-              
-              <div className="space-y-4">
-                {/* WhatsApp (Priority) */}
-                <div className="flex items-start gap-4 bg-gradient-to-r from-[#25D366]/10 to-[#25D366]/5 p-4 rounded-xl border-2 border-[#25D366]/20">
-                  <div className="bg-[#25D366] text-white p-3 rounded-lg">
-                    <FaWhatsapp className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-dark mb-1">WhatsApp (Recommandé)</p>
-                    <a 
-                      href={getWhatsAppLink()} 
-                      className="text-[#25D366] font-semibold hover:underline text-lg"
-                    >
-                      {CONTACT.whatsapp}
-                    </a>
-                    <p className="text-sm text-gray-600 mt-1">Réponse sous 1 heure</p>
-                  </div>
-                </div>
-                
-                {/* Phone */}
-                <div className="flex items-start gap-4 bg-white p-4 rounded-xl border-2 border-gray-100">
-                  <div className="bg-primary text-white p-3 rounded-lg">
-                    <Phone className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-dark mb-1">Téléphone</p>
-                    <a 
-                      href={`tel:${CONTACT.phone}`}
-                      className="text-primary font-semibold hover:underline text-lg"
-                    >
-                      {CONTACT.phone}
-                    </a>
-                  </div>
-                </div>
-                
-                {/* Email */}
-                <div className="flex items-start gap-4 bg-white p-4 rounded-xl border-2 border-gray-100">
-                  <div className="bg-secondary text-white p-3 rounded-lg">
-                    <Mail className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-dark mb-1">Email</p>
-                    <a 
-                      href={`mailto:${CONTACT.email}`}
-                      className="text-secondary font-semibold hover:underline"
-                    >
-                      {CONTACT.email}
-                    </a>
-                  </div>
-                </div>
-                
-                {/* Address */}
-                <div className="flex items-start gap-4 bg-white p-4 rounded-xl border-2 border-gray-100">
-                  <div className="bg-accent text-white p-3 rounded-lg">
-                    <MapPin className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-dark mb-1">Localisation</p>
-                    <p className="text-gray-700">{CONTACT.address}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Business Hours */}
-            <div className="bg-gradient-to-br from-primary to-secondary p-6 rounded-2xl text-white">
-              <div className="flex items-center gap-3 mb-4">
-                <Clock className="w-6 h-6" />
-                <h4 className="text-xl font-bold">Horaires d'Intervention</h4>
-              </div>
-              <div className="space-y-2 text-white/90">
-                <p className="flex items-center gap-2">
-                  <FaRegCalendarAlt className="text-secondary" />
-                  {BUSINESS_HOURS.weekdays}
-                </p>
 
-                <p className="flex items-center gap-2">
-                  <FaRegCalendarAlt className="text-secondary" />
-                  {BUSINESS_HOURS.saturday}
-                </p>
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16">
+          {/* Left: Info */}
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-6">Coordonnées</h3>
 
-                <p className="flex items-center gap-2">
-                  <FaRegCalendarAlt className="text-secondary" />
-                  {BUSINESS_HOURS.sunday}
-                </p>
-
-                <p className="mt-4 pt-4 border-t border-white/20 font-semibold flex items-center gap-2">
-                  <FaBolt className="text-accent" />
-                  {BUSINESS_HOURS.response}
-                </p>
-              </div>
-
-            </div>
-            
-            {/* Quick WhatsApp CTA */}
-            <Button 
+            {/* WhatsApp (highlighted) */}
+            <a
               href={getWhatsAppLink()}
-              variant="whatsapp"
-              size="lg"
-              fullWidth
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-4 bg-white border border-[#25D366]/20 rounded-xl p-4 mb-3 hover:border-[#25D366]/40 hover:shadow-sm transition-all group"
             >
-              <FaWhatsapp className="mr-2 text-xl" />
-              Discuter sur WhatsApp
-            </Button>
+              <div className="w-9 h-9 rounded-lg bg-[#25D366] flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-slate-500 mb-0.5">WhatsApp (recommandé)</p>
+                <p className="text-sm font-semibold text-slate-900 group-hover:text-[#25D366] transition-colors">
+                  {CONTACT.whatsapp}
+                </p>
+                <p className="text-xs text-slate-400 mt-0.5">Réponse sous 1 heure</p>
+              </div>
+              <span className="text-xs text-slate-400 self-center">→</span>
+            </a>
+
+            {/* Phone */}
+            <div className="flex items-start gap-4 bg-white border border-slate-100 rounded-xl p-4 mb-3">
+              <div className="w-9 h-9 rounded-lg bg-primary-light flex items-center justify-center flex-shrink-0">
+                <Phone className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-slate-500 mb-0.5">Téléphone</p>
+                <a href={`tel:${CONTACT.phone}`} className="text-sm font-semibold text-slate-900 hover:text-primary transition-colors">
+                  {CONTACT.phone}
+                </a>
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="flex items-start gap-4 bg-white border border-slate-100 rounded-xl p-4 mb-3">
+              <div className="w-9 h-9 rounded-lg bg-primary-light flex items-center justify-center flex-shrink-0">
+                <Mail className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-slate-500 mb-0.5">Email</p>
+                <a href={`mailto:${CONTACT.email}`} className="text-sm font-semibold text-slate-900 hover:text-primary transition-colors">
+                  {CONTACT.email}
+                </a>
+              </div>
+            </div>
+
+            {/* Address */}
+            <div className="flex items-start gap-4 bg-white border border-slate-100 rounded-xl p-4 mb-6">
+              <div className="w-9 h-9 rounded-lg bg-primary-light flex items-center justify-center flex-shrink-0">
+                <MapPin className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-slate-500 mb-0.5">Localisation</p>
+                <p className="text-sm font-semibold text-slate-900">{CONTACT.address}</p>
+                <p className="text-xs text-slate-400 mt-0.5">Bonapriso · Akwa · Bonanjo · Bali · Makepe et plus</p>
+              </div>
+            </div>
+
+            {/* Business hours */}
+            <div className="bg-slate-900 rounded-xl p-5 text-white">
+              <div className="flex items-center gap-2 mb-4">
+                <Clock className="w-4 h-4 text-slate-400" />
+                <span className="text-sm font-semibold">Horaires d'intervention</span>
+              </div>
+              <ul className="space-y-2 text-sm text-slate-300">
+                <li>{BUSINESS_HOURS.weekdays}</li>
+                <li>{BUSINESS_HOURS.saturday}</li>
+                <li>{BUSINESS_HOURS.sunday}</li>
+                <li className="pt-2 border-t border-slate-700 text-primary-light" style={{ color: '#93C5FD' }}>
+                  ⚡ {BUSINESS_HOURS.response}
+                </li>
+              </ul>
+            </div>
           </div>
-          
-          {/* Contact Form */}
-          <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-            <h3 className="text-2xl font-bold text-dark mb-6">
-              Demande de Devis Gratuit
-            </h3>
+
+          {/* Right: Form */}
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-6 lg:p-8">
+            <h3 className="text-lg font-semibold text-slate-900 mb-6">Demande de devis gratuit</h3>
             <ContactForm />
           </div>
         </div>
-        
-        {/* Map Embed (Placeholder) */}
-        <div className="mt-16 max-w-6xl mx-auto">
-          <div className="bg-gray-200 rounded-2xl overflow-hidden h-96 flex items-center justify-center">
-            <div className="text-center p-8">
-              <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 font-semibold text-lg">
-                Nous intervenons dans toute la ville de Douala
-              </p>
-              <p className="text-gray-500 mt-2">
-                Bonapriso • Akwa • Bonanjo • Bali • Makepe • Bonamoussadi et plus
-              </p>
-            </div>
+
+        {/* Map placeholder */}
+        {/* <div className="mt-10 rounded-2xl overflow-hidden border border-slate-100 h-64 bg-slate-100 flex items-center justify-center">
+          <div className="text-center p-6">
+            <MapPin className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+            <p className="text-sm text-slate-400">
+              Carte de Douala — zones d'intervention NexClean
+            </p>
+            <p className="text-xs text-slate-300 mt-1">
+              Intégrez Google Maps avec votre clé API dans <code className="font-mono">ContactSection.tsx</code>
+            </p>
           </div>
-        </div>
+        </div> */}
       </div>
     </section>
   );

@@ -1,5 +1,4 @@
-import React from 'react';
-import { Star, MapPin } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { Testimonial } from '@/content/testimonials-data';
 
 interface TestimonialCardProps {
@@ -7,29 +6,47 @@ interface TestimonialCardProps {
 }
 
 export default function TestimonialCard({ testimonial }: TestimonialCardProps) {
+  // Generate initials avatar
+  const initials = testimonial.name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
-      <div className="flex items-center gap-1 mb-3">
-        {[...Array(testimonial.rating)].map((_, i) => (
-          <Star key={i} className="w-5 h-5 fill-accent text-accent" />
+    <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-card hover:shadow-card-hover transition-all duration-300">
+      {/* Stars */}
+      <div className="flex gap-0.5 mb-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Star
+            key={i}
+            className={`w-4 h-4 ${i < testimonial.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}`}
+            strokeWidth={0}
+          />
         ))}
       </div>
-      
-      <p className="text-gray-700 mb-4 leading-relaxed italic">"{testimonial.comment}"</p>
-      
-      <div className="border-t pt-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="font-bold text-dark">{testimonial.name}</p>
-            <div className="flex items-center gap-1 text-sm text-gray-600">
-              <MapPin className="w-4 h-4" />
-              <span>{testimonial.location}</span>
-            </div>
+
+      {/* Quote */}
+      <blockquote className="text-sm text-slate-700 italic leading-relaxed mb-5">
+        &ldquo;{testimonial.comment}&rdquo;
+      </blockquote>
+
+      {/* Author */}
+      <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+        <div className="flex items-center gap-3">
+          {/* Avatar */}
+          <div className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center text-primary text-xs font-bold">
+            {initials}
           </div>
-          <div className="text-right">
-            <p className="text-xs text-gray-500">{testimonial.service}</p>
+          <div>
+            <p className="text-sm font-semibold text-slate-900">{testimonial.name}</p>
+            <p className="text-xs text-slate-400">{testimonial.location}</p>
           </div>
         </div>
+        <span className="text-xs text-slate-400 text-right leading-tight max-w-[100px]">
+          {testimonial.service}
+        </span>
       </div>
     </div>
   );
