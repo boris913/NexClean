@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Menu, X, Phone } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { CONTACT } from '@/lib/constants';
@@ -9,8 +10,8 @@ import Image from 'next/image';
 const navLinks = [
   { name: 'Accueil', href: '#' },
   { name: 'Services', href: '#services' },
-  // { name: 'Réalisations', href: '#realisations' },
   { name: 'Tarifs', href: '#tarifs' },
+  { name: 'Blog', href: '/blog' },
   { name: 'Contact', href: '#contact' },
 ];
 
@@ -24,10 +25,11 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [menuOpen]);
 
   return (
@@ -40,32 +42,47 @@ export default function Header() {
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <a href="#" className="flex-shrink-0 group">
-            <div>
-              <Image
-                src="/images/logo.png"
-                alt="NexClean"
-                width={150}   // largeur réelle de l'image
-                height={50} 
-                className="object-contain"
-                priority
-              />
-            </div>
+          {/* Logo - utilisation d'une balise <a> standard pour éviter les problèmes d'hydratation avec next/image */}
+          <a href="/" className="flex-shrink-0 group">
+            <Image
+              src="/images/logo.png"
+              alt="NexClean"
+              width={150}
+              height={50}
+              className="object-contain"
+              priority
+            />
           </a>
 
-          {/* Desktop nav - centered */}
+          {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="relative text-sm font-medium text-slate-700 hover:text-primary transition-colors duration-150 group"
-              >
-                {link.name}
-                <span className="absolute -bottom-0.5 left-0 h-[1.5px] w-0 bg-primary group-hover:w-full transition-all duration-300" />
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              if (link.href.startsWith('/') || link.href.startsWith('#')) {
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    scroll={link.href.startsWith('#')}
+                    className="relative text-sm font-medium text-slate-700 hover:text-primary transition-colors duration-150 group"
+                  >
+                    {link.name}
+                    <span className="absolute -bottom-0.5 left-0 h-[1.5px] w-0 bg-primary group-hover:w-full transition-all duration-300" />
+                  </Link>
+                );
+              }
+              return (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative text-sm font-medium text-slate-700 hover:text-primary transition-colors duration-150 group"
+                >
+                  {link.name}
+                  <span className="absolute -bottom-0.5 left-0 h-[1.5px] w-0 bg-primary group-hover:w-full transition-all duration-300" />
+                </a>
+              );
+            })}
           </nav>
 
           {/* Desktop CTA */}
@@ -92,20 +109,37 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile menu overlay */}
+      {/* Mobile menu */}
       {menuOpen && (
         <div className="lg:hidden bg-white border-t border-slate-100 animate-slide-down">
           <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col gap-1">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={() => setMenuOpen(false)}
-                className="py-3 px-4 rounded-lg text-sm font-medium text-slate-700 hover:text-primary hover:bg-slate-50 transition-colors"
-              >
-                {link.name}
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              if (link.href.startsWith('/') || link.href.startsWith('#')) {
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    scroll={link.href.startsWith('#')}
+                    onClick={() => setMenuOpen(false)}
+                    className="py-3 px-4 rounded-lg text-sm font-medium text-slate-700 hover:text-primary hover:bg-slate-50 transition-colors"
+                  >
+                    {link.name}
+                  </Link>
+                );
+              }
+              return (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setMenuOpen(false)}
+                  className="py-3 px-4 rounded-lg text-sm font-medium text-slate-700 hover:text-primary hover:bg-slate-50 transition-colors"
+                >
+                  {link.name}
+                </a>
+              );
+            })}
             <div className="mt-4 pt-4 border-t border-slate-100">
               <Button
                 href={`tel:${CONTACT.phone}`}

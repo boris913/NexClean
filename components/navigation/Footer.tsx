@@ -14,8 +14,9 @@ const serviceLinks = [
 const quickLinks = [
   { name: 'Accueil', href: '#' },
   { name: 'Services', href: '#services' },
-  { name: 'Réalisations', href: '#realisations' },
+  // { name: 'Réalisations', href: '#realisations' },
   { name: 'Tarifs', href: '#tarifs' },
+  { name: 'Blog', href: '/blog' },
   { name: 'Contact', href: '#contact' },
 ];
 

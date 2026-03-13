@@ -1,62 +1,68 @@
 import { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/seo';
+import { getAllPostSlugs } from '@/lib/blog';
 
-/**
- * Sitemap XML généré automatiquement par Next.js App Router.
- * Accessible sur : /sitemap.xml
- *
- * À soumettre dans Google Search Console après déploiement :
- * https://search.google.com/search-console → Sitemaps → Ajouter https://nexclean.cm/sitemap.xml
- */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const slugs = await getAllPostSlugs();
   const now = new Date();
 
-  return [
-    // ─── Page principale ──────────────────────────────────────
+  const blogEntries = slugs.map((slug) => ({
+    url: `${SITE_URL}/blog/${slug}`,
+    lastModified: now,
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
+  }));
+
+  const staticPages = [
     {
       url: SITE_URL,
       lastModified: now,
-      changeFrequency: 'weekly',
+      changeFrequency: 'weekly' as const,
       priority: 1.0,
     },
-
-    // ─── Sections de la page (ancres) ────────────────────────
-    // Google comprend les ancres et les indexe comme contenu
     {
       url: `${SITE_URL}/#services`,
       lastModified: now,
-      changeFrequency: 'monthly',
+      changeFrequency: 'monthly' as const,
       priority: 0.9,
     },
     {
       url: `${SITE_URL}/#tarifs`,
       lastModified: now,
-      changeFrequency: 'monthly',
+      changeFrequency: 'monthly' as const,
       priority: 0.8,
     },
     {
       url: `${SITE_URL}/#realisations`,
       lastModified: now,
-      changeFrequency: 'weekly',
+      changeFrequency: 'weekly' as const,
       priority: 0.7,
     },
     {
       url: `${SITE_URL}/#temoignages`,
       lastModified: now,
-      changeFrequency: 'monthly',
+      changeFrequency: 'monthly' as const,
       priority: 0.7,
     },
     {
       url: `${SITE_URL}/#contact`,
       lastModified: now,
-      changeFrequency: 'yearly',
+      changeFrequency: 'yearly' as const,
       priority: 0.8,
     },
     {
       url: `${SITE_URL}/#faq`,
       lastModified: now,
-      changeFrequency: 'monthly',
+      changeFrequency: 'monthly' as const,
       priority: 0.6,
     },
+    {
+      url: `${SITE_URL}/blog`,
+      lastModified: now,
+      changeFrequency: 'daily' as const,
+      priority: 0.9,
+    },
   ];
+
+  return [...staticPages, ...blogEntries];
 }

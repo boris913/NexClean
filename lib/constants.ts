@@ -6,7 +6,7 @@ export const CONTACT = {
 };
 
 export const SOCIAL_MEDIA = {
-  facebook: 'https://www.facebook.com/nexclean',
+  facebook: 'https://www.facebook.com/profile.php?id=61585203135726',
   instagram: 'https://www.instagram.com/nexclean',
 };
 
