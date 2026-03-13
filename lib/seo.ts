@@ -64,7 +64,7 @@ export const LOCAL_BUSINESS_SCHEMA = {
   url: SITE_URL,
   logo: {
     '@type': 'ImageObject',
-    url: `${SITE_URL}/images/nexclean-logo-1.png`,
+    url: `${SITE_URL}/images/logo.png`,
     width: 400,
     height: 100,
   },

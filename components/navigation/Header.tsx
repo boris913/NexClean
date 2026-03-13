@@ -42,11 +42,12 @@ export default function Header() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <a href="#" className="flex-shrink-0 group">
-            <div className="relative w-40 h-10 md:w-48 md:h-12">
+            <div>
               <Image
-                src="/images/nexclean-logo-1.png"
+                src="/images/logo.png"
                 alt="NexClean"
-                fill
+                width={150}   // largeur réelle de l'image
+                height={50} 
                 className="object-contain"
                 priority
               />

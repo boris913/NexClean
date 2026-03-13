@@ -27,11 +27,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <div className="relative w-36 h-9 mb-5">
+            <div> {/* Taille augmentée */}
               <Image
-                src="/images/nexclean-logo-1.png"
+                src="/images/logo.png"
                 alt="NexClean"
-                fill
+                width={150}  
+                height={50} 
                 className="object-contain brightness-0 invert"
               />
             </div>
