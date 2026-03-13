@@ -1,7 +1,7 @@
 export const CONTACT = {
   phone: '+237696370479',
   whatsapp: '+237696370479',
-  email: 'contact@nexclean.cm',
+  email: 'nexcleanservice@gmail.com',
   address: 'Douala, Cameroun',
 };
 

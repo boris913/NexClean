@@ -23,8 +23,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const coverImage = post.coverImage
-    ? `https://nexclean.cm${post.coverImage}`
-    : 'https://nexclean.cm/og-image.png';
+    ? `https://nexclean.xyz${post.coverImage}`
+    : 'https://nexclean.xyz/og-image.png';
 
   return {
     title: `${post.title} | Blog NexClean`,
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     openGraph: {
       title: post.title,
       description: post.description,
-      url: `https://nexclean.cm/blog/${slug}`,
+      url: `https://nexclean.xyz/blog/${slug}`,
       images: [{ url: coverImage, width: 1200, height: 630, alt: post.title }],
       type: 'article',
       publishedTime: post.date,

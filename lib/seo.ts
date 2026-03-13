@@ -3,7 +3,7 @@
 // Toute la configuration SEO centralisée ici.
 // ============================================================
 
-export const SITE_URL = 'https://nexclean.cm';
+export const SITE_URL = 'https://nexclean.xyz';
 export const SITE_NAME = 'NexClean';
 export const SITE_LOCALE = 'fr_CM';
 

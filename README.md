@@ -228,4 +228,4 @@ Développé avec ❤️ pour NexClean - La propreté nouvelle génération
 - WhatsApp: +237 6 82 43 49 62
 - Email: contact@nexclean.cm
 
-**Site Production:** https://nexclean.cm (à configurer)
+**Site Production:** https://nexclean.xyz
