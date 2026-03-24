@@ -16,7 +16,7 @@ interface TeamInActionSectionProps {
 }
 
 const defaultTeamImage: TeamImage = {
-  src: '/images/team/equipe-nexclean.jfif',
+  src: '/images/team/equipe-nexclean.jpg',
   alt: 'Équipe NexClean au complet',
   caption: 'Toute notre équipe à votre service',
 };
