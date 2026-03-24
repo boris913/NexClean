@@ -8,11 +8,12 @@ import { CONTACT } from '@/lib/constants';
 import Image from 'next/image';
 
 const navLinks = [
-  { name: 'Accueil', href: '#' },
-  { name: 'Services', href: '#services' },
-  { name: 'Tarifs', href: '#tarifs' },
+  { name: 'Accueil', href: '/' },
+  { name: 'Équipe', href: '/#team' }, 
+  { name: 'Services', href: '/#services' },
+  { name: 'Tarifs', href: '/#tarifs' },
   { name: 'Blog', href: '/blog' },
-  { name: 'Contact', href: '#contact' },
+  { name: 'Contact', href: '/#contact' },
 ];
 
 export default function Header() {
@@ -42,8 +43,7 @@ export default function Header() {
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Logo - utilisation d'une balise <a> standard pour éviter les problèmes d'hydratation avec next/image */}
-          <a href="/" className="flex-shrink-0 group">
+          <Link href="/" className="flex-shrink-0 group">
             <Image
               src="/images/logo.png"
               alt="NexClean"
@@ -52,37 +52,20 @@ export default function Header() {
               className="object-contain"
               priority
             />
-          </a>
+          </Link>
 
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => {
-              if (link.href.startsWith('/') || link.href.startsWith('#')) {
-                return (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    scroll={link.href.startsWith('#')}
-                    className="relative text-sm font-medium text-slate-700 hover:text-primary transition-colors duration-150 group"
-                  >
-                    {link.name}
-                    <span className="absolute -bottom-0.5 left-0 h-[1.5px] w-0 bg-primary group-hover:w-full transition-all duration-300" />
-                  </Link>
-                );
-              }
-              return (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative text-sm font-medium text-slate-700 hover:text-primary transition-colors duration-150 group"
-                >
-                  {link.name}
-                  <span className="absolute -bottom-0.5 left-0 h-[1.5px] w-0 bg-primary group-hover:w-full transition-all duration-300" />
-                </a>
-              );
-            })}
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                className="relative text-sm font-medium text-slate-700 hover:text-primary transition-colors duration-150 group"
+              >
+                {link.name}
+                <span className="absolute -bottom-0.5 left-0 h-[1.5px] w-0 bg-primary group-hover:w-full transition-all duration-300" />
+              </Link>
+            ))}
           </nav>
 
           {/* Desktop CTA */}
@@ -113,33 +96,16 @@ export default function Header() {
       {menuOpen && (
         <div className="lg:hidden bg-white border-t border-slate-100 animate-slide-down">
           <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col gap-1">
-            {navLinks.map((link) => {
-              if (link.href.startsWith('/') || link.href.startsWith('#')) {
-                return (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    scroll={link.href.startsWith('#')}
-                    onClick={() => setMenuOpen(false)}
-                    className="py-3 px-4 rounded-lg text-sm font-medium text-slate-700 hover:text-primary hover:bg-slate-50 transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                );
-              }
-              return (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setMenuOpen(false)}
-                  className="py-3 px-4 rounded-lg text-sm font-medium text-slate-700 hover:text-primary hover:bg-slate-50 transition-colors"
-                >
-                  {link.name}
-                </a>
-              );
-            })}
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                onClick={() => setMenuOpen(false)}
+                className="py-3 px-4 rounded-lg text-sm font-medium text-slate-700 hover:text-primary hover:bg-slate-50 transition-colors"
+              >
+                {link.name}
+              </Link>
+            ))}
             <div className="mt-4 pt-4 border-t border-slate-100">
               <Button
                 href={`tel:${CONTACT.phone}`}

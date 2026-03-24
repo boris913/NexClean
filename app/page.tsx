@@ -7,6 +7,7 @@ import TestimonialsSection from '@/components/sections/TestimonialsSection';
 import CoverageSection from '@/components/sections/CoverageSection';
 import FAQSection from '@/components/sections/FAQSection';
 import ContactSection from '@/components/sections/ContactSection';
+import TeamInActionSection from '@/components/sections/TeamInActionSection';
 import { SITE_URL, OG_IMAGE } from '@/lib/seo';
 import type { Metadata } from 'next';
 
@@ -37,6 +38,7 @@ export default function Home() {
   return (
     <>
       <HeroSection />
+      <TeamInActionSection />
       <ServicesSection />
       {/* <RealisationsSection /> */}
       <ProcessSection />

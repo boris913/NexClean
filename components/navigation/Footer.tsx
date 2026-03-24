@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Phone, Mail, MapPin, Facebook, Instagram } from 'lucide-react';
 import { CONTACT, SOCIAL_MEDIA, getWhatsAppLink } from '@/lib/constants';
 import Image from 'next/image';
@@ -12,28 +13,28 @@ const serviceLinks = [
 ];
 
 const quickLinks = [
-  { name: 'Accueil', href: '#' },
-  { name: 'Services', href: '#services' },
+  { name: 'Accueil', href: '/' },
+  { name: 'Équipe', href: '/#team' }, 
+  { name: 'Services', href: '/#services' },
   // { name: 'Réalisations', href: '#realisations' },
-  { name: 'Tarifs', href: '#tarifs' },
+  { name: 'Tarifs', href: '/#tarifs' },
   { name: 'Blog', href: '/blog' },
-  { name: 'Contact', href: '#contact' },
+  { name: 'Contact', href: '/#contact' },
 ];
 
 export default function Footer() {
   return (
     <footer className="bg-slate-900 text-slate-300">
-      {/* Main content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <div> {/* Taille augmentée */}
+            <div>
               <Image
                 src="/images/logo.png"
                 alt="NexClean"
-                width={150}  
-                height={50} 
+                width={150}
+                height={50}
                 className="object-contain brightness-0 invert"
               />
             </div>
@@ -79,12 +80,12 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {quickLinks.map((link) => (
                 <li key={link.name}>
-                  <a
+                  <Link
                     href={link.href}
                     className="text-sm text-slate-400 hover:text-white transition-colors"
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
