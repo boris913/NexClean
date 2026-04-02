@@ -46,7 +46,7 @@ export const DEFAULT_KEYWORDS = [
 
 // ─── Open Graph Image ────────────────────────────────────────
 export const OG_IMAGE = {
-  url: `${SITE_URL}/og-image.png`,
+  url: `/opengraph-image`,
   width: 1200,
   height: 630,
   alt: 'NexClean — Service de Nettoyage Professionnel à Douala, Cameroun',

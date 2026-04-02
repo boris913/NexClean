@@ -1,4 +1,6 @@
 import { ImageResponse } from 'next/og';
+import fs from 'fs/promises';
+import path from 'path';
 
 export const runtime = 'edge';
 export const alt = 'NexClean — Service de Nettoyage Professionnel à Douala';
@@ -6,13 +8,24 @@ export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 /**
- * Image Open Graph générée dynamiquement.
- * Accessible sur : /og-image.png (via app/opengraph-image.tsx)
- * Utilisée par : Facebook, Twitter/X, WhatsApp, LinkedIn lors du partage du lien.
- *
- * Design : fond sombre NexClean, nom en grand, tagline, badges de confiance.
+ * Charge l'image du logo depuis le dossier public.
+ * En environnement Edge, on utilise fetch sur l'URL publique.
+ * Pour le développement local, on peut aussi lire le fichier.
  */
-export default function OGImage() {
+async function getLogoData(): Promise<string> {
+  // En production (Edge), l'image est accessible via l'URL du site
+  const baseUrl = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : 'http://localhost:3000';
+  const res = await fetch(`${baseUrl}/images/logo.png`);
+  const buffer = await res.arrayBuffer();
+  const base64 = Buffer.from(buffer).toString('base64');
+  return `data:image/png;base64,${base64}`;
+}
+
+export default async function OGImage() {
+  const logoDataUrl = await getLogoData();
+
   return new ImageResponse(
     (
       <div
@@ -22,53 +35,78 @@ export default function OGImage() {
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'flex-start',
-          justifyContent: 'center',
-          padding: '80px',
+          padding: '60px 80px',
           fontFamily: 'system-ui, sans-serif',
           position: 'relative',
         }}
       >
-        {/* Background pattern */}
+        {/* Motif de fond subtil */}
         <div
           style={{
             position: 'absolute',
             top: 0,
             right: 0,
-            width: '500px',
-            height: '500px',
-            background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)',
+            width: '600px',
+            height: '600px',
+            background: 'radial-gradient(circle, rgba(59,130,246,0.2) 0%, transparent 70%)',
             borderRadius: '50%',
           }}
         />
 
-        {/* Brand badge */}
+        {/* En-tête avec logo */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
-            background: 'rgba(59,130,246,0.15)',
-            border: '1px solid rgba(59,130,246,0.3)',
-            borderRadius: '50px',
-            padding: '8px 20px',
-            marginBottom: '32px',
+            gap: '20px',
+            marginBottom: '40px',
           }}
         >
-          <div
+          {/* Logo redimensionné (hauteur 70px, largeur auto) */}
+          <img
+            src={logoDataUrl}
+            alt="NexClean Logo"
             style={{
-              width: '10px',
-              height: '10px',
-              borderRadius: '50%',
-              background: '#22C55E',
+              height: '70px',
+              width: 'auto',
+              objectFit: 'contain',
             }}
           />
-          <span style={{ color: '#93C5FD', fontSize: '18px', fontWeight: 600 }}>
-            Douala, Cameroun
-          </span>
+          {/* Séparateur visuel */}
+          <div
+            style={{
+              width: '2px',
+              height: '50px',
+              background: 'rgba(255,255,255,0.2)',
+            }}
+          />
+          {/* Badge de localisation */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(59,130,246,0.15)',
+              border: '1px solid rgba(59,130,246,0.3)',
+              borderRadius: '50px',
+              padding: '8px 20px',
+            }}
+          >
+            <div
+              style={{
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
+                background: '#22C55E',
+              }}
+            />
+            <span style={{ color: '#93C5FD', fontSize: '18px', fontWeight: 600 }}>
+              Douala, Cameroun
+            </span>
+          </div>
         </div>
 
-        {/* Main title */}
+        {/* Titre principal */}
         <div
           style={{
             fontSize: '72px',
@@ -80,7 +118,9 @@ export default function OGImage() {
             maxWidth: '800px',
           }}
         >
-          NexClean
+          Nettoyage professionnel
+          <br />
+          à Douala
         </div>
 
         {/* Tagline */}
@@ -93,12 +133,12 @@ export default function OGImage() {
             lineHeight: 1.4,
           }}
         >
-          Service de nettoyage professionnel à Douala.
+          NexClean — La propreté nouvelle génération.
           <br />
-          Maisons, bureaux, désinfection.
+          Maisons, bureaux, désinfection, après travaux.
         </div>
 
-        {/* Trust badges */}
+        {/* Badges de confiance */}
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
           {[
             '✓ Intervention sous 24h',
@@ -122,7 +162,7 @@ export default function OGImage() {
           ))}
         </div>
 
-        {/* Contact */}
+        {/* Contact en bas à droite */}
         <div
           style={{
             position: 'absolute',
@@ -134,15 +174,13 @@ export default function OGImage() {
             gap: '4px',
           }}
         >
-          <span style={{ color: '#64748B', fontSize: '16px' }}>nexclean.cm</span>
-          <span style={{ color: '#0A5ED7', fontSize: '18px', fontWeight: 600 }}>
-            +237 6 81 71 15 40
+          <span style={{ color: '#64748B', fontSize: '16px' }}>nexclean.xyz</span>
+          <span style={{ color: '#60A5FA', fontSize: '18px', fontWeight: 600 }}>
+            +237 6 96 37 04 79
           </span>
         </div>
       </div>
     ),
-    {
-      ...size,
-    }
+    { ...size }
   );
 }
