@@ -23,14 +23,14 @@ export const metadata: Metadata = {
     description:
       'Nettoyage professionnel pour particuliers et entreprises à Douala. Rapide · Propre · Prix accessibles.',
     url: SITE_URL,
-    // images: [
-    //   {
-    //     url: OG_IMAGE.url,
-    //     width: OG_IMAGE.width,
-    //     height: OG_IMAGE.height,
-    //     alt: OG_IMAGE.alt,
-    //   },
-    // ],
+    images: [
+      {
+        url: OG_IMAGE.url,
+        width: OG_IMAGE.width,
+        height: OG_IMAGE.height,
+        alt: OG_IMAGE.alt,
+      },
+    ],
   },
 };
 

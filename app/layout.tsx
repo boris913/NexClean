@@ -74,15 +74,15 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     locale: 'fr_CM',
     type: 'website',
-    // images: [
-    //   {
-    //     url: OG_IMAGE.url,
-    //     width: OG_IMAGE.width,
-    //     height: OG_IMAGE.height,
-    //     alt: OG_IMAGE.alt,
-    //     type: 'image/png',
-    //   },
-    // ],
+    images: [
+      {
+        url: OG_IMAGE.url,
+        width: OG_IMAGE.width,
+        height: OG_IMAGE.height,
+        alt: OG_IMAGE.alt,
+        type: 'image/png',
+      },
+    ],
   },
 
   // ─── Twitter / X Card ──────────────────────────────────────
@@ -90,7 +90,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
-    // images: [OG_IMAGE.url],
+    images: [OG_IMAGE.url],
   },
 
   // ─── Robots ────────────────────────────────────────────────
