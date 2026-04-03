@@ -1,28 +1,11 @@
 import { ImageResponse } from 'next/og';
-import fs from 'fs';
-import path from 'path';
 
-// CORRECTION CRITIQUE :
-// - 'edge' remplacé par 'nodejs' → permet de lire les fichiers avec fs.readFileSync
-//   sans faire un fetch() auto-référentiel qui échoue chez les crawlers
-//   Facebook / WhatsApp / LinkedIn.
-// - Le runtime 'edge' était la cause principale de l'absence de preview.
 export const runtime = 'nodejs';
-
 export const alt = 'NexClean — Service de Nettoyage Professionnel à Douala';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-function getLogoData(): string {
-  // Lecture directe du fichier : fiable, pas de dépendance réseau.
-  const logoPath = path.join(process.cwd(), 'public', 'images', 'logo.png');
-  const buffer = fs.readFileSync(logoPath);
-  return `data:image/png;base64,${buffer.toString('base64')}`;
-}
-
 export default function OGImage() {
-  const logoDataUrl = getLogoData();
-
   return new ImageResponse(
     (
       <div
@@ -33,11 +16,11 @@ export default function OGImage() {
           display: 'flex',
           flexDirection: 'column',
           padding: '60px 80px',
-          fontFamily: 'system-ui, sans-serif',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
           position: 'relative',
         }}
       >
-        {/* Halo lumineux décoratif */}
+        {/* Halo décoratif */}
         <div
           style={{
             position: 'absolute',
@@ -50,7 +33,7 @@ export default function OGImage() {
           }}
         />
 
-        {/* En-tête : logo + badge localisation */}
+        {/* En-tête : logo texte + badge localisation */}
         <div
           style={{
             display: 'flex',
@@ -59,11 +42,20 @@ export default function OGImage() {
             marginBottom: '40px',
           }}
         >
-          <img
-            src={logoDataUrl}
-            alt="NexClean Logo"
-            style={{ height: '70px', width: 'auto', objectFit: 'contain' }}
-          />
+          <span
+            style={{
+              fontSize: '42px',
+              fontWeight: 800,
+              color: '#FFFFFF',
+              letterSpacing: '-1px',
+              background: 'rgba(255,255,255,0.05)',
+              padding: '8px 20px',
+              borderRadius: '60px',
+              border: '1px solid rgba(255,255,255,0.15)',
+            }}
+          >
+            NexClean
+          </span>
           <div style={{ width: '2px', height: '50px', background: 'rgba(255,255,255,0.2)' }} />
           <div
             style={{
@@ -76,17 +68,13 @@ export default function OGImage() {
               padding: '8px 20px',
             }}
           >
-            <div
-              style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22C55E' }}
-            />
-            <span style={{ color: '#93C5FD', fontSize: '18px', fontWeight: 600 }}>
-              Douala, Cameroun
-            </span>
+            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22C55E' }} />
+            <span style={{ color: '#93C5FD', fontSize: '18px', fontWeight: 600 }}>Douala, Cameroun</span>
           </div>
         </div>
 
-        {/* Titre principal */}
-        <div
+        {/* Titre principal : <h1> sans <div> problématique */}
+        <h1
           style={{
             fontSize: '72px',
             fontWeight: 800,
@@ -99,10 +87,10 @@ export default function OGImage() {
         >
           Nettoyage professionnel
           <br />à Douala
-        </div>
+        </h1>
 
-        {/* Tagline */}
-        <div
+        {/* Tagline : <p> au lieu de <div> */}
+        <p
           style={{
             fontSize: '28px',
             color: '#94A3B8',
@@ -114,28 +102,26 @@ export default function OGImage() {
           NexClean — La propreté nouvelle génération.
           <br />
           Maisons, bureaux, désinfection, après travaux.
-        </div>
+        </p>
 
         {/* Badges de confiance */}
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-          {['✓ Intervention sous 24h', '✓ Satisfaction garantie', '✓ Devis gratuit'].map(
-            (badge) => (
-              <div
-                key={badge}
-                style={{
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  borderRadius: '8px',
-                  padding: '12px 20px',
-                  color: '#E2E8F0',
-                  fontSize: '18px',
-                  fontWeight: 500,
-                }}
-              >
-                {badge}
-              </div>
-            )
-          )}
+          {['✓ Intervention sous 24h', '✓ Satisfaction garantie', '✓ Devis gratuit'].map((badge) => (
+            <div
+              key={badge}
+              style={{
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: '8px',
+                padding: '12px 20px',
+                color: '#E2E8F0',
+                fontSize: '18px',
+                fontWeight: 500,
+              }}
+            >
+              {badge}
+            </div>
+          ))}
         </div>
 
         {/* Contact bas-droit */}
@@ -151,9 +137,7 @@ export default function OGImage() {
           }}
         >
           <span style={{ color: '#64748B', fontSize: '16px' }}>nexclean.xyz</span>
-          <span style={{ color: '#60A5FA', fontSize: '18px', fontWeight: 600 }}>
-            +237 6 96 37 04 79
-          </span>
+          <span style={{ color: '#60A5FA', fontSize: '18px', fontWeight: 600 }}>+237 6 96 37 04 79</span>
         </div>
       </div>
     ),

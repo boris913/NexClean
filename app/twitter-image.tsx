@@ -1,23 +1,11 @@
 import { ImageResponse } from 'next/og';
-import fs from 'fs';
-import path from 'path';
 
-// Même correction que opengraph-image.tsx : runtime nodejs + lecture fichier directe.
 export const runtime = 'nodejs';
-
 export const alt = 'NexClean — Service de Nettoyage Professionnel à Douala';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-function getLogoData(): string {
-  const logoPath = path.join(process.cwd(), 'public', 'images', 'logo.png');
-  const buffer = fs.readFileSync(logoPath);
-  return `data:image/png;base64,${buffer.toString('base64')}`;
-}
-
 export default function TwitterImage() {
-  const logoDataUrl = getLogoData();
-
   return new ImageResponse(
     (
       <div
@@ -28,11 +16,11 @@ export default function TwitterImage() {
           display: 'flex',
           flexDirection: 'column',
           padding: '60px 80px',
-          fontFamily: 'system-ui, sans-serif',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
           position: 'relative',
         }}
       >
-        {/* Halo lumineux */}
+        {/* Halo décoratif */}
         <div
           style={{
             position: 'absolute',
@@ -45,7 +33,7 @@ export default function TwitterImage() {
           }}
         />
 
-        {/* En-tête */}
+        {/* En-tête : logo texte + badge localisation */}
         <div
           style={{
             display: 'flex',
@@ -54,11 +42,20 @@ export default function TwitterImage() {
             marginBottom: '40px',
           }}
         >
-          <img
-            src={logoDataUrl}
-            alt="NexClean Logo"
-            style={{ height: '70px', width: 'auto', objectFit: 'contain' }}
-          />
+          <span
+            style={{
+              fontSize: '42px',
+              fontWeight: 800,
+              color: '#FFFFFF',
+              letterSpacing: '-1px',
+              background: 'rgba(255,255,255,0.05)',
+              padding: '8px 20px',
+              borderRadius: '60px',
+              border: '1px solid rgba(255,255,255,0.15)',
+            }}
+          >
+            NexClean
+          </span>
           <div style={{ width: '2px', height: '50px', background: 'rgba(255,255,255,0.2)' }} />
           <div
             style={{
@@ -71,17 +68,13 @@ export default function TwitterImage() {
               padding: '8px 20px',
             }}
           >
-            <div
-              style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22C55E' }}
-            />
-            <span style={{ color: '#93C5FD', fontSize: '18px', fontWeight: 600 }}>
-              Douala, Cameroun
-            </span>
+            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22C55E' }} />
+            <span style={{ color: '#93C5FD', fontSize: '18px', fontWeight: 600 }}>Douala, Cameroun</span>
           </div>
         </div>
 
-        {/* Titre */}
-        <div
+        {/* Titre principal */}
+        <h1
           style={{
             fontSize: '72px',
             fontWeight: 800,
@@ -92,9 +85,9 @@ export default function TwitterImage() {
           }}
         >
           NexClean
-        </div>
+        </h1>
 
-        <div
+        <p
           style={{
             fontSize: '28px',
             color: '#94A3B8',
@@ -103,28 +96,26 @@ export default function TwitterImage() {
           }}
         >
           Service de nettoyage professionnel à Douala.
-        </div>
+        </p>
 
         {/* Badges */}
         <div style={{ display: 'flex', gap: '16px' }}>
-          {['✓ Intervention sous 24h', '✓ Satisfaction garantie', '✓ Devis gratuit'].map(
-            (badge) => (
-              <div
-                key={badge}
-                style={{
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  borderRadius: '8px',
-                  padding: '12px 20px',
-                  color: '#E2E8F0',
-                  fontSize: '18px',
-                  fontWeight: 500,
-                }}
-              >
-                {badge}
-              </div>
-            )
-          )}
+          {['✓ Intervention sous 24h', '✓ Satisfaction garantie', '✓ Devis gratuit'].map((badge) => (
+            <div
+              key={badge}
+              style={{
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: '8px',
+                padding: '12px 20px',
+                color: '#E2E8F0',
+                fontSize: '18px',
+                fontWeight: 500,
+              }}
+            >
+              {badge}
+            </div>
+          ))}
         </div>
 
         {/* Contact */}
@@ -140,9 +131,7 @@ export default function TwitterImage() {
           }}
         >
           <span style={{ color: '#64748B', fontSize: '16px' }}>nexclean.xyz</span>
-          <span style={{ color: '#60A5FA', fontSize: '18px', fontWeight: 600 }}>
-            +237 6 96 37 04 79
-          </span>
+          <span style={{ color: '#60A5FA', fontSize: '18px', fontWeight: 600 }}>+237 6 96 37 04 79</span>
         </div>
       </div>
     ),

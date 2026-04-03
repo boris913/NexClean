@@ -19,13 +19,14 @@ import {
   WEBSITE_SCHEMA,
 } from '@/lib/seo';
 
-// ─── Fonts ───────────────────────────────────────────────────
+// ─── Fonts avec fallback pour éviter l'erreur "Failed to load dynamic font" ──
 const dmSans = DM_Sans({
   subsets: ['latin'],
   variable: '--font-dm-sans',
   weight: ['300', '400', '500', '600', '700'],
   display: 'swap',
   preload: true,
+  fallback: ['system-ui', 'Arial', 'Helvetica', 'sans-serif'],
 });
 
 const dmSerifDisplay = DM_Serif_Display({
@@ -34,9 +35,10 @@ const dmSerifDisplay = DM_Serif_Display({
   weight: ['400'],
   display: 'swap',
   preload: true,
+  fallback: ['Georgia', 'Times New Roman', 'serif'],
 });
 
-// ─── Viewport (séparé de Metadata comme recommandé Next.js 14+) ─
+// ─── Viewport ────────────────────────────────────────────────
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -45,7 +47,6 @@ export const viewport: Viewport = {
 
 // ─── Metadata principale ─────────────────────────────────────
 export const metadata: Metadata = {
-  // Title avec template pour les futures sous-pages
   title: {
     default: DEFAULT_TITLE,
     template: TITLE_TEMPLATE,
@@ -56,7 +57,6 @@ export const metadata: Metadata = {
   creator: 'NexClean',
   publisher: 'NexClean',
 
-  // Canonical URL
   metadataBase: new URL(SITE_URL),
   alternates: {
     canonical: '/',
@@ -66,7 +66,6 @@ export const metadata: Metadata = {
     },
   },
 
-  // ─── Open Graph ────────────────────────────────────────────
   openGraph: {
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
@@ -85,7 +84,6 @@ export const metadata: Metadata = {
     ],
   },
 
-  // ─── Twitter / X Card ──────────────────────────────────────
   twitter: {
     card: 'summary_large_image',
     title: DEFAULT_TITLE,
@@ -93,7 +91,6 @@ export const metadata: Metadata = {
     images: [OG_IMAGE.url],
   },
 
-  // ─── Robots ────────────────────────────────────────────────
   robots: {
     index: true,
     follow: true,
@@ -106,20 +103,14 @@ export const metadata: Metadata = {
     },
   },
 
-  // ─── Verification Search Consoles ─────────────────────────
-  // Remplacez les valeurs par vos vrais codes de vérification
   verification: {
     google: 'REMPLACER_PAR_VOTRE_CODE_GOOGLE_SEARCH_CONSOLE',
-    // yandex: 'VOTRE_CODE_YANDEX',
-    // bing: 'VOTRE_CODE_BING',
   },
 
-  // ─── App / PWA Metadata ────────────────────────────────────
   applicationName: SITE_NAME,
   category: 'services',
   classification: 'Nettoyage professionnel',
 
-  // ─── Divers ────────────────────────────────────────────────
   referrer: 'origin-when-cross-origin',
   formatDetection: {
     email: false,
@@ -133,18 +124,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" className={`${dmSans.variable} ${dmSerifDisplay.variable}`}>
       <head>
-        {/* Favicon set complet */}
         <link rel="icon" href="/images/favicon.ico" sizes="any" />
         <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico" />
         <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico" />
         <link rel="manifest" href="/site.webmanifest" />
 
-        {/* Preconnect pour performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
-        {/* DNS-prefetch WhatsApp */}
         <link rel="dns-prefetch" href="https://wa.me" />
         <link rel="dns-prefetch" href="https://api.whatsapp.com" />
       </head>
@@ -156,8 +144,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Footer />
         <WhatsAppButton />
 
-        {/* ─── JSON-LD Structured Data ─────────────────────── */}
-        {/* LocalBusiness — principal, indexé par Google pour Knowledge Panel */}
         <Script
           id="schema-local-business"
           type="application/ld+json"
@@ -165,7 +151,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(LOCAL_BUSINESS_SCHEMA) }}
         />
 
-        {/* Services — apparaît dans les rich results Google */}
         <Script
           id="schema-services"
           type="application/ld+json"
@@ -173,7 +158,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(SERVICES_SCHEMA) }}
         />
 
-        {/* FAQ — permet l'affichage de la FAQ directement dans les résultats Google */}
         <Script
           id="schema-faq"
           type="application/ld+json"
@@ -181,7 +165,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_SCHEMA) }}
         />
 
-        {/* WebSite — pour le Search Sitelinks */}
         <Script
           id="schema-website"
           type="application/ld+json"
