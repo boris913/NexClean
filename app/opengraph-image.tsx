@@ -1,30 +1,27 @@
 import { ImageResponse } from 'next/og';
-import fs from 'fs/promises';
+import fs from 'fs';
 import path from 'path';
 
-export const runtime = 'edge';
+// CORRECTION CRITIQUE :
+// - 'edge' remplacé par 'nodejs' → permet de lire les fichiers avec fs.readFileSync
+//   sans faire un fetch() auto-référentiel qui échoue chez les crawlers
+//   Facebook / WhatsApp / LinkedIn.
+// - Le runtime 'edge' était la cause principale de l'absence de preview.
+export const runtime = 'nodejs';
+
 export const alt = 'NexClean — Service de Nettoyage Professionnel à Douala';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-/**
- * Charge l'image du logo depuis le dossier public.
- * En environnement Edge, on utilise fetch sur l'URL publique.
- * Pour le développement local, on peut aussi lire le fichier.
- */
-async function getLogoData(): Promise<string> {
-  // En production (Edge), l'image est accessible via l'URL du site
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:3000';
-  const res = await fetch(`${baseUrl}/images/logo.png`);
-  const buffer = await res.arrayBuffer();
-  const base64 = Buffer.from(buffer).toString('base64');
-  return `data:image/png;base64,${base64}`;
+function getLogoData(): string {
+  // Lecture directe du fichier : fiable, pas de dépendance réseau.
+  const logoPath = path.join(process.cwd(), 'public', 'images', 'logo.png');
+  const buffer = fs.readFileSync(logoPath);
+  return `data:image/png;base64,${buffer.toString('base64')}`;
 }
 
-export default async function OGImage() {
-  const logoDataUrl = await getLogoData();
+export default function OGImage() {
+  const logoDataUrl = getLogoData();
 
   return new ImageResponse(
     (
@@ -40,7 +37,7 @@ export default async function OGImage() {
           position: 'relative',
         }}
       >
-        {/* Motif de fond subtil */}
+        {/* Halo lumineux décoratif */}
         <div
           style={{
             position: 'absolute',
@@ -53,7 +50,7 @@ export default async function OGImage() {
           }}
         />
 
-        {/* En-tête avec logo */}
+        {/* En-tête : logo + badge localisation */}
         <div
           style={{
             display: 'flex',
@@ -62,25 +59,12 @@ export default async function OGImage() {
             marginBottom: '40px',
           }}
         >
-          {/* Logo redimensionné (hauteur 70px, largeur auto) */}
           <img
             src={logoDataUrl}
             alt="NexClean Logo"
-            style={{
-              height: '70px',
-              width: 'auto',
-              objectFit: 'contain',
-            }}
+            style={{ height: '70px', width: 'auto', objectFit: 'contain' }}
           />
-          {/* Séparateur visuel */}
-          <div
-            style={{
-              width: '2px',
-              height: '50px',
-              background: 'rgba(255,255,255,0.2)',
-            }}
-          />
-          {/* Badge de localisation */}
+          <div style={{ width: '2px', height: '50px', background: 'rgba(255,255,255,0.2)' }} />
           <div
             style={{
               display: 'flex',
@@ -93,12 +77,7 @@ export default async function OGImage() {
             }}
           >
             <div
-              style={{
-                width: '10px',
-                height: '10px',
-                borderRadius: '50%',
-                background: '#22C55E',
-              }}
+              style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22C55E' }}
             />
             <span style={{ color: '#93C5FD', fontSize: '18px', fontWeight: 600 }}>
               Douala, Cameroun
@@ -119,8 +98,7 @@ export default async function OGImage() {
           }}
         >
           Nettoyage professionnel
-          <br />
-          à Douala
+          <br />à Douala
         </div>
 
         {/* Tagline */}
@@ -140,29 +118,27 @@ export default async function OGImage() {
 
         {/* Badges de confiance */}
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-          {[
-            '✓ Intervention sous 24h',
-            '✓ Satisfaction garantie',
-            '✓ Devis gratuit',
-          ].map((badge) => (
-            <div
-              key={badge}
-              style={{
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                borderRadius: '8px',
-                padding: '12px 20px',
-                color: '#E2E8F0',
-                fontSize: '18px',
-                fontWeight: 500,
-              }}
-            >
-              {badge}
-            </div>
-          ))}
+          {['✓ Intervention sous 24h', '✓ Satisfaction garantie', '✓ Devis gratuit'].map(
+            (badge) => (
+              <div
+                key={badge}
+                style={{
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  borderRadius: '8px',
+                  padding: '12px 20px',
+                  color: '#E2E8F0',
+                  fontSize: '18px',
+                  fontWeight: 500,
+                }}
+              >
+                {badge}
+              </div>
+            )
+          )}
         </div>
 
-        {/* Contact en bas à droite */}
+        {/* Contact bas-droit */}
         <div
           style={{
             position: 'absolute',

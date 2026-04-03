@@ -16,37 +16,34 @@ export const TITLE_TEMPLATE = '%s | NexClean Douala';
 
 // ─── Mots-clés ciblés (longue traîne + locaux) ───────────────
 export const DEFAULT_KEYWORDS = [
-  // Locaux primaires
   'nettoyage Douala',
   'service nettoyage Douala',
   'entreprise nettoyage Douala',
   'nettoyage professionnel Douala',
-  // Services
   'nettoyage maison Douala',
   'nettoyage bureau Douala',
   'nettoyage vitres Douala',
   'désinfection Douala',
   'nettoyage après travaux Douala',
   'femme de ménage Douala',
-  // Géographique
   'nettoyage Bonapriso',
   'nettoyage Akwa',
   'nettoyage Bonanjo',
   'nettoyage Bali Douala',
   'nettoyage Makepe',
   'nettoyage Bonamoussadi',
-  // Cameroun
   'service nettoyage Cameroun',
   'nettoyage professionnel Cameroun',
-  // Brand
   'NexClean',
   'NexClean Douala',
   'NexClean Cameroun',
 ].join(', ');
 
 // ─── Open Graph Image ────────────────────────────────────────
+// CORRECTION : URL absolue obligatoire pour Facebook, WhatsApp, LinkedIn.
+// Une URL relative (/opengraph-image) est ignorée par leurs crawlers.
 export const OG_IMAGE = {
-  url: `/opengraph-image`,
+  url: `${SITE_URL}/opengraph-image`,   // ← URL ABSOLUE
   width: 1200,
   height: 630,
   alt: 'NexClean — Service de Nettoyage Professionnel à Douala, Cameroun',
@@ -68,9 +65,9 @@ export const LOCAL_BUSINESS_SCHEMA = {
     width: 400,
     height: 100,
   },
-  image: `${SITE_URL}/og-image.png`,
+  image: `${SITE_URL}/opengraph-image`,
   telephone: '+237696370479',
-  email: 'contact@nexclean.cm',
+  email: 'nexcleanservice@gmail.com',
   address: {
     '@type': 'PostalAddress',
     streetAddress: 'Douala',
@@ -101,45 +98,20 @@ export const LOCAL_BUSINESS_SCHEMA = {
   currenciesAccepted: 'XAF',
   paymentAccepted: 'Cash, Mobile Money, Virement Bancaire',
   areaServed: [
-    {
-      '@type': 'Place',
-      name: 'Bonapriso, Douala',
-    },
-    {
-      '@type': 'Place',
-      name: 'Akwa, Douala',
-    },
-    {
-      '@type': 'Place',
-      name: 'Bonanjo, Douala',
-    },
-    {
-      '@type': 'Place',
-      name: 'Bali, Douala',
-    },
-    {
-      '@type': 'Place',
-      name: 'Makepe, Douala',
-    },
-    {
-      '@type': 'Place',
-      name: 'Bonamoussadi, Douala',
-    },
-    {
-      '@type': 'Place',
-      name: 'Deido, Douala',
-    },
-    {
-      '@type': 'Place',
-      name: 'New Bell, Douala',
-    },
+    { '@type': 'Place', name: 'Bonapriso, Douala' },
+    { '@type': 'Place', name: 'Akwa, Douala' },
+    { '@type': 'Place', name: 'Bonanjo, Douala' },
+    { '@type': 'Place', name: 'Bali, Douala' },
+    { '@type': 'Place', name: 'Makepe, Douala' },
+    { '@type': 'Place', name: 'Bonamoussadi, Douala' },
+    { '@type': 'Place', name: 'Deido, Douala' },
+    { '@type': 'Place', name: 'New Bell, Douala' },
   ],
   hasMap: 'https://www.google.com/maps?q=Douala,Cameroun',
   sameAs: [
-    'https://www.facebook.com/nexclean',
+    'https://www.facebook.com/profile.php?id=61585203135726',
     'https://www.instagram.com/nexclean',
   ],
-  // Aggregate rating — à mettre à jour avec vos vrais avis
   aggregateRating: {
     '@type': 'AggregateRating',
     ratingValue: '4.9',
@@ -149,7 +121,7 @@ export const LOCAL_BUSINESS_SCHEMA = {
   },
 };
 
-// ─── Schema.org — Services (Service Schema) ──────────────────
+// ─── Schema.org — Services ───────────────────────────────────
 export const SERVICES_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
@@ -163,8 +135,7 @@ export const SERVICES_SCHEMA = {
       item: {
         '@type': 'Service',
         name: 'Nettoyage Maison',
-        description:
-          'Nettoyage complet de maisons et appartements à Douala. Sols, surfaces, sanitaires et cuisine.',
+        description: 'Nettoyage complet de maisons et appartements à Douala. Sols, surfaces, sanitaires et cuisine.',
         provider: { '@id': `${SITE_URL}/#organization` },
         areaServed: 'Douala, Cameroun',
         offers: {
@@ -185,8 +156,7 @@ export const SERVICES_SCHEMA = {
       item: {
         '@type': 'Service',
         name: 'Nettoyage Bureau',
-        description:
-          'Nettoyage et entretien de bureaux et espaces professionnels à Douala.',
+        description: 'Nettoyage et entretien de bureaux et espaces professionnels à Douala.',
         provider: { '@id': `${SITE_URL}/#organization` },
         areaServed: 'Douala, Cameroun',
         offers: {
@@ -207,8 +177,7 @@ export const SERVICES_SCHEMA = {
       item: {
         '@type': 'Service',
         name: 'Désinfection Complète',
-        description:
-          'Désinfection professionnelle de locaux résidentiels et commerciaux à Douala.',
+        description: 'Désinfection professionnelle de locaux résidentiels et commerciaux à Douala.',
         provider: { '@id': `${SITE_URL}/#organization` },
         areaServed: 'Douala, Cameroun',
       },
@@ -242,7 +211,7 @@ export const FAQ_SCHEMA = {
       name: 'Fournissez-vous le matériel et les produits de nettoyage ?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Absolument ! Nous arrivons avec tout le matériel professionnel et les produits de nettoyage nécessaires. Vous n\'avez rien à prévoir.',
+        text: "Absolument ! Nous arrivons avec tout le matériel professionnel et les produits de nettoyage nécessaires. Vous n'avez rien à prévoir.",
       },
     },
     {
@@ -250,7 +219,7 @@ export const FAQ_SCHEMA = {
       name: 'Puis-je réserver un nettoyage pour le jour même à Douala ?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Oui, selon nos disponibilités. Contactez-nous sur WhatsApp pour une intervention rapide. Nous nous efforçons de répondre aux urgences dans les meilleurs délais.',
+        text: "Oui, selon nos disponibilités. Contactez-nous sur WhatsApp pour une intervention rapide. Nous nous efforçons de répondre aux urgences dans les meilleurs délais.",
       },
     },
     {
@@ -258,15 +227,15 @@ export const FAQ_SCHEMA = {
       name: 'Quels sont les tarifs pour un nettoyage de maison à Douala ?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Nos tarifs pour le nettoyage de maison à Douala commencent à 8 000 FCFA pour un studio et vont jusqu\'à 16 000 FCFA pour un appartement de 3 chambres et plus. Contactez-nous pour un devis personnalisé gratuit.',
+        text: "Nos tarifs pour le nettoyage de maison à Douala commencent à 8 000 FCFA pour un studio et vont jusqu'à 16 000 FCFA pour un appartement de 3 chambres et plus. Contactez-nous pour un devis personnalisé gratuit.",
       },
     },
     {
       '@type': 'Question',
-      name: 'Quelle est la différence entre une prestation ponctuelle et un abonnement mensuel ?',
+      name: "Quelle est la différence entre une prestation ponctuelle et un abonnement mensuel ?",
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'La prestation ponctuelle est un service unique. L\'abonnement mensuel vous offre des passages réguliers (4 ou 8 par mois) avec un tarif réduit et un agent dédié qui connaît vos habitudes.',
+        text: "La prestation ponctuelle est un service unique. L'abonnement mensuel vous offre des passages réguliers (4 ou 8 par mois) avec un tarif réduit et un agent dédié qui connaît vos habitudes.",
       },
     },
   ],
@@ -286,7 +255,7 @@ export const BREADCRUMB_SCHEMA = {
   ],
 };
 
-// ─── Schema.org — WebSite (SearchAction pour Google Sitelinks) ─
+// ─── Schema.org — WebSite ────────────────────────────────────
 export const WEBSITE_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',

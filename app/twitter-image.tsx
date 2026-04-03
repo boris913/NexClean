@@ -1,22 +1,22 @@
 import { ImageResponse } from 'next/og';
+import fs from 'fs';
+import path from 'path';
 
-export const runtime = 'edge';
+// Même correction que opengraph-image.tsx : runtime nodejs + lecture fichier directe.
+export const runtime = 'nodejs';
+
 export const alt = 'NexClean — Service de Nettoyage Professionnel à Douala';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-async function getLogoData(): Promise<string> {
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:3000';
-  const res = await fetch(`${baseUrl}/images/logo.png`);
-  const buffer = await res.arrayBuffer();
-  const base64 = Buffer.from(buffer).toString('base64');
-  return `data:image/png;base64,${base64}`;
+function getLogoData(): string {
+  const logoPath = path.join(process.cwd(), 'public', 'images', 'logo.png');
+  const buffer = fs.readFileSync(logoPath);
+  return `data:image/png;base64,${buffer.toString('base64')}`;
 }
 
-export default async function TwitterImage() {
-  const logoDataUrl = await getLogoData();
+export default function TwitterImage() {
+  const logoDataUrl = getLogoData();
 
   return new ImageResponse(
     (
@@ -32,7 +32,7 @@ export default async function TwitterImage() {
           position: 'relative',
         }}
       >
-        {/* Effet de lumière */}
+        {/* Halo lumineux */}
         <div
           style={{
             position: 'absolute',
@@ -45,7 +45,7 @@ export default async function TwitterImage() {
           }}
         />
 
-        {/* En-tête avec logo */}
+        {/* En-tête */}
         <div
           style={{
             display: 'flex',
@@ -59,13 +59,7 @@ export default async function TwitterImage() {
             alt="NexClean Logo"
             style={{ height: '70px', width: 'auto', objectFit: 'contain' }}
           />
-          <div
-            style={{
-              width: '2px',
-              height: '50px',
-              background: 'rgba(255,255,255,0.2)',
-            }}
-          />
+          <div style={{ width: '2px', height: '50px', background: 'rgba(255,255,255,0.2)' }} />
           <div
             style={{
               display: 'flex',
@@ -78,12 +72,7 @@ export default async function TwitterImage() {
             }}
           >
             <div
-              style={{
-                width: '10px',
-                height: '10px',
-                borderRadius: '50%',
-                background: '#22C55E',
-              }}
+              style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22C55E' }}
             />
             <span style={{ color: '#93C5FD', fontSize: '18px', fontWeight: 600 }}>
               Douala, Cameroun
