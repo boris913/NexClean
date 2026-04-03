@@ -73,7 +73,7 @@ export default function OGImage() {
           </div>
         </div>
 
-        {/* Titre principal : <h1> sans <div> problématique */}
+        {/* Titre principal */}
         <h1
           style={{
             fontSize: '72px',
@@ -82,40 +82,24 @@ export default function OGImage() {
             lineHeight: 1.05,
             marginBottom: '20px',
             letterSpacing: '-2px',
-            maxWidth: '800px',
           }}
         >
-          Nettoyage professionnel
-          <br /> à Douala
+          NexClean
         </h1>
 
-        {/* Tagline : <p> au lieu de <div> */}
         <p
           style={{
             fontSize: '28px',
             color: '#94A3B8',
             marginBottom: '48px',
-            maxWidth: '700px',
             lineHeight: 1.4,
           }}
         >
-          NexClean — La propreté nouvelle génération.
+          Service de nettoyage professionnel à Douala.
         </p>
 
-        <p
-          style={{
-            fontSize: '28px',
-            color: '#94A3B8',
-            marginBottom: '48px',
-            maxWidth: '700px',
-            lineHeight: 1.4,
-          }}
-        >
-          Maisons, bureaux, désinfection, après travaux.
-        </p>
-
-        {/* Badges de confiance */}
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+        {/* Badges */}
+        <div style={{ display: 'flex', gap: '16px' }}>
           {['✓ Intervention sous 24h', '✓ Satisfaction garantie', '✓ Devis gratuit'].map((badge) => (
             <div
               key={badge}
@@ -134,7 +118,7 @@ export default function OGImage() {
           ))}
         </div>
 
-        {/* Contact bas-droit */}
+        {/* Contact */}
         <div
           style={{
             position: 'absolute',
@@ -151,6 +135,6 @@ export default function OGImage() {
         </div>
       </div>
     ),
-    { ...size }
+    { width: 1200, height: 630 }
   );
 }
