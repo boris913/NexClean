@@ -86,7 +86,7 @@ export default function OGImage() {
           }}
         >
           Nettoyage professionnel
-          <br />à Douala
+          <br /> à Douala
         </h1>
 
         {/* Tagline : <p> au lieu de <div> */}
@@ -100,7 +100,17 @@ export default function OGImage() {
           }}
         >
           NexClean — La propreté nouvelle génération.
-          <br />
+        </p>
+
+        <p
+          style={{
+            fontSize: '28px',
+            color: '#94A3B8',
+            marginBottom: '48px',
+            maxWidth: '700px',
+            lineHeight: 1.4,
+          }}
+        >
           Maisons, bureaux, désinfection, après travaux.
         </p>
 
