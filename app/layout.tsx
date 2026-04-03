@@ -19,7 +19,6 @@ import {
   WEBSITE_SCHEMA,
 } from '@/lib/seo';
 
-// ─── Fonts avec fallback pour éviter l'erreur "Failed to load dynamic font" ──
 const dmSans = DM_Sans({
   subsets: ['latin'],
   variable: '--font-dm-sans',
@@ -27,6 +26,7 @@ const dmSans = DM_Sans({
   display: 'swap',
   preload: true,
   fallback: ['system-ui', 'Arial', 'Helvetica', 'sans-serif'],
+  adjustFontFallback: false, // ← évite l'erreur de police pour les caractères spéciaux
 });
 
 const dmSerifDisplay = DM_Serif_Display({
@@ -36,16 +36,15 @@ const dmSerifDisplay = DM_Serif_Display({
   display: 'swap',
   preload: true,
   fallback: ['Georgia', 'Times New Roman', 'serif'],
+  adjustFontFallback: false,
 });
 
-// ─── Viewport ────────────────────────────────────────────────
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   themeColor: '#0A5ED7',
 };
 
-// ─── Metadata principale ─────────────────────────────────────
 export const metadata: Metadata = {
   title: {
     default: DEFAULT_TITLE,
@@ -56,7 +55,6 @@ export const metadata: Metadata = {
   authors: [{ name: 'NexClean', url: SITE_URL }],
   creator: 'NexClean',
   publisher: 'NexClean',
-
   metadataBase: new URL(SITE_URL),
   alternates: {
     canonical: '/',
@@ -65,7 +63,6 @@ export const metadata: Metadata = {
       'fr': '/',
     },
   },
-
   openGraph: {
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
@@ -83,14 +80,12 @@ export const metadata: Metadata = {
       },
     ],
   },
-
   twitter: {
     card: 'summary_large_image',
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
     images: [OG_IMAGE.url],
   },
-
   robots: {
     index: true,
     follow: true,
@@ -102,15 +97,12 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-
   verification: {
     google: 'REMPLACER_PAR_VOTRE_CODE_GOOGLE_SEARCH_CONSOLE',
   },
-
   applicationName: SITE_NAME,
   category: 'services',
   classification: 'Nettoyage professionnel',
-
   referrer: 'origin-when-cross-origin',
   formatDetection: {
     email: false,
@@ -119,7 +111,6 @@ export const metadata: Metadata = {
   },
 };
 
-// ─── Layout ──────────────────────────────────────────────────
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className={`${dmSans.variable} ${dmSerifDisplay.variable}`}>
@@ -129,10 +120,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico" />
         <link rel="manifest" href="/site.webmanifest" />
-
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-
         <link rel="dns-prefetch" href="https://wa.me" />
         <link rel="dns-prefetch" href="https://api.whatsapp.com" />
       </head>
@@ -143,28 +132,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
         <Footer />
         <WhatsAppButton />
-
         <Script
           id="schema-local-business"
           type="application/ld+json"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(LOCAL_BUSINESS_SCHEMA) }}
         />
-
         <Script
           id="schema-services"
           type="application/ld+json"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(SERVICES_SCHEMA) }}
         />
-
         <Script
           id="schema-faq"
           type="application/ld+json"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_SCHEMA) }}
         />
-
         <Script
           id="schema-website"
           type="application/ld+json"

@@ -5,6 +5,26 @@ export const alt = 'NexClean — Service de Nettoyage Professionnel à Douala';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
+// Composant icône coche (SVG inline)
+const CheckIcon = () => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ marginRight: '8px' }}
+  >
+    <path
+      d="M20 6L9 17L4 12"
+      stroke="#22C55E"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 export default function OGImage() {
   return new ImageResponse(
     (
@@ -98,12 +118,14 @@ export default function OGImage() {
           Service de nettoyage professionnel à Douala.
         </p>
 
-        {/* Badges */}
-        <div style={{ display: 'flex', gap: '16px' }}>
-          {['✓ Intervention sous 24h', '✓ Satisfaction garantie', '✓ Devis gratuit'].map((badge) => (
+        {/* Badges avec icônes SVG */}
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+          {['Intervention sous 24h', 'Satisfaction garantie', 'Devis gratuit'].map((badge) => (
             <div
               key={badge}
               style={{
+                display: 'flex',
+                alignItems: 'center',
                 background: 'rgba(255,255,255,0.08)',
                 border: '1px solid rgba(255,255,255,0.12)',
                 borderRadius: '8px',
@@ -113,6 +135,7 @@ export default function OGImage() {
                 fontWeight: 500,
               }}
             >
+              <CheckIcon />
               {badge}
             </div>
           ))}
