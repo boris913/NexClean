@@ -8,7 +8,7 @@ export const SITE_NAME = 'NexClean';
 export const SITE_LOCALE = 'fr_CM';
 
 // ─── Métadonnées globales ────────────────────────────────────
-export const DEFAULT_TITLE = 'NexClean — Service de Nettoyage Professionnel à Douala';
+export const DEFAULT_TITLE = 'NexClean — Service de Nettoyage Professionnel à Douala et à Yaoundé';
 export const DEFAULT_DESCRIPTION =
   'NexClean, la propreté nouvelle génération à Douala. Nettoyage professionnel pour maisons, bureaux et commerces au Cameroun. Intervention sous 24h, satisfaction garantie. Devis gratuit.';
 
@@ -46,7 +46,7 @@ export const OG_IMAGE = {
   url: `${SITE_URL}/opengraph-image`,   // ← URL ABSOLUE
   width: 1200,
   height: 630,
-  alt: 'NexClean — Service de Nettoyage Professionnel à Douala, Cameroun',
+  alt: 'NexClean — Service de Nettoyage Professionnel à Douala et à Yaoundé, Cameroun',
 };
 
 // ─── Schema.org — LocalBusiness ──────────────────────────────
@@ -57,7 +57,7 @@ export const LOCAL_BUSINESS_SCHEMA = {
   name: 'NexClean',
   alternateName: 'NexClean Douala',
   description:
-    'Service de nettoyage professionnel à Douala, Cameroun. Maisons, bureaux, désinfection, après travaux.',
+    'Service de Nettoyage Professionnel à Douala et à Yaoundé, Cameroun. Maisons, bureaux, désinfection, après travaux.',
   url: SITE_URL,
   logo: {
     '@type': 'ImageObject',

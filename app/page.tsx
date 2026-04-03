@@ -12,14 +12,14 @@ import { SITE_URL, OG_IMAGE } from '@/lib/seo';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'NexClean — Service de Nettoyage Professionnel à Douala, Cameroun',
+  title: 'NexClean — Service de Nettoyage Professionnel à Douala et à Yaoundé, Cameroun',
   description:
     'NexClean, la propreté nouvelle génération à Douala. Nettoyage maison, bureau, vitres, désinfection, après travaux. Intervention sous 24h. Devis gratuit.',
   alternates: {
     canonical: SITE_URL,
   },
   openGraph: {
-    title: 'NexClean — Service de Nettoyage Professionnel à Douala',
+    title: 'NexClean — Service de Nettoyage Professionnel à Douala et à Yaoundé',
     description:
       'Nettoyage professionnel pour particuliers et entreprises à Douala. Rapide · Propre · Prix accessibles.',
     url: SITE_URL,

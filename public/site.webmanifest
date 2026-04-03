@@ -1,7 +1,7 @@
 {
   "name": "NexClean — Nettoyage Professionnel Douala",
   "short_name": "NexClean",
-  "description": "Service de nettoyage professionnel à Douala, Cameroun. Maisons, bureaux, désinfection. Intervention sous 24h.",
+  "description": "Service de Nettoyage Professionnel à Douala et à Yaoundé, Cameroun. Maisons, bureaux, désinfection. Intervention sous 24h.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

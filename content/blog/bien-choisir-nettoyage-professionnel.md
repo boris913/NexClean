@@ -1,5 +1,5 @@
 ---
-title: "Comment bien choisir son service de nettoyage professionnel à Douala ?"
+title: "Comment bien choisir son service de Nettoyage Professionnel à Douala et à Yaoundé ?"
 description: "Conseils pratiques pour sélectionner le prestataire idéal pour l'entretien de votre maison ou bureau."
 date: "2025-04-01"
 author: "Équipe NexClean"
@@ -8,7 +8,7 @@ coverImage: "/images/blog/nettoyage-professionnel.png"
 isPublished: true
 ---
 
-# Comment bien choisir son service de nettoyage professionnel à Douala ?
+# Comment bien choisir son service de Nettoyage Professionnel à Douala et à Yaoundé ?
 
 Faire appel à un service de nettoyage professionnel peut vous faire gagner un temps précieux et garantir un résultat impeccable. Mais comment être sûr de faire le bon choix ?
 

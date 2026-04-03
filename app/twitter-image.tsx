@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'nodejs';
-export const alt = 'NexClean — Service de Nettoyage Professionnel à Douala';
+export const alt = 'NexClean — Service de Nettoyage Professionnel à Douala et à Yaoundé';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -111,7 +111,7 @@ export default function TwitterImage() {
             lineHeight: 1.4,
           }}
         >
-          Service de nettoyage professionnel à Douala.
+          Service de Nettoyage Professionnel à Douala et à Yaoundé.
         </p>
 
         <div style={{ display: 'flex', gap: '16px' }}>
