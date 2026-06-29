@@ -70,7 +70,7 @@ export default function BlogClient({ posts }: BlogClientProps) {
                     </div>
                   )}
                 </div>
-                <div className="p-6">
+                <div className="p-4 md:p-6">  {/* ← padding réduit sur mobile */}
                   <div className="flex items-center gap-2 text-sm text-slate-500 mb-3">
                     <time dateTime={post.date}>{formatDate(post.date)}</time>
                     <span>•</span>

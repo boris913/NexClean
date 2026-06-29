@@ -3,7 +3,7 @@ title: "Les zones les plus oubliées du ménage… et pourquoi elles nécessiten
 description: "Ventilation, dessus de meubles hauts, joints de carrelage, plinthes… Découvrez ces zones négligées et pourquoi seul un professionnel peut les nettoyer efficacement."
 date: "2026-04-14"
 author: "Équipe NexClean"
-tags: ["Ménage", "Zones oubliées", "Nettoyage professionnel", "Conseils", "Douala"]
+tags: ["Ménage", "Zones", "oubliées", "Nettoyage", "professionnel", "Conseils", "Douala"]
 coverImage: "/images/blog/zones-oubliees-menage.png"
 isPublished: true
 ---

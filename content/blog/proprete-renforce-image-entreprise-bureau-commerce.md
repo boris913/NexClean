@@ -3,7 +3,7 @@ title: "Entreprise, bureau ou commerce : un environnement propre renforce votre 
 description: "Découvrez pourquoi la propreté booste la productivité, améliore la perception client et fait la différence face à la concurrence. Un argumentaire pour les professionnels."
 date: "2026-05-15"
 author: "Équipe NexClean"
-tags: ["Propreté professionnelle", "Image de marque", "Productivité", "Nettoyage bureau", "Commerce", "Perception client"]
+tags: ["Propreté", "Image de marque", "Productivité", "Nettoyage", "Commerce"]
 coverImage: "/images/blog/proprete-image-entreprise.png"
 isPublished: true
 ---

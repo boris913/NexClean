@@ -3,7 +3,7 @@ title: "5 taches tenaces que seuls les professionnels peuvent éliminer"
 description: "Résine, rouille, moisissure incrustée, odeurs persistantes… Découvrez les taches les plus coriaces et pourquoi un professionnel est indispensable."
 date: "2026-04-22"
 author: "Équipe NexClean"
-tags: ["Taches tenaces", "Nettoyage professionnel", "Conseils", "Douala", "Résine", "Rouille", "Moisissure"]
+tags: ["Taches", "tenaces", "Nettoyage", "professionnel", "Conseils", "Douala", "Résine", "Rouille", "Moisissure"]
 coverImage: "/images/blog/taches-tenaces.png"
 isPublished: true
 ---

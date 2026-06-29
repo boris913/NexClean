@@ -3,7 +3,7 @@ title: "Pourquoi un devis de nettoyage sur site est plus fiable qu’un tarif au
 description: "Découvrez pourquoi une évaluation personnalisée sur place garantit un prix juste, un travail adapté et aucune mauvaise surprise."
 date: "2026-04-17"
 author: "Équipe NexClean"
-tags: ["Devis", "Nettoyage professionnel", "Conseils", "Douala", "Transparence"]
+tags: ["Devis", "Nettoyage", "professionnel", "Conseils", "Douala", "Transparence"]
 coverImage: "/images/blog/devis-sur-site.png"
 isPublished: true
 ---

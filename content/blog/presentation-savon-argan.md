@@ -3,7 +3,7 @@ title: "Découvrez le Savon Précieux à l’Huile d’Argan : l’allié multit
 description: "Maison NexClean Paris présente son innovation exclusive : un savon liquide d'exception à l'huile d'argan, conçu pour la vaisselle, la lessive et tous vos sols."
 date: "2026-06-29"
 author: "Équipe NexClean"
-tags: ["Savon Précieux", "Innovation NexClean", "Entretien maison", "Nettoyage haut de gamme", "Douala"]
+tags: ["Savon", "Précieux", "Innovation", "NexClean", "Entretien", "maison", "Nettoyage", "haut de gamme", "Douala"]
 coverImage: "/images/blog/nexclean-savon.png"
 isPublished: true
 ---
