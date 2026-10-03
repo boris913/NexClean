@@ -1,5 +1,6 @@
 import HeroSection from '@/components/sections/HeroSection';
 import ServicesSection from '@/components/sections/ServicesSection';
+import ServicesMarquee from '@/components/sections/ServicesMarquee';
 import AudienceSection from '@/components/sections/AudienceSection';
 import BeforeAfterSection from '@/components/sections/BeforeAfterSection';
 import WhyUsSection from '@/components/sections/WhyUsSection';
@@ -39,6 +40,7 @@ export default function Home() {
   return (
     <>
       <HeroSection />
+      <ServicesMarquee />
       <ServicesSection />
       <AudienceSection />
       <BeforeAfterSection />

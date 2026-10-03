@@ -42,7 +42,7 @@ export const products: Product[] = [
       { src: '/images/blog/nexclean-savon.png', alt: "Flacons de savon liquide NexClean à l'huile d'argan, 1 L" },
       { src: '/images/blog/nexclean-savon1.png', alt: 'Savon liquide NexClean' },
     ],
-    formats: [{ label: 'Flacon 1 L', price: null }],
+    formats: [{ label: 'Flacon 1 L', price: 1500 }],
     available: true,
     usages: ['Vaisselle', 'Lessive à la main ou en machine', 'Lavage des sols'],
     surfaces: ['Carrelage', 'Marbre', 'Parquet vitrifié', 'Vaisselle', 'Textiles'],
@@ -69,8 +69,10 @@ export const formatPrice = (price: number | null) =>
   price === null ? 'Prix sur demande' : `${price.toLocaleString('fr-FR')} FCFA`;
 
 export const SHOP_INFO = {
+  /** Mention affichée à côté de chaque prix. */
+  priceNote: 'Livraison non incluse',
   delivery:
-    'Livraison à Douala : frais et délai confirmés sur WhatsApp selon votre quartier. Retrait possible sur rendez-vous.',
+    'Prix hors livraison. Livraison à Douala : frais et délai confirmés sur WhatsApp selon votre quartier. Retrait possible sur rendez-vous.',
   wholesale:
     'Entreprises, revendeurs et achats en gros : tarifs dédiés sur demande.',
 };

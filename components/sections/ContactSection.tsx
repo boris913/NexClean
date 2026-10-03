@@ -12,7 +12,7 @@ export default function ContactSection() {
         {/* Header */}
         <div className="text-center mb-14">
           <SectionLabel className="mb-4">Contact</SectionLabel>
-          <h2 className="font-display text-3xl sm:text-4xl text-slate-900 mb-3">
+          <h2 className="font-display font-bold text-3xl sm:text-5xl text-ink-900 mb-3">
             Parlons de votre projet
           </h2>
           <p className="text-slate-500 max-w-md mx-auto">

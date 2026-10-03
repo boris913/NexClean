@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
-import { type Product, formatPrice } from '@/content/products-data';
+import { type Product, formatPrice, SHOP_INFO } from '@/content/products-data';
 
 export default function ProductCard({ product }: { product: Product }) {
   const minPrice = product.formats[0]?.price ?? null;
@@ -9,14 +9,14 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <Link
       href={`/boutique/${product.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-card hover:shadow-card-hover transition-all"
+      className="group flex flex-col overflow-hidden rounded-3xl bg-white border border-ink-100 shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300"
     >
-      <div className="relative aspect-square bg-slate-50">
+      <div className="relative aspect-[3/4] bg-brand-50 overflow-hidden">
         <Image
           src={product.images[0].src}
           alt={product.images[0].alt}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          className="object-cover group-hover:scale-105 transition-transform duration-700"
           sizes="(max-width: 640px) 100vw, 33vw"
         />
         {!product.available && (
@@ -28,11 +28,16 @@ export default function ProductCard({ product }: { product: Product }) {
       <div className="flex flex-col flex-1 p-5">
         <h3 className="text-base font-semibold text-slate-900 mb-1 group-hover:text-primary transition-colors">{product.name}</h3>
         <p className="text-sm text-slate-500 mb-4">{product.tagline}</p>
-        <div className="mt-auto flex items-center justify-between">
-          <span className="text-sm font-semibold text-slate-900">
-            {product.formats.map((f) => f.label).join(' · ')} — {formatPrice(minPrice)}
+        <div className="mt-auto flex items-end justify-between gap-3">
+          <span>
+            <span className="block font-display text-2xl font-extrabold text-ink-900">{formatPrice(minPrice)}</span>
+            <span className="block text-xs text-ink-500">
+              {product.formats.map((f) => f.label).join(' · ')} · {SHOP_INFO.priceNote}
+            </span>
           </span>
-          <ArrowRight className="w-4 h-4 text-primary group-hover:translate-x-0.5 transition-transform" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-cta px-4 py-2 text-sm font-bold text-ink-900 group-hover:bg-brand-300 transition-colors">
+            Acheter <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+          </span>
         </div>
       </div>
     </Link>

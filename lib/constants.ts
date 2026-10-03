@@ -14,7 +14,7 @@ export const CONTACT = {
 };
 
 export const COMPANY = {
-  name: 'NexClean',
+  name: 'NEXCLEAN SARL',
   legalName: 'NEXCLEAN SARL',
   // Renseigner uniquement des informations officielles (laisser vide sinon : non affiché).
   rccm: '',
@@ -64,7 +64,7 @@ export const PAYMENT_TERMS = {
     "Paiement selon les conditions indiquées sur votre devis. Un acompte peut être demandé à la validation pour certaines prestations, le solde étant réglé après l'intervention.",
   abonnement: "Règlement mensuel selon les termes du contrat d'abonnement.",
   produits:
-    'Commande confirmée sur WhatsApp. Paiement en espèces ou Mobile Money à la livraison ou au retrait.',
+    'Commande confirmée sur WhatsApp. Paiement en espèces ou Mobile Money à la livraison ou au retrait. Frais de livraison en sus.',
 };
 
 export const WHY_US = [

@@ -14,13 +14,13 @@ export default function ServiceCard({ service }: ServiceCardProps) {
   return (
     <Link
       href={getServiceHref(service)}
-      className="group flex flex-col bg-white rounded-2xl p-6 border border-slate-100 shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300"
+      className="group flex h-full flex-col bg-white rounded-3xl p-7 border border-ink-100 shadow-card hover:shadow-card-hover hover:border-brand-200 hover:-translate-y-1.5 transition-all duration-300"
     >
-      <div className="w-11 h-11 rounded-xl bg-primary-light flex items-center justify-center mb-5">
-        <IconComponent className="w-5 h-5 text-primary" strokeWidth={1.75} />
+      <div className="w-14 h-14 rounded-2xl bg-brand-100 group-hover:bg-cta flex items-center justify-center mb-6 transition-all duration-300 group-hover:rotate-6">
+        <IconComponent className="w-6 h-6 text-brand-700 group-hover:text-ink-900 transition-colors" strokeWidth={1.75} />
       </div>
 
-      <h3 className="text-base font-semibold text-slate-900 mb-2 group-hover:text-primary transition-colors">
+      <h3 className="font-display text-xl font-semibold text-ink-900 mb-2">
         {service.name}
       </h3>
 

@@ -9,7 +9,7 @@ export default function CoverageSection() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <SectionLabel className="mb-4">Zone de couverture</SectionLabel>
-          <h2 className="font-display text-3xl sm:text-4xl text-slate-900 mb-3">
+          <h2 className="font-display font-bold text-3xl sm:text-5xl text-ink-900 mb-3">
             Où intervenons-nous ?
           </h2>
           <p className="text-slate-500">Nous intervenons à {CITIES_LABEL}. Principaux quartiers couverts :</p>
@@ -57,9 +57,9 @@ export default function CoverageSection() {
         </div>
 
         {/* Note */}
-        <div className="bg-primary text-white rounded-xl p-6 text-center">
+        <div className="bg-ink-900 text-white rounded-3xl p-7 text-center">
           <p className="font-semibold mb-1">Votre quartier n'est pas listé ?</p>
-          <p className="text-sm text-blue-100">
+          <p className="text-sm text-ink-300">
             Contactez-nous — nous étudions toutes les demandes. Des frais de déplacement peuvent s'appliquer.
           </p>
         </div>

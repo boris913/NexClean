@@ -32,7 +32,7 @@ export default function WhatsAppButton() {
         shadow-[0_4px_20px_rgba(37,211,102,0.4)]
         hover:scale-110 hover:shadow-[0_4px_28px_rgba(37,211,102,0.5)]
         transition-all duration-200 ease-out
-        animate-fade-in
+        animate-fade-in animate-pulse-ring
       "
     >
       <WhatsAppIcon className="w-7 h-7" />

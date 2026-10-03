@@ -20,13 +20,13 @@ export default function ClientProcess() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <SectionLabel className="mb-4">Processus & paiement</SectionLabel>
-          <h2 className="font-display text-3xl sm:text-4xl text-slate-900 mb-3">De la demande au suivi</h2>
+          <h2 className="font-display font-bold text-3xl sm:text-5xl text-ink-900 mb-3">De la demande au suivi</h2>
         </div>
 
         <ol className="flex flex-wrap justify-center gap-2 mb-12">
           {STEPS.map((step, i) => (
             <li key={step} className="flex items-center gap-2 bg-white border border-slate-200 rounded-full pl-1.5 pr-4 py-1.5 text-sm text-slate-700">
-              <span className="w-6 h-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">{i + 1}</span>
+              <span className="w-6 h-6 rounded-full bg-cta text-ink-900 text-xs font-bold flex items-center justify-center">{i + 1}</span>
               {step}
             </li>
           ))}

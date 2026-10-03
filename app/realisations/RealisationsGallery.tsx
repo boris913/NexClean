@@ -21,7 +21,7 @@ export default function RealisationsGallery({ items }: { items: Realisation[] })
               onClick={() => setFilter(f)}
               className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
                 filter === f
-                  ? 'bg-primary text-white border-primary'
+                  ? 'bg-ink-900 text-white border-ink-900'
                   : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
               }`}
             >

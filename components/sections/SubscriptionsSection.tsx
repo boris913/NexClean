@@ -2,6 +2,7 @@ import { CalendarCheck, Home, Building2, Trees, Check, ArrowRight } from 'lucide
 import SectionLabel from '@/components/ui/SectionLabel';
 import Button from '@/components/ui/Button';
 import { getWhatsAppLink, PAYMENT_TERMS } from '@/lib/constants';
+import { Stagger, StaggerItem } from '@/components/ui/Reveal';
 
 export const subscriptionPlans = [
   {
@@ -35,7 +36,7 @@ export default function SubscriptionsSection({ withHeader = true }: { withHeader
           <div className="mb-12 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
             <div>
               <SectionLabel className="mb-4">Abonnements</SectionLabel>
-              <h2 className="font-display text-3xl sm:text-4xl text-slate-900 mb-3">L&apos;entretien régulier, sans y penser</h2>
+              <h2 className="font-display font-bold text-3xl sm:text-5xl text-ink-900 mb-3">L&apos;entretien régulier, sans y penser</h2>
               <p className="text-slate-500 max-w-lg">Des passages planifiés à l&apos;avance, à un tarif préférentiel.</p>
             </div>
             <Button href="/abonnements" variant="secondary" size="md" icon={ArrowRight} iconPosition="right">
@@ -44,30 +45,41 @@ export default function SubscriptionsSection({ withHeader = true }: { withHeader
           </div>
         )}
 
-        <div className="grid md:grid-cols-3 gap-5">
-          {subscriptionPlans.map((plan) => (
-            <div key={plan.name} className="flex flex-col rounded-2xl border border-slate-100 p-6 shadow-card">
-              <div className="w-11 h-11 rounded-xl bg-primary-light flex items-center justify-center mb-4">
-                <plan.icon className="w-5 h-5 text-primary" strokeWidth={1.75} />
+        <Stagger className="grid md:grid-cols-3 gap-5 items-stretch">
+          {subscriptionPlans.map((plan, i) => {
+            const featured = i === 1;
+            return (
+            <StaggerItem
+              key={plan.name}
+              className={`relative flex flex-col rounded-3xl p-7 transition-all duration-300 hover:-translate-y-1 ${
+                featured ? 'bg-ink-900 text-white shadow-2xl md:-my-3' : 'bg-white border border-ink-100 shadow-card hover:shadow-card-hover'
+              }`}
+            >
+              {featured && (
+                <span className="absolute -top-3 left-7 rounded-full bg-cta px-3 py-1 text-xs font-bold text-ink-900">Entreprises</span>
+              )}
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-5 ${featured ? 'bg-cta' : 'bg-brand-100'}`}>
+                <plan.icon className={`w-6 h-6 ${featured ? 'text-ink-900' : 'text-brand-700'}`} strokeWidth={1.75} />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900">{plan.name}</h3>
-              <p className="text-success font-semibold mb-4">{plan.price}</p>
+              <h3 className={`font-display text-xl font-semibold ${featured ? 'text-white' : 'text-ink-900'}`}>{plan.name}</h3>
+              <p className={`font-semibold mb-5 ${featured ? 'text-brand-300' : 'text-brand-700'}`}>{plan.price}</p>
               <ul className="space-y-2 mb-6">
                 {plan.points.map((pt) => (
-                  <li key={pt} className="flex items-center gap-2 text-sm text-slate-600">
+                  <li key={pt} className={`flex items-center gap-2 text-sm ${featured ? 'text-ink-200' : 'text-ink-600'}`}>
                     <Check className="w-3.5 h-3.5 text-success flex-shrink-0" strokeWidth={2.5} />
                     {pt}
                   </li>
                 ))}
               </ul>
-              <Button href={getWhatsAppLink(plan.message)} variant="secondary" size="md" fullWidth className="mt-auto">
+              <Button href={getWhatsAppLink(plan.message)} variant={featured ? 'primary' : 'secondary'} size="md" fullWidth className="mt-auto">
                 Demander cette formule
               </Button>
-            </div>
-          ))}
-        </div>
+            </StaggerItem>
+            );
+          })}
+        </Stagger>
 
-        <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 rounded-xl bg-slate-50 border border-slate-100 p-5">
+        <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3 rounded-2xl bg-brand-50 border border-brand-100 p-5">
           <CalendarCheck className="w-5 h-5 text-primary flex-shrink-0" />
           <p className="text-sm text-slate-600 flex-1">
             Besoin d&apos;une formule personnalisée ? Nous construisons le planning avec vous. Tarifs indicatifs : le prix final dépend de la surface, de l&apos;état et de la fréquence. {PAYMENT_TERMS.abonnement}

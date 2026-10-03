@@ -38,7 +38,7 @@ export default function RecrutementPage() {
 
       <section className="py-14 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-display text-2xl sm:text-3xl text-slate-900 mb-8">Ce que nous attendons</h2>
+          <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink-900 mb-8">Ce que nous attendons</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {values.map((v) => (
               <div key={v.title} className="rounded-2xl border border-slate-100 p-5 shadow-card">
@@ -53,7 +53,7 @@ export default function RecrutementPage() {
 
       <section className="py-14 bg-slate-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-display text-2xl sm:text-3xl text-slate-900 mb-2">Offres</h2>
+          <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink-900 mb-2">Offres</h2>
           <p className="text-slate-500 mb-8">
             {openJobs.length > 0
               ? `${openJobs.length} offre(s) ouverte(s). Les candidatures spontanées sont toujours les bienvenues.`
@@ -94,7 +94,7 @@ export default function RecrutementPage() {
       <section id="candidature" className="py-16 sm:py-20 bg-white scroll-mt-24">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h2 className="font-display text-3xl text-slate-900 mb-2">Déposer ma candidature</h2>
+            <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink-900 mb-2">Déposer ma candidature</h2>
             <p className="text-slate-500">Quelques minutes suffisent. Vos données ne sont jamais publiées.</p>
           </div>
           <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-6 lg:p-8">

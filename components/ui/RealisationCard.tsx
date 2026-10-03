@@ -7,7 +7,7 @@ export default function RealisationCard({ item }: { item: Realisation }) {
   const photos = [
     item.before && { ...item.before, label: 'Avant', tone: 'bg-slate-900/80' },
     item.during && { ...item.during, label: 'Pendant', tone: 'bg-accent' },
-    item.after && { ...item.after, label: 'Après', tone: 'bg-primary' },
+    item.after && { ...item.after, label: 'Après', tone: 'bg-brand-600' },
   ].filter(Boolean) as { src: string; alt: string; label: string; tone: string }[];
 
   return (

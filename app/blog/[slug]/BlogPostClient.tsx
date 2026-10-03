@@ -61,7 +61,7 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
 
         {/* En-tête */}
         <header className="mb-6 md:mb-8">
-          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-slate-900 mb-3 md:mb-4 leading-tight">
+          <h1 className="font-display font-extrabold text-3xl md:text-4xl lg:text-5xl text-ink-900 mb-3 md:mb-4 leading-tight">
             {post.title}
           </h1>
           <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-slate-500 border-b border-slate-100 pb-3 md:pb-4">

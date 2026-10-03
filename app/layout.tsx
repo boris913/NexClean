@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { DM_Sans, DM_Serif_Display } from 'next/font/google';
+import { Outfit, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/navigation/Header';
 import Footer from '@/components/navigation/Footer';
@@ -7,6 +7,7 @@ import WhatsAppButton from '@/components/ui/WhatsAppButton';
 import MobileCTABar from '@/components/ui/MobileCTABar';
 import Analytics from '@/components/analytics/Analytics';
 import JsonLd from '@/components/ui/JsonLd';
+import { MotionProvider } from '@/components/ui/Reveal';
 import {
   DEFAULT_TITLE,
   DEFAULT_DESCRIPTION,
@@ -20,30 +21,24 @@ import {
   WEBSITE_SCHEMA,
 } from '@/lib/seo';
 
-const dmSans = DM_Sans({
+const fontBody = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  variable: '--font-dm-sans',
-  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-body',
+  weight: ['400', '500', '600', '700', '800'],
   display: 'swap',
-  preload: true,
-  fallback: ['system-ui', 'Arial', 'Helvetica', 'sans-serif'],
-  adjustFontFallback: false, // ← évite l'erreur de police pour les caractères spéciaux
 });
 
-const dmSerifDisplay = DM_Serif_Display({
+const fontDisplay = Outfit({
   subsets: ['latin'],
-  variable: '--font-dm-serif',
-  weight: ['400'],
+  variable: '--font-display',
+  weight: ['500', '600', '700', '800'],
   display: 'swap',
-  preload: true,
-  fallback: ['Georgia', 'Times New Roman', 'serif'],
-  adjustFontFallback: false,
 });
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#0A5ED7',
+  themeColor: '#84CC45',
 };
 
 export const metadata: Metadata = {
@@ -53,9 +48,9 @@ export const metadata: Metadata = {
   },
   description: DEFAULT_DESCRIPTION,
   keywords: DEFAULT_KEYWORDS,
-  authors: [{ name: 'NexClean', url: SITE_URL }],
-  creator: 'NexClean',
-  publisher: 'NexClean',
+  authors: [{ name: SITE_NAME, url: SITE_URL }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
   metadataBase: new URL(SITE_URL),
   openGraph: {
     title: DEFAULT_TITLE,
@@ -107,19 +102,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${dmSans.variable} ${dmSerifDisplay.variable}`}>
+    <html lang="fr" className={`${fontBody.variable} ${fontDisplay.variable}`}>
       <head>
-        <link rel="icon" href="/images/favicon.ico" sizes="any" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico" />
         <link rel="manifest" href="/site.webmanifest" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://wa.me" />
         <link rel="dns-prefetch" href="https://api.whatsapp.com" />
       </head>
-      <body>
+      <body className="font-sans antialiased">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:bg-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow"
@@ -127,8 +116,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Aller au contenu
         </a>
         <Header />
-        <main id="main-content" className="pt-20">
-          {children}
+        <main id="main-content" className="pt-20 overflow-x-clip">
+          <MotionProvider>{children}</MotionProvider>
         </main>
         <Footer />
         <WhatsAppButton />

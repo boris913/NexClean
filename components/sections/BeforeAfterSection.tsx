@@ -12,7 +12,7 @@ export default function BeforeAfterSection() {
         <div className="mb-12 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
           <div>
             <SectionLabel className="mb-4">Avant / Après</SectionLabel>
-            <h2 className="font-display text-3xl sm:text-4xl text-slate-900 mb-3">Nos équipes sur le terrain</h2>
+            <h2 className="font-display font-bold text-3xl sm:text-5xl text-ink-900 mb-3">Nos équipes sur le terrain</h2>
             <p className="text-slate-500 max-w-lg">De vraies interventions NexClean, photographiées sur chantier.</p>
           </div>
           <Button href="/realisations" variant="secondary" size="md" icon={ArrowRight} iconPosition="right">
@@ -26,7 +26,7 @@ export default function BeforeAfterSection() {
           ))}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 content-start">
             {fieldPhotos.map((p) => (
-              <div key={p.src} className="relative aspect-square overflow-hidden rounded-xl">
+              <div key={p.src} className="relative aspect-[3/4] overflow-hidden rounded-2xl">
                 <Image
                   src={p.src}
                   alt={p.alt}

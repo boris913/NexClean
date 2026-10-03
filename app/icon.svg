@@ -1,0 +1,13 @@
+<svg width="112" height="112" viewBox="0 0 112 112" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g transform="translate(0 -16)">
+<rect y="16" width="112" height="112" rx="31.36" fill="url(#nc_grad)"/>
+<path id="mark-n" d="M30.5803 102V44.8262H40.6603L45.0149 56.519V102H30.5803ZM70.0133 102L36.6283 59.5834L40.6603 44.8262L74.1259 87.2429L70.0133 102ZM70.0133 102L66.3038 89.9846V44.8262H80.7384V102H70.0133Z" fill="white"/>
+<path transform="translate(60 -8) scale(1.25)" d="M23.52 31.68L25.294 37.746L31.36 39.52L25.294 41.294L23.52 47.36L21.746 41.294L15.68 39.52L21.746 37.746L23.52 31.68Z" fill="white"/>
+</g>
+<defs>
+<linearGradient id="nc_grad" x1="16" y1="32" x2="96" y2="112" gradientUnits="userSpaceOnUse">
+<stop stop-color="#A3DE6E"/>
+<stop offset="1" stop-color="#4E911F"/>
+</linearGradient>
+</defs>
+</svg>

@@ -23,7 +23,7 @@ export default function PricingSection() {
         {/* Header */}
         <div className="text-center mb-12">
           <SectionLabel className="mb-4">Tarifs</SectionLabel>
-          <h2 className="font-display text-3xl sm:text-4xl text-slate-900 mb-3">
+          <h2 className="font-display font-bold text-3xl sm:text-5xl text-ink-900 mb-3">
             Tarifs indicatifs
           </h2>
           <p className="text-slate-500 max-w-lg mx-auto mb-8">
@@ -55,14 +55,14 @@ export default function PricingSection() {
               key={option.id}
               className={`relative bg-white rounded-2xl p-6 border transition-all duration-200 ${
                 option.popular
-                  ? 'border-primary shadow-[0_0_0_2px_#0A5ED7] shadow-card'
+                  ? 'border-brand-400 shadow-[0_0_0_2px_#84CC45] shadow-card'
                   : 'border-slate-100 shadow-card hover:shadow-card-hover hover:border-slate-200'
               }`}
             >
               {/* Popular badge */}
               {option.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="text-xs font-semibold bg-primary text-white px-3 py-1 rounded-full">
+                  <span className="text-xs font-semibold bg-cta text-ink-900 px-3 py-1 rounded-full">
                     Recommandé
                   </span>
                 </div>

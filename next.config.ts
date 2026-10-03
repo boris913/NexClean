@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // Permet un build de prévisualisation sans toucher au .next du serveur de dev.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
+
   // ─── Images ────────────────────────────────────────────────
   images: {
     formats: ['image/avif', 'image/webp'],

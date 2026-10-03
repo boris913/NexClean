@@ -54,7 +54,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
             <div className="space-y-3">
-              <div className="relative aspect-square rounded-2xl overflow-hidden bg-slate-50">
+              <div className="relative aspect-[3/4] max-h-[640px] mx-auto rounded-3xl overflow-hidden bg-brand-50">
                 <Image src={product.images[0].src} alt={product.images[0].alt} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" priority />
               </div>
               {product.images.length > 1 && (
@@ -69,7 +69,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             </div>
 
             <div>
-              <h1 className="font-display text-3xl sm:text-4xl text-slate-900 mb-2">{product.name}</h1>
+              <h1 className="font-display font-bold text-3xl sm:text-5xl text-ink-900 mb-2">{product.name}</h1>
               <p className="text-slate-500 mb-4">{product.tagline}</p>
               <p className="text-slate-700 mb-6 leading-relaxed">{product.description}</p>
               <dl className="grid grid-cols-2 gap-3 mb-6 text-sm">

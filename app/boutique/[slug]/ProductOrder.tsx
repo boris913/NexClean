@@ -5,7 +5,7 @@ import { Minus, Plus } from 'lucide-react';
 import WhatsAppIcon from '@/components/ui/WhatsAppIcon';
 import { getWhatsAppLink } from '@/lib/constants';
 import { trackEvent } from '@/lib/analytics';
-import { type Product, formatPrice } from '@/content/products-data';
+import { type Product, formatPrice, SHOP_INFO } from '@/content/products-data';
 
 /** Sélection format + quantité, puis commande structurée sur WhatsApp. */
 export default function ProductOrder({ product }: { product: Product }) {
@@ -20,7 +20,7 @@ export default function ProductOrder({ product }: { product: Product }) {
     `• Produit : ${product.name}`,
     `• Format : ${format.label}`,
     `• Quantité : ${qty}`,
-    total !== null ? `• Total estimé : ${formatPrice(total)}` : '',
+    total !== null ? `• Total : ${formatPrice(total)} (hors livraison)` : '',
     '',
     'Quartier de livraison : ',
     'Nom : ',
@@ -61,7 +61,7 @@ export default function ProductOrder({ product }: { product: Product }) {
 
       <div className="flex items-center gap-4">
         <span className="text-sm font-medium text-slate-700">Quantité</span>
-        <div className="flex items-center rounded-xl border border-slate-200">
+        <div className="flex items-center rounded-full border border-ink-200 bg-white">
           <button
             type="button"
             onClick={() => setQty(Math.max(1, qty - 1))}
@@ -83,8 +83,14 @@ export default function ProductOrder({ product }: { product: Product }) {
         </div>
       </div>
 
-      <div className="text-lg font-bold text-slate-900">
-        {total !== null ? `Total : ${formatPrice(total)}` : `${format.label} — ${formatPrice(null)}`}
+      <div>
+        <div className="font-display text-3xl font-extrabold text-ink-900">
+          {total !== null ? formatPrice(total) : formatPrice(null)}
+        </div>
+        <p className="text-sm text-ink-500">
+          {qty > 1 && format.price !== null ? `${qty} × ${formatPrice(format.price)} · ` : ''}
+          {SHOP_INFO.priceNote}
+        </p>
       </div>
 
       <a
@@ -92,7 +98,7 @@ export default function ProductOrder({ product }: { product: Product }) {
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => trackEvent('product_order_click', { product: product.slug, quantity: qty, format: format.label })}
-        className="flex items-center justify-center gap-2 w-full h-14 rounded-xl bg-[#25D366] hover:bg-[#20B858] text-white font-semibold transition-colors"
+        className="flex items-center justify-center gap-2 w-full h-14 rounded-full bg-[#25D366] hover:bg-[#1FBE5B] text-white font-semibold shadow-btn hover:shadow-[0_10px_24px_-6px_rgba(37,211,102,0.6)] hover:-translate-y-0.5 transition-all"
       >
         <WhatsAppIcon className="w-5 h-5" />
         Commander sur WhatsApp

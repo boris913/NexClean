@@ -71,7 +71,7 @@ export default function EspacesVertsPage() {
 
       <section className="py-16 sm:py-20 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-display text-3xl text-slate-900 mb-10 text-center">Nos prestations</h2>
+          <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink-900 mb-10 text-center">Nos prestations</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {prestations.map((p) => (
               <div key={p.title} className="rounded-2xl border border-slate-100 p-5 shadow-card">
@@ -110,7 +110,7 @@ export default function EspacesVertsPage() {
       {greenRealisations.length > 0 && (
         <section className="py-16 bg-slate-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="font-display text-3xl text-slate-900 mb-8">Avant / Après</h2>
+            <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink-900 mb-8">Avant / Après</h2>
             <div className="grid md:grid-cols-2 gap-5">
               {greenRealisations.map((r) => (
                 <RealisationCard key={r.id} item={r} />
@@ -123,7 +123,7 @@ export default function EspacesVertsPage() {
       <section id="devis-espaces-verts" className="py-16 sm:py-20 bg-slate-50 scroll-mt-24">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h2 className="font-display text-3xl text-slate-900 mb-2">Demander un état des lieux / devis</h2>
+            <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink-900 mb-2">Demander un état des lieux / devis</h2>
             <p className="text-slate-500">Envoyez ensuite vos photos ou vidéos du site sur WhatsApp.</p>
           </div>
           <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-6 lg:p-8">

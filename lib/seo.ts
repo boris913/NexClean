@@ -11,14 +11,14 @@ import { activeZones } from '@/content/zones-coverage';
 import type { Product } from '@/content/products-data';
 
 export const SITE_URL = 'https://nexclean.xyz';
-export const SITE_NAME = 'NexClean';
+export const SITE_NAME = 'NEXCLEAN SARL';
 export const SITE_LOCALE = 'fr_CM';
 
 // ─── Métadonnées globales ────────────────────────────────────
-export const DEFAULT_TITLE = `NexClean — Nettoyage professionnel & entretien à ${CITIES_LABEL}, Cameroun`;
-export const DEFAULT_DESCRIPTION = `NexClean : nettoyage de maisons et bureaux, fin de chantier, vitres, entretien d'espaces verts et produits d'entretien à ${CITIES_LABEL}. Devis gratuit sur WhatsApp.`;
+export const DEFAULT_TITLE = `NEXCLEAN SARL — Nettoyage professionnel & entretien à ${CITIES_LABEL}, Cameroun`;
+export const DEFAULT_DESCRIPTION = `NEXCLEAN SARL : nettoyage de maisons et bureaux, fin de chantier, vitres, entretien d'espaces verts et produits d'entretien à ${CITIES_LABEL}. Devis gratuit sur WhatsApp.`;
 
-export const TITLE_TEMPLATE = '%s | NexClean';
+export const TITLE_TEMPLATE = '%s | NEXCLEAN SARL';
 
 // ─── Mots-clés ciblés (longue traîne + locaux) ───────────────
 export const DEFAULT_KEYWORDS = [
@@ -35,6 +35,7 @@ export const DEFAULT_KEYWORDS = [
   'recrutement agent de nettoyage Douala',
   'nettoyage professionnel Cameroun',
   'NexClean',
+  'NEXCLEAN SARL',
 ].join(', ');
 
 // ─── Open Graph Image ────────────────────────────────────────
@@ -63,7 +64,7 @@ export function pageMetadata({
     description,
     alternates: { canonical: `${SITE_URL}${path}` },
     openGraph: {
-      title: `${title} | NexClean`,
+      title: `${title} | ${SITE_NAME}`,
       description,
       url: `${SITE_URL}${path}`,
       siteName: SITE_NAME,
@@ -80,11 +81,12 @@ export const LOCAL_BUSINESS_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
   '@id': `${SITE_URL}/#organization`,
-  name: 'NexClean',
+  name: SITE_NAME,
+  alternateName: 'NexClean',
   legalName: 'NEXCLEAN SARL',
   description: DEFAULT_DESCRIPTION,
   url: SITE_URL,
-  logo: `${SITE_URL}/images/logo.png`,
+  logo: `${SITE_URL}/images/brand/logo-horizontal.png`,
   image: `${SITE_URL}/opengraph-image`,
   telephone: CONTACT.phone,
   email: CONTACT.email,
@@ -195,12 +197,12 @@ export const breadcrumbSchema = (items: { name: string; path: string }[]) => ({
 export const WEBSITE_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  name: 'NexClean',
+  name: SITE_NAME,
   url: SITE_URL,
   description: DEFAULT_DESCRIPTION,
   potentialAction: {
     '@type': 'ContactAction',
     target: getWhatsAppLink(),
-    name: 'Contacter NexClean sur WhatsApp',
+    name: 'Contacter NEXCLEAN SARL sur WhatsApp',
   },
 };

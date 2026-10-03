@@ -35,7 +35,7 @@ export default function BlogClient({ posts }: BlogClientProps) {
         <h1 className="font-display text-4xl sm:text-5xl text-slate-900 mb-4">
           Blog NexClean
         </h1>
-        <div className="w-20 h-1 bg-primary mx-auto mb-4 rounded-full" />
+        <div className="w-20 h-1.5 bg-cta mx-auto mb-4 rounded-full" />
         <p className="text-lg text-slate-600 max-w-2xl mx-auto">
           Conseils, guides et actualités pour un intérieur toujours impeccable.
         </p>
@@ -106,7 +106,7 @@ export default function BlogClient({ posts }: BlogClientProps) {
             <div className="text-center mt-12">
               <button
                 onClick={loadMore}
-                className="bg-primary text-white font-medium px-8 py-3 rounded-full hover:bg-primary-dark transition-colors shadow-btn hover:shadow-btn-hover"
+                className="bg-cta text-ink-900 font-medium px-8 py-3 rounded-full hover:bg-primary-dark transition-colors shadow-btn hover:shadow-btn-hover"
               >
                 Voir plus d'articles
               </button>

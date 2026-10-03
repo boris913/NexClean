@@ -64,7 +64,7 @@ export default function AProposPage() {
       <section className="py-16 sm:py-20 bg-slate-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-10 items-center">
           <div>
-            <h2 className="font-display text-3xl text-slate-900 mb-4 flex items-center gap-3">
+            <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink-900 mb-4 flex items-center gap-3">
               <ClipboardCheck className="w-7 h-7 text-primary" />
               Engagement qualité
             </h2>
@@ -72,7 +72,7 @@ export default function AProposPage() {
             <ol className="space-y-3">
               {qualitySteps.map((s, i) => (
                 <li key={s} className="flex gap-3 text-slate-700">
-                  <span className="w-7 h-7 rounded-full bg-primary text-white text-sm font-bold flex items-center justify-center flex-shrink-0">
+                  <span className="w-7 h-7 rounded-full bg-cta text-ink-900 text-sm font-bold flex items-center justify-center flex-shrink-0">
                     {i + 1}
                   </span>
                   <span className="pt-0.5">{s}</span>

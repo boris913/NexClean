@@ -3,10 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --font-dm-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-dm-serif: 'DM Serif Display', Georgia, 'Times New Roman', serif;
-  }
 
   html {
     scroll-behavior: smooth;
@@ -15,8 +11,28 @@
   }
 
   body {
-    @apply bg-white text-slate-900;
-    font-family: var(--font-dm-sans);
+    @apply bg-white text-ink-900;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight;
+  }
+
+  ::selection {
+    @apply bg-brand-200 text-ink-900;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 
   *,
@@ -27,8 +43,16 @@
 }
 
 @layer utilities {
-  .font-display {
-    font-family: var(--font-dm-serif);
+  /* Texte surligné vert clair (titres) */
+  .highlight {
+    background-image: linear-gradient(transparent 62%, theme('colors.brand.300') 62%, theme('colors.brand.300') 92%, transparent 92%);
+    padding: 0 0.1em;
+  }
+
+  /* Fond à points discrets */
+  .bg-dots {
+    background-image: radial-gradient(theme('colors.brand.300') 1px, transparent 1px);
+    background-size: 22px 22px;
   }
 
   /* Fade in on scroll utility */
@@ -52,7 +76,7 @@
 
   /* Subtle gradient text */
   .gradient-text {
-    background: linear-gradient(135deg, #0A5ED7, #2563EB);
+    background: linear-gradient(135deg, theme('colors.brand.500'), theme('colors.brand.700'));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -65,16 +89,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #F8FAFC;
+  background: theme('colors.ink.50');
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: theme('colors.brand.200');
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #0A5ED7;
+  background: theme('colors.brand.500');
 }
 
 /* styles supplémentaires pour le contenu des articles (prose) */

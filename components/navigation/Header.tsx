@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Menu, X, Phone, ChevronDown, ArrowRight } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { CONTACT, TEL_LINK } from '@/lib/constants';
-import Image from 'next/image';
+import Logo from '@/components/ui/Logo';
 
 interface NavLink {
   name: string;
@@ -78,25 +78,18 @@ export default function Header() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-[0_1px_0_0_#e2e8f0]'
-          : 'bg-white/90 backdrop-blur-sm'
+          ? 'bg-white/90 backdrop-blur-xl shadow-[0_1px_0_0_theme(colors.ink.200),0_8px_24px_-12px_rgba(19,26,18,0.12)]'
+          : 'bg-white/70 backdrop-blur-md'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20 gap-4">
           <Link href="/" className="flex-shrink-0 group">
-            <Image
-              src="/images/logo.png"
-              alt="NexClean"
-              width={140}
-              height={46}
-              className="object-contain"
-              priority
-            />
+            <Logo height={42} priority className="h-9 sm:h-[42px] w-auto transition-transform duration-300 group-hover:scale-[1.02]" />
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-5 xl:gap-7" aria-label="Navigation principale">
+          <nav className="hidden xl:flex items-center gap-5 xl:gap-7" aria-label="Navigation principale">
             {navLinks.filter((l) => l.href !== '/').map((link) =>
               link.children ? (
                 <div key={link.name} className="relative" ref={dropdownRef}>
@@ -112,12 +105,12 @@ export default function Header() {
                     <ChevronDown className={`w-3.5 h-3.5 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {dropdownOpen && (
-                    <div className="absolute left-1/2 -translate-x-1/2 top-full mt-4 w-72 bg-white rounded-xl border border-slate-100 shadow-card-hover p-2 animate-slide-down">
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full mt-4 w-80 bg-white rounded-2xl border border-ink-100 shadow-card-hover p-2 animate-slide-down">
                       {link.children.map((child) => (
                         <Link
                           key={child.href}
                           href={child.href}
-                          className="block px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors"
+                          className="block px-3 py-2.5 rounded-xl hover:bg-brand-50 transition-colors"
                         >
                           <span className="block text-sm font-medium text-slate-900">{child.name}</span>
                           {child.description && (
@@ -138,7 +131,7 @@ export default function Header() {
                 >
                   {link.name}
                   <span
-                    className={`absolute -bottom-0.5 left-0 h-[1.5px] bg-primary transition-all duration-300 ${
+                    className={`absolute -bottom-1 left-0 h-[2px] rounded-full bg-brand-400 transition-all duration-300 ${
                       isActive(link) ? 'w-full' : 'w-0 group-hover:w-full'
                     }`}
                   />
@@ -148,23 +141,28 @@ export default function Header() {
           </nav>
 
           {/* Desktop CTA */}
-          <div className="hidden lg:flex items-center gap-2">
+          <div className="hidden xl:flex items-center gap-2">
             <a
               href={TEL_LINK}
               aria-label={`Appeler NexClean au ${CONTACT.phoneDisplay}`}
-              className="w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:text-primary hover:border-primary transition-colors"
+              className="w-10 h-10 rounded-full border border-ink-200 flex items-center justify-center text-ink-600 hover:text-primary hover:border-brand-400 hover:bg-brand-50 transition-colors"
             >
               <Phone className="w-4 h-4" />
             </a>
-            <Button href="/contact" variant="primary" size="sm">
+            <Button href="/contact" variant="primary" size="md" icon={ArrowRight} iconPosition="right">
               Demander un devis
             </Button>
           </div>
 
+          {/* Tablette : CTA compact à côté du menu */}
+          <Button href="/contact" variant="primary" size="sm" className="hidden md:inline-flex xl:hidden ml-auto">
+            Devis gratuit
+          </Button>
+
           {/* Mobile toggle */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="lg:hidden p-2 -mr-2 rounded-lg hover:bg-slate-100 transition-colors"
+            className="xl:hidden p-2 -mr-2 rounded-lg hover:bg-slate-100 transition-colors"
             aria-label={menuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
             aria-expanded={menuOpen}
           >
@@ -175,7 +173,7 @@ export default function Header() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="lg:hidden bg-white border-t border-slate-100 animate-slide-down max-h-[calc(100dvh-5rem)] overflow-y-auto">
+        <div className="xl:hidden bg-white border-t border-slate-100 animate-slide-down max-h-[calc(100dvh-5rem)] overflow-y-auto">
           <nav className="max-w-6xl mx-auto px-4 pt-4 pb-28 flex flex-col gap-0.5" aria-label="Navigation mobile">
             {navLinks.map((link) => (
               <div key={link.name}>
