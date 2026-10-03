@@ -1,76 +1,95 @@
 // ============================================================
 // SEO CONFIGURATION — NexClean
-// Toute la configuration SEO centralisée ici.
+// Toute la configuration SEO centralisée ici. Les données structurées
+// sont générées à partir des fichiers de contenu (aucune duplication).
 // ============================================================
+
+import type { Metadata } from 'next';
+import { CONTACT, SOCIAL_MEDIA, FAQ, PAYMENT_TERMS, CITIES_LABEL, ACTIVE_CITIES, getWhatsAppLink } from '@/lib/constants';
+import { services, getServiceHref, type Service } from '@/content/services-data';
+import { activeZones } from '@/content/zones-coverage';
+import type { Product } from '@/content/products-data';
 
 export const SITE_URL = 'https://nexclean.xyz';
 export const SITE_NAME = 'NexClean';
 export const SITE_LOCALE = 'fr_CM';
 
 // ─── Métadonnées globales ────────────────────────────────────
-export const DEFAULT_TITLE = 'NexClean — Service de Nettoyage Professionnel à Douala et à Yaoundé';
-export const DEFAULT_DESCRIPTION =
-  'NexClean, la propreté nouvelle génération à Douala. Nettoyage professionnel pour maisons, bureaux et commerces au Cameroun. Intervention sous 24h, satisfaction garantie. Devis gratuit.';
+export const DEFAULT_TITLE = `NexClean — Nettoyage professionnel & entretien à ${CITIES_LABEL}, Cameroun`;
+export const DEFAULT_DESCRIPTION = `NexClean : nettoyage de maisons et bureaux, fin de chantier, vitres, entretien d'espaces verts et produits d'entretien à ${CITIES_LABEL}. Devis gratuit sur WhatsApp.`;
 
-export const TITLE_TEMPLATE = '%s | NexClean Douala';
+export const TITLE_TEMPLATE = '%s | NexClean';
 
 // ─── Mots-clés ciblés (longue traîne + locaux) ───────────────
 export const DEFAULT_KEYWORDS = [
   'nettoyage Douala',
-  'service nettoyage Douala',
   'entreprise nettoyage Douala',
   'nettoyage professionnel Douala',
   'nettoyage maison Douala',
   'nettoyage bureau Douala',
+  'nettoyage fin de chantier Douala',
   'nettoyage vitres Douala',
+  'entretien espaces verts Douala',
   'désinfection Douala',
-  'nettoyage après travaux Douala',
-  'femme de ménage Douala',
-  'nettoyage Bonapriso',
-  'nettoyage Akwa',
-  'nettoyage Bonanjo',
-  'nettoyage Bali Douala',
-  'nettoyage Makepe',
-  'nettoyage Bonamoussadi',
-  'service nettoyage Cameroun',
+  'produit nettoyage Cameroun',
+  'recrutement agent de nettoyage Douala',
   'nettoyage professionnel Cameroun',
   'NexClean',
-  'NexClean Douala',
-  'NexClean Cameroun',
 ].join(', ');
 
 // ─── Open Graph Image ────────────────────────────────────────
-// CORRECTION : URL absolue obligatoire pour Facebook, WhatsApp, LinkedIn.
-// Une URL relative (/opengraph-image) est ignorée par leurs crawlers.
+// URL absolue obligatoire pour Facebook, WhatsApp, LinkedIn.
 export const OG_IMAGE = {
-  url: `${SITE_URL}/opengraph-image`,   // ← URL ABSOLUE
+  url: `${SITE_URL}/opengraph-image`,
   width: 1200,
   height: 630,
-  alt: 'NexClean — Service de Nettoyage Professionnel à Douala et à Yaoundé, Cameroun',
+  alt: DEFAULT_TITLE,
 };
 
+/** Métadonnées standard d'une page interne (titre, description, canonical, OG). */
+export function pageMetadata({
+  title,
+  description,
+  path,
+  image,
+}: {
+  title: string;
+  description: string;
+  path: string;
+  image?: string;
+}): Metadata {
+  return {
+    title,
+    description,
+    alternates: { canonical: `${SITE_URL}${path}` },
+    openGraph: {
+      title: `${title} | NexClean`,
+      description,
+      url: `${SITE_URL}${path}`,
+      siteName: SITE_NAME,
+      locale: SITE_LOCALE,
+      type: 'website',
+      images: [image ? { url: `${SITE_URL}${image}` } : { url: OG_IMAGE.url, width: OG_IMAGE.width, height: OG_IMAGE.height, alt: OG_IMAGE.alt }],
+    },
+  };
+}
+
 // ─── Schema.org — LocalBusiness ──────────────────────────────
+// Pas d'aggregateRating : à ajouter uniquement à partir d'avis réels et traçables.
 export const LOCAL_BUSINESS_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
   '@id': `${SITE_URL}/#organization`,
   name: 'NexClean',
-  alternateName: 'NexClean Douala',
-  description:
-    'Service de Nettoyage Professionnel à Douala et à Yaoundé, Cameroun. Maisons, bureaux, désinfection, après travaux.',
+  legalName: 'NEXCLEAN SARL',
+  description: DEFAULT_DESCRIPTION,
   url: SITE_URL,
-  logo: {
-    '@type': 'ImageObject',
-    url: `${SITE_URL}/images/logo.png`,
-    width: 400,
-    height: 100,
-  },
+  logo: `${SITE_URL}/images/logo.png`,
   image: `${SITE_URL}/opengraph-image`,
-  telephone: '+237696370479',
-  email: 'nexcleanservice@gmail.com',
+  telephone: CONTACT.phone,
+  email: CONTACT.email,
   address: {
     '@type': 'PostalAddress',
-    streetAddress: 'Douala',
     addressLocality: 'Douala',
     addressRegion: 'Littoral',
     addressCountry: 'CM',
@@ -94,166 +113,83 @@ export const LOCAL_BUSINESS_SCHEMA = {
       closes: '17:00',
     },
   ],
-  priceRange: '8 000 – 120 000 FCFA',
+  priceRange: 'FCFA',
   currenciesAccepted: 'XAF',
-  paymentAccepted: 'Cash, Mobile Money, Virement Bancaire',
+  paymentAccepted: PAYMENT_TERMS.methods.join(', '),
   areaServed: [
-    { '@type': 'Place', name: 'Bonapriso, Douala' },
-    { '@type': 'Place', name: 'Akwa, Douala' },
-    { '@type': 'Place', name: 'Bonanjo, Douala' },
-    { '@type': 'Place', name: 'Bali, Douala' },
-    { '@type': 'Place', name: 'Makepe, Douala' },
-    { '@type': 'Place', name: 'Bonamoussadi, Douala' },
-    { '@type': 'Place', name: 'Deido, Douala' },
-    { '@type': 'Place', name: 'New Bell, Douala' },
+    ...ACTIVE_CITIES.map((c) => ({ '@type': 'City', name: c })),
+    ...activeZones.map((z) => ({ '@type': 'Place', name: `${z.name}, ${z.city}` })),
   ],
-  hasMap: 'https://www.google.com/maps?q=Douala,Cameroun',
-  sameAs: [
-    'https://www.facebook.com/profile.php?id=61585203135726',
-    'https://www.instagram.com/nexclean',
-  ],
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '4.9',
-    bestRating: '5',
-    worstRating: '1',
-    ratingCount: '100',
-  },
+  sameAs: [SOCIAL_MEDIA.facebook, SOCIAL_MEDIA.instagram, SOCIAL_MEDIA.tiktok, SOCIAL_MEDIA.linkedin].filter(Boolean),
 };
+
+export const serviceSchema = (s: Service) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: s.name,
+  description: s.seo.description,
+  url: `${SITE_URL}${getServiceHref(s)}`,
+  provider: { '@id': `${SITE_URL}/#organization` },
+  areaServed: ACTIVE_CITIES.map((c) => ({ '@type': 'City', name: c })),
+});
 
 // ─── Schema.org — Services ───────────────────────────────────
 export const SERVICES_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
   name: 'Services NexClean',
-  description: 'Liste des services de nettoyage professionnel proposés par NexClean à Douala',
-  url: `${SITE_URL}/#services`,
-  itemListElement: [
-    {
-      '@type': 'ListItem',
-      position: 1,
-      item: {
-        '@type': 'Service',
-        name: 'Nettoyage Maison',
-        description: 'Nettoyage complet de maisons et appartements à Douala. Sols, surfaces, sanitaires et cuisine.',
-        provider: { '@id': `${SITE_URL}/#organization` },
-        areaServed: 'Douala, Cameroun',
-        offers: {
-          '@type': 'Offer',
-          priceCurrency: 'XAF',
-          priceSpecification: {
-            '@type': 'PriceSpecification',
-            minPrice: '8000',
-            maxPrice: '25000',
-            priceCurrency: 'XAF',
-          },
-        },
-      },
-    },
-    {
-      '@type': 'ListItem',
-      position: 2,
-      item: {
-        '@type': 'Service',
-        name: 'Nettoyage Bureau',
-        description: 'Nettoyage et entretien de bureaux et espaces professionnels à Douala.',
-        provider: { '@id': `${SITE_URL}/#organization` },
-        areaServed: 'Douala, Cameroun',
-        offers: {
-          '@type': 'Offer',
-          priceCurrency: 'XAF',
-          priceSpecification: {
-            '@type': 'PriceSpecification',
-            minPrice: '15000',
-            maxPrice: '50000',
-            priceCurrency: 'XAF',
-          },
-        },
-      },
-    },
-    {
-      '@type': 'ListItem',
-      position: 3,
-      item: {
-        '@type': 'Service',
-        name: 'Désinfection Complète',
-        description: 'Désinfection professionnelle de locaux résidentiels et commerciaux à Douala.',
-        provider: { '@id': `${SITE_URL}/#organization` },
-        areaServed: 'Douala, Cameroun',
-      },
-    },
-  ],
+  itemListElement: services.map((s, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    item: serviceSchema(s),
+  })),
 };
 
-// ─── Schema.org — FAQ ────────────────────────────────────────
-export const FAQ_SCHEMA = {
+export const productSchema = (p: Product) => {
+  const priced = p.formats.filter((f) => f.price !== null);
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: p.name,
+    description: p.description,
+    image: p.images.map((img) => `${SITE_URL}${img.src}`),
+    brand: { '@type': 'Brand', name: 'NexClean' },
+    url: `${SITE_URL}/boutique/${p.slug}`,
+    ...(priced.length > 0 && {
+      offers: priced.map((f) => ({
+        '@type': 'Offer',
+        name: f.label,
+        price: f.price,
+        priceCurrency: 'XAF',
+        availability: p.available ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        url: `${SITE_URL}/boutique/${p.slug}`,
+      })),
+    }),
+  };
+};
+
+export const faqSchema = (items: { question: string; answer: string }[]) => ({
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'Quels quartiers de Douala couvrez-vous ?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'Nous intervenons principalement à Bonapriso, Akwa, Bonanjo, Bali, Makepe, Bonamoussadi, Deido et New Bell. Bonaberi et PK8-PK12 seront bientôt couverts.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'Comment se passe le paiement ?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'Nous acceptons le paiement en cash, Mobile Money (MTN, Orange) et virement bancaire. Le paiement se fait après la prestation pour votre tranquillité.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'Fournissez-vous le matériel et les produits de nettoyage ?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: "Absolument ! Nous arrivons avec tout le matériel professionnel et les produits de nettoyage nécessaires. Vous n'avez rien à prévoir.",
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'Puis-je réserver un nettoyage pour le jour même à Douala ?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: "Oui, selon nos disponibilités. Contactez-nous sur WhatsApp pour une intervention rapide. Nous nous efforçons de répondre aux urgences dans les meilleurs délais.",
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'Quels sont les tarifs pour un nettoyage de maison à Douala ?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: "Nos tarifs pour le nettoyage de maison à Douala commencent à 8 000 FCFA pour un studio et vont jusqu'à 16 000 FCFA pour un appartement de 3 chambres et plus. Contactez-nous pour un devis personnalisé gratuit.",
-      },
-    },
-    {
-      '@type': 'Question',
-      name: "Quelle est la différence entre une prestation ponctuelle et un abonnement mensuel ?",
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: "La prestation ponctuelle est un service unique. L'abonnement mensuel vous offre des passages réguliers (4 ou 8 par mois) avec un tarif réduit et un agent dédié qui connaît vos habitudes.",
-      },
-    },
-  ],
-};
+  mainEntity: items.map((f) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+});
 
-// ─── Schema.org — Breadcrumb ─────────────────────────────────
-export const BREADCRUMB_SCHEMA = {
+export const FAQ_SCHEMA = faqSchema(FAQ);
+
+export const breadcrumbSchema = (items: { name: string; path: string }[]) => ({
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
-  itemListElement: [
-    {
-      '@type': 'ListItem',
-      position: 1,
-      name: 'Accueil',
-      item: SITE_URL,
-    },
-  ],
-};
+  itemListElement: [{ name: 'Accueil', path: '' }, ...items].map((item, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: item.name,
+    item: `${SITE_URL}${item.path}`,
+  })),
+});
 
 // ─── Schema.org — WebSite ────────────────────────────────────
 export const WEBSITE_SCHEMA = {
@@ -264,7 +200,7 @@ export const WEBSITE_SCHEMA = {
   description: DEFAULT_DESCRIPTION,
   potentialAction: {
     '@type': 'ContactAction',
-    target: `https://wa.me/237696370479`,
+    target: getWhatsAppLink(),
     name: 'Contacter NexClean sur WhatsApp',
   },
 };

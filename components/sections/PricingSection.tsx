@@ -4,7 +4,7 @@ import { useState } from 'react';
 import SectionLabel from '@/components/ui/SectionLabel';
 import Button from '@/components/ui/Button';
 import { pricingParticuliers, pricingProfessionnels, paymentMethods } from '@/content/pricing-data';
-import { getWhatsAppLink } from '@/lib/constants';
+import { getWhatsAppLink, PAYMENT_TERMS } from '@/lib/constants';
 import { Check, Banknote, Smartphone, Building2, ArrowRight } from 'lucide-react';
 
 const paymentIcons: Record<string, typeof Banknote> = {
@@ -18,16 +18,16 @@ export default function PricingSection() {
   const options = tab === 'particuliers' ? pricingParticuliers : pricingProfessionnels;
 
   return (
-    <section id="tarifs" className="py-24 bg-white">
+    <section id="tarifs" className="py-20 sm:py-24 bg-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
           <SectionLabel className="mb-4">Tarifs</SectionLabel>
           <h2 className="font-display text-3xl sm:text-4xl text-slate-900 mb-3">
-            Prix transparents et accessibles
+            Tarifs indicatifs
           </h2>
-          <p className="text-slate-500 max-w-md mx-auto mb-8">
-            Choisissez la formule qui correspond à vos besoins. Sans mauvaises surprises.
+          <p className="text-slate-500 max-w-lg mx-auto mb-8">
+            Prix de départ donnés à titre indicatif : le devis final dépend de la surface, de l&apos;état des lieux, de l&apos;accès, de la fréquence et des moyens nécessaires.
           </p>
 
           {/* Tabs */}
@@ -76,12 +76,12 @@ export default function PricingSection() {
               {/* Prices */}
               <div className="mb-5 space-y-3">
                 <div>
-                  <p className="text-xs text-slate-400 mb-0.5">Ponctuel</p>
+                  <p className="text-xs text-slate-400 mb-0.5">Ponctuel, à partir de</p>
                   <p className="text-xl font-bold text-slate-900">{option.pricePonctuel}</p>
                 </div>
                 {option.priceAbonnement && (
                   <div className="pt-3 border-t border-slate-100">
-                    <p className="text-xs text-slate-400 mb-0.5">Abonnement mensuel</p>
+                    <p className="text-xs text-slate-400 mb-0.5">Abonnement mensuel, à partir de</p>
                     <p className="text-lg font-semibold text-success">{option.priceAbonnement}</p>
                   </div>
                 )}
@@ -133,9 +133,16 @@ export default function PricingSection() {
         </div>
 
         {/* Note */}
-        <p className="text-center text-xs text-slate-400">
-          Paiement après la prestation · Satisfaction garantie ou intervention gratuite
-        </p>
+        <div className="grid sm:grid-cols-2 gap-4 text-sm text-slate-600">
+          <p className="rounded-xl border border-slate-100 p-4">
+            <span className="block font-semibold text-slate-900 mb-1">Prestation ponctuelle</span>
+            {PAYMENT_TERMS.ponctuel}
+          </p>
+          <p className="rounded-xl border border-slate-100 p-4">
+            <span className="block font-semibold text-slate-900 mb-1">Abonnement</span>
+            {PAYMENT_TERMS.abonnement}
+          </p>
+        </div>
       </div>
     </section>
   );

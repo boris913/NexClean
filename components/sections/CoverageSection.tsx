@@ -1,17 +1,18 @@
 import SectionLabel from '@/components/ui/SectionLabel';
-import { zones, activeZones, upcomingZones } from '@/content/zones-coverage';
+import { activeZones, upcomingZones } from '@/content/zones-coverage';
+import { CITIES_LABEL } from '@/lib/constants';
 import { MapPin, Check, Clock } from 'lucide-react';
 
 export default function CoverageSection() {
   return (
-    <section id="zones" className="py-20 bg-slate-50">
+    <section id="zones" className="py-20 sm:py-24 bg-slate-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <SectionLabel className="mb-4">Zone de couverture</SectionLabel>
           <h2 className="font-display text-3xl sm:text-4xl text-slate-900 mb-3">
             Où intervenons-nous ?
           </h2>
-          <p className="text-slate-500">Principaux quartiers de Douala couverts.</p>
+          <p className="text-slate-500">Nous intervenons à {CITIES_LABEL}. Principaux quartiers couverts :</p>
         </div>
 
         {/* Active */}
@@ -20,7 +21,7 @@ export default function CoverageSection() {
             <Check className="w-4 h-4 text-success" />
             <span className="text-sm font-semibold text-slate-700">Zones actives</span>
             <span className="text-xs text-success bg-green-50 border border-green-100 px-2 py-0.5 rounded-full">
-              Intervention immédiate
+              Couverts régulièrement
             </span>
           </div>
           <div className="flex flex-wrap gap-2">

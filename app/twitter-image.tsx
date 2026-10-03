@@ -1,7 +1,8 @@
 import { ImageResponse } from 'next/og';
+import { CITIES_LABEL } from '@/lib/constants';
 
 export const runtime = 'nodejs';
-export const alt = 'NexClean — Service de Nettoyage Professionnel à Douala et à Yaoundé';
+export const alt = `NexClean — Nettoyage professionnel & entretien à ${CITIES_LABEL}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -111,11 +112,11 @@ export default function TwitterImage() {
             lineHeight: 1.4,
           }}
         >
-          Service de Nettoyage Professionnel à Douala et à Yaoundé.
+          {`Nettoyage professionnel & entretien à ${CITIES_LABEL}.`}
         </p>
 
         <div style={{ display: 'flex', gap: '16px' }}>
-          {['Intervention sous 24h', 'Satisfaction garantie', 'Devis gratuit'].map((badge) => (
+          {['Particuliers & entreprises', 'Espaces verts', 'Devis gratuit'].map((badge) => (
             <div
               key={badge}
               style={{

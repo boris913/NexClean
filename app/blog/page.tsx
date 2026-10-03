@@ -3,7 +3,7 @@ import BlogClient from './BlogClient';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Blog — Conseils et actualités | NexClean Douala',
+  title: 'Blog — Conseils et actualités',
   description:
     'Retrouvez tous nos articles sur le nettoyage professionnel, les bonnes pratiques, et les actualités de NexClean à Douala.',
 };

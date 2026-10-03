@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from 'next';
 import { DM_Sans, DM_Serif_Display } from 'next/font/google';
-import Script from 'next/script';
 import './globals.css';
 import Header from '@/components/navigation/Header';
 import Footer from '@/components/navigation/Footer';
 import WhatsAppButton from '@/components/ui/WhatsAppButton';
+import MobileCTABar from '@/components/ui/MobileCTABar';
+import Analytics from '@/components/analytics/Analytics';
+import JsonLd from '@/components/ui/JsonLd';
 import {
   DEFAULT_TITLE,
   DEFAULT_DESCRIPTION,
@@ -15,7 +17,6 @@ import {
   OG_IMAGE,
   LOCAL_BUSINESS_SCHEMA,
   SERVICES_SCHEMA,
-  FAQ_SCHEMA,
   WEBSITE_SCHEMA,
 } from '@/lib/seo';
 
@@ -56,13 +57,6 @@ export const metadata: Metadata = {
   creator: 'NexClean',
   publisher: 'NexClean',
   metadataBase: new URL(SITE_URL),
-  alternates: {
-    canonical: '/',
-    languages: {
-      'fr-CM': '/',
-      'fr': '/',
-    },
-  },
   openGraph: {
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
@@ -97,9 +91,9 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  verification: {
-    google: 'REMPLACER_PAR_VOTRE_CODE_GOOGLE_SEARCH_CONSOLE',
-  },
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION && {
+    verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION },
+  }),
   applicationName: SITE_NAME,
   category: 'services',
   classification: 'Nettoyage professionnel',
@@ -126,36 +120,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://api.whatsapp.com" />
       </head>
       <body>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:bg-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow"
+        >
+          Aller au contenu
+        </a>
         <Header />
         <main id="main-content" className="pt-20">
           {children}
         </main>
         <Footer />
         <WhatsAppButton />
-        <Script
-          id="schema-local-business"
-          type="application/ld+json"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(LOCAL_BUSINESS_SCHEMA) }}
-        />
-        <Script
-          id="schema-services"
-          type="application/ld+json"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(SERVICES_SCHEMA) }}
-        />
-        <Script
-          id="schema-faq"
-          type="application/ld+json"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_SCHEMA) }}
-        />
-        <Script
-          id="schema-website"
-          type="application/ld+json"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_SCHEMA) }}
-        />
+        <MobileCTABar />
+        <Analytics />
+        <JsonLd data={LOCAL_BUSINESS_SCHEMA} />
+        <JsonLd data={SERVICES_SCHEMA} />
+        <JsonLd data={WEBSITE_SCHEMA} />
       </body>
     </html>
   );

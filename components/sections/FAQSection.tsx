@@ -5,11 +5,11 @@ import { ChevronDown } from 'lucide-react';
 import SectionLabel from '@/components/ui/SectionLabel';
 import { FAQ, getWhatsAppLink } from '@/lib/constants';
 
-export default function FAQSection() {
+export default function FAQSection({ items = FAQ }: { items?: { question: string; answer: string }[] }) {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="py-24 bg-white">
+    <section id="faq" className="py-20 sm:py-24 bg-white">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
@@ -24,14 +24,14 @@ export default function FAQSection() {
 
         {/* Accordion */}
         <div className="space-y-1.5">
-          {FAQ.map((item, index) => (
+          {items.map((item, index) => (
             <div
               key={index}
               className="border border-slate-100 rounded-xl overflow-hidden"
             >
               <button
                 onClick={() => setOpen(open === index ? null : index)}
-                className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-slate-50 transition-colors duration-150 group"
+                className="w-full flex items-center justify-between px-5 py-4 min-h-[56px] text-left hover:bg-slate-50 transition-colors duration-150 group"
                 aria-expanded={open === index}
               >
                 <span className={`text-sm font-medium pr-6 transition-colors ${open === index ? 'text-primary' : 'text-slate-800'}`}>

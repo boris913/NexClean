@@ -1,44 +1,39 @@
+import { MessageSquare } from 'lucide-react';
 import SectionLabel from '@/components/ui/SectionLabel';
 import TestimonialCard from '@/components/ui/TestimonialCard';
-import { testimonials } from '@/content/testimonials-data';
+import Button from '@/components/ui/Button';
+import { verifiedTestimonials } from '@/content/testimonials-data';
+import { getWhatsAppLink } from '@/lib/constants';
 
-const stats = [
-  { value: '100+', label: 'Clients satisfaits' },
-  { value: '500+', label: 'Prestations réalisées' },
-  { value: '4.9/5', label: 'Note moyenne' },
-  { value: '98%', label: 'Taux de satisfaction' },
-];
-
+/** N'affiche que les avis vérifiés et autorisés (voir testimonials-data.ts). */
 export default function TestimonialsSection() {
   return (
-    <section id="temoignages" className="py-24 bg-slate-50">
+    <section id="temoignages" className="py-20 sm:py-24 bg-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-14">
+        <div className="text-center mb-12">
           <SectionLabel className="mb-4">Témoignages</SectionLabel>
-          <h2 className="font-display text-3xl sm:text-4xl text-slate-900 mb-3">
-            Ils nous font confiance
-          </h2>
-          <p className="text-slate-500 max-w-md mx-auto">
-            Découvrez l'expérience de nos clients à Douala.
-          </p>
+          <h2 className="font-display text-3xl sm:text-4xl text-slate-900 mb-3">L&apos;avis de nos clients</h2>
         </div>
 
-        {/* Cards */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-16">
-          {testimonials.map((t) => (
-            <TestimonialCard key={t.id} testimonial={t} />
-          ))}
-        </div>
+        {verifiedTestimonials.length > 0 && (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+            {verifiedTestimonials.map((t) => (
+              <TestimonialCard key={t.id} testimonial={t} />
+            ))}
+          </div>
+        )}
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pt-12 border-t border-slate-200">
-          {stats.map((s) => (
-            <div key={s.label} className="text-center">
-              <p className="text-3xl sm:text-4xl font-bold text-primary mb-1">{s.value}</p>
-              <p className="text-sm text-slate-500">{s.label}</p>
-            </div>
-          ))}
+        <div className="max-w-xl mx-auto text-center rounded-2xl bg-primary-light/50 border border-primary/10 p-6">
+          <MessageSquare className="w-8 h-8 text-primary mx-auto mb-3" strokeWidth={1.5} />
+          <p className="font-semibold text-slate-900 mb-1">Vous avez fait appel à NexClean ?</p>
+          <p className="text-sm text-slate-500 mb-4">Votre avis nous aide à progresser et rassure nos futurs clients.</p>
+          <Button
+            href={getWhatsAppLink("Bonjour NexClean, je souhaite laisser un avis sur votre prestation :")}
+            variant="primary"
+            size="sm"
+          >
+            Laisser un avis
+          </Button>
         </div>
       </div>
     </section>

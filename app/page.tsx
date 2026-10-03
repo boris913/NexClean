@@ -1,27 +1,28 @@
 import HeroSection from '@/components/sections/HeroSection';
 import ServicesSection from '@/components/sections/ServicesSection';
-// import RealisationsSection from '@/components/sections/RealisationsSection';
+import AudienceSection from '@/components/sections/AudienceSection';
+import BeforeAfterSection from '@/components/sections/BeforeAfterSection';
+import WhyUsSection from '@/components/sections/WhyUsSection';
 import ProcessSection from '@/components/sections/ProcessSection';
-import PricingSection from '@/components/sections/PricingSection';
+import SubscriptionsSection from '@/components/sections/SubscriptionsSection';
+import ProductsSection from '@/components/sections/ProductsSection';
 import TestimonialsSection from '@/components/sections/TestimonialsSection';
 import CoverageSection from '@/components/sections/CoverageSection';
 import FAQSection from '@/components/sections/FAQSection';
-import ContactSection from '@/components/sections/ContactSection';
-import TeamInActionSection from '@/components/sections/TeamInActionSection';
-import { SITE_URL, OG_IMAGE } from '@/lib/seo';
+import CTASection from '@/components/sections/CTASection';
+import JsonLd from '@/components/ui/JsonLd';
+import { SITE_URL, OG_IMAGE, DEFAULT_TITLE, DEFAULT_DESCRIPTION, FAQ_SCHEMA } from '@/lib/seo';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'NexClean — Service de Nettoyage Professionnel à Douala et à Yaoundé, Cameroun',
-  description:
-    'NexClean, la propreté nouvelle génération à Douala. Nettoyage maison, bureau, vitres, désinfection, après travaux. Intervention sous 24h. Devis gratuit.',
+  title: { absolute: DEFAULT_TITLE },
+  description: DEFAULT_DESCRIPTION,
   alternates: {
     canonical: SITE_URL,
   },
   openGraph: {
-    title: 'NexClean — Service de Nettoyage Professionnel à Douala et à Yaoundé',
-    description:
-      'Nettoyage professionnel pour particuliers et entreprises à Douala. Rapide · Propre · Prix accessibles.',
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
     url: SITE_URL,
     images: [
       {
@@ -38,15 +39,18 @@ export default function Home() {
   return (
     <>
       <HeroSection />
-      <TeamInActionSection />
       <ServicesSection />
-      {/* <RealisationsSection /> */}
+      <AudienceSection />
+      <BeforeAfterSection />
+      <WhyUsSection />
       <ProcessSection />
-      <PricingSection />
+      <SubscriptionsSection />
+      <ProductsSection />
       <TestimonialsSection />
       <CoverageSection />
       <FAQSection />
-      <ContactSection />
+      <CTASection />
+      <JsonLd data={FAQ_SCHEMA} />
     </>
   );
 }

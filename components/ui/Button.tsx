@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { LucideIcon } from 'lucide-react';
 
 interface ButtonProps {
@@ -67,6 +68,14 @@ export default function Button({
       {Icon && iconPosition === 'right' && <Icon className={iconClass} />}
     </>
   );
+
+  if (href?.startsWith('/')) {
+    return (
+      <Link href={href} className={classes}>
+        {inner}
+      </Link>
+    );
+  }
 
   if (href) {
     return (
