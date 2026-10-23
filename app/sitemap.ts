@@ -3,12 +3,17 @@ import { SITE_URL } from '@/lib/seo';
 import { getAllPostSlugs } from '@/lib/blog';
 import { servicePages } from '@/content/services-data';
 import { products } from '@/content/products-data';
+import { openJobs } from '@/content/jobs-data';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const slugs = await getAllPostSlugs();
   const now = new Date();
 
-  const page = (path: string, priority: number, changeFrequency: 'daily' | 'weekly' | 'monthly' | 'yearly' = 'monthly') => ({
+  const page = (
+    path: string,
+    priority: number,
+    changeFrequency: 'daily' | 'weekly' | 'monthly' | 'yearly' = 'monthly'
+  ) => ({
     url: `${SITE_URL}${path}`,
     lastModified: now,
     changeFrequency,
@@ -29,6 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page('/tarifs', 0.8),
     page('/a-propos', 0.6),
     page('/recrutement', 0.7, 'weekly'),
+    ...openJobs.map((j) => page(`/recrutement/${j.slug}`, 0.6, 'weekly')),
     page('/contact', 0.8, 'yearly'),
     page('/blog', 0.7, 'daily'),
     ...slugs.map((slug) => page(`/blog/${slug}`, 0.6, 'monthly')),
