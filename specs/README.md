@@ -23,6 +23,18 @@ Spécifications par lot, base de l'implémentation pilotée par les specs. Elles
 | [MVP1-04-formulaires-devis.md](MVP1-04-formulaires-devis.md) | Migration des formulaires de devis en « enregistrer puis WhatsApp » |
 | [MVP1-05-attribution-notifications.md](MVP1-05-attribution-notifications.md) | Attribution automatique, Non attribués, réaffectation, notifications, modèles de messages, compteurs |
 
+## MVP-2 – « Cycle recrutement complet » (ADR 0023)
+
+| Fichier | Contenu |
+|---|---|
+| [MVP2-01-espace-candidat.md](MVP2-01-espace-candidat.md) | Inscription, consentements, connexion et réinitialisation assistée, espace personnel, accord aux propositions, suppression des données |
+| [MVP2-02-vivier-candidatures.md](MVP2-02-vivier-candidatures.md) | File Nouveaux candidats, statuts candidat, candidatures aux offres existantes, recherche et filtres |
+| [MVP2-03-propositions-placements.md](MVP2-03-propositions-placements.md) | Propositions avec accord, transmission au client, entretiens, placements, garantie, clôture de la recherche |
+| [MVP2-04-tarification-documents.md](MVP2-04-tarification-documents.md) | Grille tarifaire, devis et avenants, « Valider et envoyer », acceptation en ligne, PDF, factures et avoirs |
+| [MVP2-05-encaissements.md](MVP2-05-encaissements.md) | Encaissements manuels, gardes de statut, montant final, solde, trop-perçu, remboursement, crédit client |
+
+Le MVP-2 remplace, pour les Dossiers `REC` uniquement, le mode transitoire de MVP1-02 RG-16. Les autres types de dossier le conservent jusqu'à l'arrivée de la grille des prestations.
+
 ## Hypothèses de dimensionnement (ADR 0023)
 
 5 collaborateurs au démarrage ; 50–300 dossiers / mois ; 1 000–5 000 candidats la première année ; fichiers ≤ 5 Mo.

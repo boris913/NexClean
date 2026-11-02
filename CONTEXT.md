@@ -47,8 +47,12 @@ Langage commun du projet. Chaque terme a **un seul sens**. En cas de doute, ce f
 | **Solde** | Montant final − acompte encaissé, lorsqu'il est positif. | |
 | **Trop-perçu** | Montant final − acompte encaissé, lorsqu'il est négatif. Donne lieu à un Remboursement ou un Avoir. | |
 | **Ajustement** | Opération préparée par le référent qui règle un trop-perçu (remboursement ou avoir). | |
-| **Remboursement** | Restitution d'un trop-perçu au Client, validée par la direction, enregistrée comme Encaissement négatif. | Avoir |
-| **Avoir** | Crédit au profit d'un Client, imputable sur un futur Dossier. | Remboursement |
+| **Remboursement** | Restitution d'un trop-perçu au Client, validée par la direction, enregistrée comme Encaissement négatif. | Crédit client |
+| **Avoir** | Document comptable numéroté dans la séquence des factures, qui annule tout ou partie d'une facture (correction, ou trop-perçu après clôture de la recherche). | Crédit client |
+| **Crédit client** | Solde en faveur d'un Client, issu d'un trop-perçu non remboursé, déduit de son prochain devis. | Remboursement |
+| **Facture d'acompte** | Facture émise à l'acceptation du devis, pour le montant de l'acompte. | Reçu |
+| **Facture de solde** | Facture émise à la clôture de la recherche : montant final − acompte facturé (si positif). | |
+| **Reçu** | Document émis pour chaque Encaissement. N'est pas une facture. | Facture |
 
 ### Recrutement et candidats (ADR 0011–0015)
 
@@ -59,7 +63,8 @@ Langage commun du projet. Chaque terme a **un seul sens**. En cas de doute, ce f
 | **Offre** | Annonce publique destinée aux candidats (brouillon → publiée → fermée). Origine : une Ligne de poste d'un Dossier (anonymisée) ou un recrutement interne NEXCLEAN. Jamais publiée automatiquement. | Ligne de poste |
 | **Recrutement interne** | Embauche par NEXCLEAN pour elle-même ; Offre sans Dossier client ni commission. | Placement |
 | **Candidature** | Un Candidat postule à une Offre (reçue → retenue / refusée). | Proposition |
-| **Proposition** | Un référent présente un Candidat pour une Ligne de poste (proposée → entretien → retenue / refusée → placée). Exige l'accord du candidat pour ce Client. | Candidature |
+| **Proposition** | Un référent présente un Candidat pour une Ligne de poste (en attente d'accord → proposée → entretien → retenue / refusée → placée ; ou refusée par le candidat, retirée). Exige l'accord du candidat pour ce Client et ce poste ; seules les Propositions « proposées » sont visibles du Client. | Candidature |
+| **Accord du candidat** | Consentement du Candidat à être présenté à un Client précis pour un poste précis, donné dans son espace ou recueilli par WhatsApp (capture jointe). Non réutilisable pour un autre Client. | Consentement à l'inscription |
 | **Placement** | Embauche d'un Candidat par un Client via NEXCLEAN. *Annoncé* tant que la preuve manque ; *confirmé* à la prise de poste, sur attestation confirmée par le Client. Seuls les placements confirmés comptent dans le montant final. | Mise à disposition |
 | **Attestation de prise de poste** | Document prérempli confirmé par le Client, preuve d'un Placement confirmé. | |
 | **Garantie de remplacement** | Si un candidat placé part dans les 15 jours (à confirmer), NEXCLEAN fournit gratuitement un remplaçant, sans nouvelle commission ni remboursement. | Remboursement |
