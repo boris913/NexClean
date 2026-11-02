@@ -16,6 +16,15 @@ const nextConfig: NextConfig = {
   },
 
   reactStrictMode: true,
+
+  // Image Docker autonome pour le VPS (ADR 0002).
+  output: 'standalone',
+
+  // forbidden() / unauthorized() pour les refus d'accès du Back-Office (M1-ROL-03).
+  experimental: { authInterrupts: true },
+
+  // Module natif : ne pas l'empaqueter.
+  serverExternalPackages: ['@node-rs/argon2'],
   compress: true,
 
   // ─── Headers HTTP (SEO + Sécurité + Performance) ───────────

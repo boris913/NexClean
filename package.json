@@ -6,28 +6,42 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:generer": "drizzle-kit generate",
+    "db:migrer": "tsx --env-file-if-exists=.env.local scripts/migrer.ts",
+    "initialiser": "tsx --env-file-if-exists=.env.local scripts/initialiser.ts"
   },
   "dependencies": {
+    "@node-rs/argon2": "^2.2.2",
+    "better-auth": "^1.7.15",
+    "drizzle-orm": "^0.45.4",
     "framer-motion": "^11.0.0",
+    "gray-matter": "^4.0.3",
     "lucide-react": "^0.263.1",
     "next": "15.5.11",
+    "postgres": "^4.0.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-icons": "^5.5.0",
-    "gray-matter": "^4.0.3",
     "remark": "^15.0.1",
     "remark-gfm": "^4.0.1",
-    "remark-html": "^16.0.1"
+    "remark-html": "^16.0.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@tailwindcss/typography": "^0.5.19",
+    "@types/node": "^24.19.2",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
+    "drizzle-kit": "^0.31.11",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
+    "tsx": "^4.23.15",
     "typescript": "^5",
-    "@tailwindcss/typography": "^0.5.19"
+    "vitest": "^5.1.0"
   }
 }
