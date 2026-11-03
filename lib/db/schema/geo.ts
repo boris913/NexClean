@@ -4,7 +4,7 @@ import { boolean, doublePrecision, index, integer, pgTable, serial, text, unique
 export const ville = pgTable('ville', {
   id: serial('id').primaryKey(),
   nom: text('nom').notNull().unique(),
-  /** Ville où NEXCLEAN intervient (remplace CITIES de lib/constants.ts). */
+  /** Ville où NEXCLEAN intervient : annoncée sur le site public (M1-GEO-05) et attribuée automatiquement. */
   couverte: boolean('couverte').notNull().default(false),
   actif: boolean('actif').notNull().default(true),
   ordre: integer('ordre').notNull().default(100),
@@ -37,6 +37,8 @@ export const quartier = pgTable(
     latitude: doublePrecision('latitude'),
     longitude: doublePrecision('longitude'),
     actif: boolean('actif').notNull().default(true),
+    /** Affiché dans « Où intervenons-nous ? » sur le site public (M1-GEO-05). */
+    afficheSite: boolean('affiche_site').notNull().default(false),
   },
   (t) => [unique('quartier_ville_nom_uq').on(t.villeId, t.nom), index('quartier_arrondissement_idx').on(t.arrondissementId)],
 );

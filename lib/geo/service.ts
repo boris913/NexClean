@@ -1,10 +1,10 @@
 // Référentiel géographique : lecture et administration (M1-GEO-01..03, 05).
-import { and, asc, desc, eq } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { getDb, schema } from '@/lib/db';
 import { journaliser } from '@/lib/audit';
 import { ErreurMetier, type Auteur } from '@/lib/collaborateurs/service';
-import { VILLES_INITIALES } from './donnees-initiales';
+import { QUARTIERS_AFFICHES_INITIAUX, VILLES_INITIALES } from './donnees-initiales';
 
 const auteurAudit = (a: Auteur) => ({ acteurType: a.id ? ('collaborateur' as const) : ('systeme' as const), acteurId: a.id, ip: a.ip ?? null });
 
@@ -22,7 +22,7 @@ export async function initialiserReferentiel(): Promise<{ villes: number; arrond
         compte.arrondissements += insereeA.length;
         const [arr] = await tx.select({ id: schema.arrondissement.id }).from(schema.arrondissement).where(and(eq(schema.arrondissement.villeId, ville!.id), eq(schema.arrondissement.nom, nomArr)));
         for (const nomQ of quartiers) {
-          const insereeQ = await tx.insert(schema.quartier).values({ villeId: ville!.id, arrondissementId: arr!.id, nom: nomQ }).onConflictDoNothing().returning({ id: schema.quartier.id });
+          const insereeQ = await tx.insert(schema.quartier).values({ villeId: ville!.id, arrondissementId: arr!.id, nom: nomQ, afficheSite: (QUARTIERS_AFFICHES_INITIAUX[v.nom] ?? []).includes(nomQ) }).onConflictDoNothing().returning({ id: schema.quartier.id });
           compte.quartiers += insereeQ.length;
         }
       }
@@ -54,8 +54,29 @@ export async function villesCouvertes(): Promise<string[]> {
     .select({ nom: schema.ville.nom })
     .from(schema.ville)
     .where(and(eq(schema.ville.couverte, true), eq(schema.ville.actif, true)))
-    .orderBy(asc(schema.ville.ordre));
+    .orderBy(asc(schema.ville.ordre), asc(schema.ville.nom));
   return rows.map((r) => r.nom);
+}
+
+export interface CouverturePublique {
+  villes: string[];
+  /** Quartiers cochés « Afficher sur le site », actifs, des villes couvertes, groupés par ville. */
+  quartiers: { ville: string; noms: string[] }[];
+}
+
+/** Ce que le site public annonce (M1-GEO-05) : villes couvertes et quartiers mis en avant. */
+export async function couverturePublique(): Promise<CouverturePublique> {
+  const villes = await villesCouvertes();
+  const lignes = await getDb()
+    .select({ ville: schema.ville.nom, nom: schema.quartier.nom })
+    .from(schema.quartier)
+    .innerJoin(schema.ville, eq(schema.ville.id, schema.quartier.villeId))
+    .where(and(eq(schema.quartier.afficheSite, true), eq(schema.quartier.actif, true), eq(schema.ville.couverte, true), eq(schema.ville.actif, true)))
+    .orderBy(asc(schema.ville.ordre), asc(schema.quartier.nom));
+  const quartiers = villes
+    .map((ville) => ({ ville, noms: lignes.filter((l) => l.ville === ville).map((l) => l.nom) }))
+    .filter((g) => g.noms.length > 0);
+  return { villes, quartiers };
 }
 
 const nom = z.string().trim().min(2, 'Nom trop court').max(80);
@@ -91,7 +112,7 @@ const tables = { ville: schema.ville, arrondissement: schema.arrondissement, qua
 export async function modifierEntree(
   entite: Entite,
   id: number,
-  changements: { nom?: string; actif?: boolean; couverte?: boolean; latitude?: number | null; longitude?: number | null },
+  changements: { nom?: string; actif?: boolean; couverte?: boolean; afficheSite?: boolean; latitude?: number | null; longitude?: number | null },
   auteur: Auteur,
 ) {
   const c = z
@@ -99,11 +120,13 @@ export async function modifierEntree(
       nom: nom.optional(),
       actif: z.boolean().optional(),
       couverte: z.boolean().optional(),
+      afficheSite: z.boolean().optional(),
       latitude: z.number().min(-90).max(90).nullable().optional(),
       longitude: z.number().min(-180).max(180).nullable().optional(),
     })
     .parse(changements);
   if (entite !== 'ville' && c.couverte !== undefined) throw new ErreurMetier('« Couverte » ne s’applique qu’aux villes.');
+  if (entite !== 'quartier' && c.afficheSite !== undefined) throw new ErreurMetier('« Afficher sur le site » ne s’applique qu’aux quartiers.');
   if (entite !== 'quartier' && (c.latitude !== undefined || c.longitude !== undefined)) throw new ErreurMetier('Les coordonnées ne s’appliquent qu’aux quartiers.');
   const table = tables[entite];
   await getDb().transaction(async (tx) => {
@@ -138,3 +161,108 @@ export async function nomsLieu(villeId: number | null, quartierId: number | null
 }
 
 export type ListesLieux = Awaited<ReturnType<typeof listesLieux>>;
+
+// ---------------------------------------------------------------------------
+// M1-GEO-04 : revue des saisies « Autre quartier »
+// ---------------------------------------------------------------------------
+
+/** Forme comparable d'une saisie libre : sans espaces superflus, insensible à la casse. */
+const cleSaisie = sql<string>`lower(btrim(${schema.dossier.quartierAutre}))`;
+
+export interface SaisieAutre {
+  villeId: number;
+  ville: string;
+  /** Libellé tel que saisi la première fois. */
+  saisie: string;
+  nombreDossiers: number;
+  /** Numéros des 5 dossiers les plus récents portant cette saisie. */
+  numeros: string[];
+}
+
+/** Saisies « Autre quartier » non encore rattachées, regroupées par ville et par libellé. */
+export async function saisiesAutreQuartier(): Promise<SaisieAutre[]> {
+  const groupes = await getDb()
+    .select({
+      villeId: schema.dossier.villeId,
+      ville: schema.ville.nom,
+      saisie: sql<string>`(array_agg(btrim(${schema.dossier.quartierAutre}) order by ${schema.dossier.creeLe}))[1]`,
+      nombreDossiers: count(),
+      numeros: sql<string[]>`(array_agg(${schema.dossier.numero} order by ${schema.dossier.creeLe} desc))[1:5]`,
+    })
+    .from(schema.dossier)
+    .innerJoin(schema.ville, eq(schema.ville.id, schema.dossier.villeId))
+    .where(and(isNull(schema.dossier.quartierId), isNotNull(schema.dossier.quartierAutre), sql`btrim(${schema.dossier.quartierAutre}) <> ''`))
+    .groupBy(schema.dossier.villeId, schema.ville.nom, cleSaisie)
+    .orderBy(desc(count()), asc(schema.ville.nom));
+  return groupes.map((g) => ({ ...g, villeId: g.villeId! }));
+}
+
+/**
+ * Convertit une saisie « Autre quartier » en Quartier du référentiel (M1-GEO-04) : quartier existant,
+ * ou nouveau quartier créé à cette occasion. Tous les Dossiers de la ville portant la même saisie
+ * (casse et espaces ignorés) sont rattachés au quartier ; leur historique en garde la trace.
+ */
+export async function convertirSaisieAutre(
+  donnees: { villeId: number; saisie: string; quartierId?: number | null; nouveau?: { nom: string; arrondissementId: number | null } | null },
+  auteur: Auteur,
+): Promise<{ quartierId: number; dossiers: number }> {
+  const d = z
+    .object({
+      villeId: z.number().int().positive(),
+      saisie: z.string().trim().min(1),
+      quartierId: z.number().int().positive().nullish(),
+      nouveau: z.object({ nom, arrondissementId: z.number().int().positive().nullable() }).nullish(),
+    })
+    .parse(donnees);
+  if (!d.quartierId === !d.nouveau) throw new ErreurMetier('Choisissez un quartier existant ou créez-en un nouveau.');
+
+  return getDb().transaction(async (tx) => {
+    let quartier: typeof schema.quartier.$inferSelect | undefined;
+    if (d.quartierId) {
+      [quartier] = await tx.select().from(schema.quartier).where(eq(schema.quartier.id, d.quartierId));
+      if (!quartier || quartier.villeId !== d.villeId) throw new ErreurMetier('Ce quartier n’appartient pas à la ville de la saisie.');
+      if (!quartier.actif) throw new ErreurMetier('Ce quartier est désactivé : réactivez-le d’abord.');
+    } else {
+      const n = d.nouveau!;
+      if (n.arrondissementId) {
+        const [a] = await tx.select({ villeId: schema.arrondissement.villeId }).from(schema.arrondissement).where(eq(schema.arrondissement.id, n.arrondissementId));
+        if (!a || a.villeId !== d.villeId) throw new ErreurMetier('Cet arrondissement n’appartient pas à la ville de la saisie.');
+      }
+      [quartier] = await tx.insert(schema.quartier).values({ villeId: d.villeId, arrondissementId: n.arrondissementId, nom: n.nom }).onConflictDoNothing().returning();
+      if (!quartier) throw new ErreurMetier('Ce quartier existe déjà dans cette ville : choisissez-le dans la liste.');
+      await journaliser({ ...auteurAudit(auteur), action: 'referentiel.quartier_ajoute', objetType: 'quartier', objetId: quartier.id, apres: quartier }, tx);
+    }
+    const cible = quartier;
+
+    const concernes = await tx
+      .select({ id: schema.dossier.id, quartierAutre: schema.dossier.quartierAutre })
+      .from(schema.dossier)
+      .where(and(eq(schema.dossier.villeId, d.villeId), isNull(schema.dossier.quartierId), sql`${cleSaisie} = lower(${d.saisie})`));
+    if (concernes.length === 0) throw new ErreurMetier('Aucun dossier ne porte plus cette saisie : elle a peut-être déjà été traitée.');
+
+    const ids = concernes.map((c) => c.id);
+    await tx.update(schema.dossier).set({ quartierId: cible.id, quartierAutre: null, derniereActionLe: new Date() }).where(inArray(schema.dossier.id, ids));
+    await tx.insert(schema.evenementDossier).values(
+      concernes.map((c) => ({
+        dossierId: c.id,
+        auteurId: auteur.id,
+        type: 'modification' as const,
+        commentaire: `Quartier « ${c.quartierAutre?.trim()} » rattaché au référentiel : ${cible.nom}.`,
+        avant: { quartierAutre: c.quartierAutre },
+        apres: { quartierId: cible.id, quartier: cible.nom },
+      })),
+    );
+    await journaliser(
+      {
+        ...auteurAudit(auteur),
+        action: 'referentiel.saisie_convertie',
+        objetType: 'quartier',
+        objetId: cible.id,
+        avant: { villeId: d.villeId, saisie: d.saisie },
+        apres: { quartierId: cible.id, dossiers: ids },
+      },
+      tx,
+    );
+    return { quartierId: cible.id, dossiers: ids.length };
+  });
+}

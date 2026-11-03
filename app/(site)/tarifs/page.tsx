@@ -1,16 +1,19 @@
 import type { Metadata } from 'next';
+import { lireCouverture } from '@/lib/geo/couverture';
 import PageHero from '@/components/ui/PageHero';
 import PricingSection from '@/components/sections/PricingSection';
 import ClientProcess from '@/components/sections/ClientProcess';
 import CTASection from '@/components/sections/CTASection';
-import { CITIES_LABEL } from '@/lib/constants';
 import { pageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = pageMetadata({
-  title: `Tarifs nettoyage à ${CITIES_LABEL}`,
-  description: `Tarifs indicatifs NexClean à ${CITIES_LABEL} : nettoyage de logements et de bureaux, ponctuel ou en abonnement. Devis gratuit selon surface et état des lieux.`,
-  path: '/tarifs',
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const { libelle: villes } = await lireCouverture();
+  return pageMetadata({
+    title: `Tarifs nettoyage à ${villes}`,
+    description: `Tarifs indicatifs NexClean à ${villes} : nettoyage de logements et de bureaux, ponctuel ou en abonnement. Devis gratuit selon surface et état des lieux.`,
+    path: '/tarifs',
+  });
+}
 
 export default function TarifsPage() {
   return (

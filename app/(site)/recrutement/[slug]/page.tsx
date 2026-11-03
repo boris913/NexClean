@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { lireCouverture } from '@/lib/geo/couverture';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -240,7 +241,7 @@ export default async function JobDetailPage({
               </p>
             </div>
             <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-6 lg:p-8">
-              <ApplicationForm defaultPosition={job.category} />
+              <ApplicationForm defaultPosition={job.category} villes={(await lireCouverture()).villes} />
             </div>
           </div>
         </section>

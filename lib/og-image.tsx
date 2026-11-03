@@ -1,13 +1,12 @@
 import { ImageResponse } from 'next/og';
 import { readFile } from 'fs/promises';
 import path from 'path';
-import { CITIES_LABEL } from '@/lib/constants';
 
-export const OG_ALT = `NEXCLEAN SARL — Nettoyage professionnel & entretien à ${CITIES_LABEL}`;
+export const OG_ALT = 'NEXCLEAN SARL — Nettoyage professionnel & entretien au Cameroun';
 export const OG_SIZE = { width: 1200, height: 630 };
 
 /** Image de partage (Facebook, WhatsApp, LinkedIn, X) aux couleurs de la marque. */
-export async function renderOgImage() {
+export async function renderOgImage(villes: string) {
   const logo = await readFile(path.join(process.cwd(), 'public/images/brand/logo-horizontal-blanc.svg'));
   const logoSrc = `data:image/svg+xml;base64,${logo.toString('base64')}`;
 
@@ -43,7 +42,7 @@ export async function renderOgImage() {
           <div style={{ fontSize: 64, fontWeight: 800, color: '#FFFFFF', lineHeight: 1.05, letterSpacing: -2 }}>
             Nettoyage professionnel & entretien
           </div>
-          <div style={{ fontSize: 30, color: '#E2F6CF', marginTop: 16 }}>{`${CITIES_LABEL}, Cameroun · Particuliers & entreprises`}</div>
+          <div style={{ fontSize: 30, color: '#E2F6CF', marginTop: 16 }}>{`${villes}, Cameroun · Particuliers & entreprises`}</div>
         </div>
         <div style={{ display: 'flex', gap: 16 }}>
           {['Devis gratuit sur WhatsApp', 'Espaces verts', 'Produits NexClean'].map((b) => (

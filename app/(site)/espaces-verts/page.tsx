@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { lireCouverture } from '@/lib/geo/couverture';
 import { Scissors, Leaf, Trees, Trash2, Sprout, Check } from 'lucide-react';
 import PageHero from '@/components/ui/PageHero';
 import Button from '@/components/ui/Button';
@@ -11,14 +12,17 @@ import { greenSpacesQuoteForm } from '@/components/forms/quote-forms';
 import { realisations } from '@/content/realisations-data';
 import RealisationCard from '@/components/ui/RealisationCard';
 import { services } from '@/content/services-data';
-import { CITIES_LABEL, getWhatsAppLink } from '@/lib/constants';
+import { getWhatsAppLink } from '@/lib/constants';
 import { pageMetadata, serviceSchema, faqSchema } from '@/lib/seo';
 
-export const metadata: Metadata = pageMetadata({
-  title: `Entretien espaces verts à ${CITIES_LABEL}`,
-  description: `Entretien d'espaces verts à ${CITIES_LABEL} : tonte de pelouse, débroussaillage, désherbage, taille de haies, ramassage des déchets verts. Ponctuel ou contrat régulier.`,
-  path: '/espaces-verts',
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const { libelle: villes } = await lireCouverture();
+  return pageMetadata({
+    title: `Entretien espaces verts à ${villes}`,
+    description: `Entretien d'espaces verts à ${villes} : tonte de pelouse, débroussaillage, désherbage, taille de haies, ramassage des déchets verts. Ponctuel ou contrat régulier.`,
+    path: '/espaces-verts',
+  });
+}
 
 const QUOTE_MSG = "Bonjour NexClean, je souhaite un état des lieux / devis pour l'entretien d'un espace vert.";
 
@@ -48,7 +52,9 @@ const greenFaq = [
   },
 ];
 
-export default function EspacesVertsPage() {
+export default async function EspacesVertsPage() {
+  const couverture = await lireCouverture();
+  const villes = couverture.libelle;
   const greenRealisations = realisations.filter((r) => r.filter === 'Espaces verts');
   const service = services.find((s) => s.href === '/espaces-verts');
 
@@ -56,7 +62,7 @@ export default function EspacesVertsPage() {
     <>
       <PageHero
         label="Espaces verts"
-        title={`Entretien des espaces verts à ${CITIES_LABEL}`}
+        title={`Entretien des espaces verts à ${villes}`}
         subtitle="Tonte, débroussaillage, désherbage, taille de haies et ramassage des déchets verts — en intervention ponctuelle ou en contrat d'entretien régulier."
         breadcrumb={[{ name: 'Services', href: '/services' }, { name: 'Espaces verts' }]}
       >
@@ -139,7 +145,7 @@ export default function EspacesVertsPage() {
         whatsappMessage={QUOTE_MSG}
         formHref="#devis-espaces-verts"
       />
-      {service && <JsonLd data={serviceSchema(service)} />}
+      {service && <JsonLd data={serviceSchema(service, couverture.villes)} />}
       <JsonLd data={faqSchema(greenFaq)} />
     </>
   );

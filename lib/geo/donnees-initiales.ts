@@ -1,7 +1,7 @@
 // Données initiales du référentiel géographique (M1-GEO-02).
 // ⚠ Rattachement des quartiers aux arrondissements à vérifier sur le terrain :
 // la liste est administrable et sera corrigée / enrichie depuis le Back-Office.
-// Les quartiers de content/zones-coverage.ts sont tous repris.
+// Reprend les quartiers de l'ancien content/zones-coverage.ts.
 
 export interface VilleInitiale {
   nom: string;
@@ -9,6 +9,11 @@ export interface VilleInitiale {
   ordre: number;
   arrondissements: Record<string, string[]>;
 }
+
+/** Quartiers affichés d'office dans « Où intervenons-nous ? » (M1-GEO-05), modifiable dans Référentiel. */
+export const QUARTIERS_AFFICHES_INITIAUX: Record<string, string[]> = {
+  Douala: ['Bonapriso', 'Akwa', 'Bonanjo', 'Bali', 'Makepe', 'Bonamoussadi', 'Deido', 'New Bell'],
+};
 
 export const VILLES_INITIALES: VilleInitiale[] = [
   {

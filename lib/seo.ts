@@ -5,9 +5,9 @@
 // ============================================================
 
 import type { Metadata } from 'next';
-import { CONTACT, SOCIAL_MEDIA, FAQ, PAYMENT_TERMS, CITIES_LABEL, ACTIVE_CITIES, getWhatsAppLink } from '@/lib/constants';
+import { CONTACT, SOCIAL_MEDIA, FAQ, PAYMENT_TERMS, getWhatsAppLink } from '@/lib/constants';
 import { services, getServiceHref, type Service } from '@/content/services-data';
-import { activeZones } from '@/content/zones-coverage';
+import type { Couverture } from '@/lib/geo/couverture';
 import type { Product } from '@/content/products-data';
 
 export const SITE_URL = 'https://nexclean.xyz';
@@ -15,8 +15,10 @@ export const SITE_NAME = 'NEXCLEAN SARL';
 export const SITE_LOCALE = 'fr_CM';
 
 // ─── Métadonnées globales ────────────────────────────────────
-export const DEFAULT_TITLE = `NEXCLEAN SARL — Nettoyage professionnel & entretien à ${CITIES_LABEL}, Cameroun`;
-export const DEFAULT_DESCRIPTION = `NEXCLEAN SARL : nettoyage de maisons et bureaux, fin de chantier, vitres, entretien d'espaces verts et produits d'entretien à ${CITIES_LABEL}. Devis gratuit sur WhatsApp.`;
+// Les villes viennent du référentiel géographique (M1-GEO-05, lib/geo/couverture.ts).
+export const titreParDefaut = (villes: string) => `NEXCLEAN SARL — Nettoyage professionnel & entretien à ${villes}, Cameroun`;
+export const descriptionParDefaut = (villes: string) =>
+  `NEXCLEAN SARL : nettoyage de maisons et bureaux, fin de chantier, vitres, entretien d'espaces verts et produits d'entretien à ${villes}. Devis gratuit sur WhatsApp.`;
 
 export const TITLE_TEMPLATE = '%s | NEXCLEAN SARL';
 
@@ -44,7 +46,7 @@ export const OG_IMAGE = {
   url: `${SITE_URL}/opengraph-image`,
   width: 1200,
   height: 630,
-  alt: DEFAULT_TITLE,
+  alt: 'NEXCLEAN SARL — Nettoyage professionnel & entretien au Cameroun',
 };
 
 /** Métadonnées standard d'une page interne (titre, description, canonical, OG). */
@@ -77,14 +79,14 @@ export function pageMetadata({
 
 // ─── Schema.org — LocalBusiness ──────────────────────────────
 // Pas d'aggregateRating : à ajouter uniquement à partir d'avis réels et traçables.
-export const LOCAL_BUSINESS_SCHEMA = {
+export const localBusinessSchema = (c: Couverture) => ({
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
   '@id': `${SITE_URL}/#organization`,
   name: SITE_NAME,
   alternateName: 'NexClean',
   legalName: 'NEXCLEAN SARL',
-  description: DEFAULT_DESCRIPTION,
+  description: descriptionParDefaut(c.libelle),
   url: SITE_URL,
   logo: `${SITE_URL}/images/brand/logo-horizontal.png`,
   image: `${SITE_URL}/opengraph-image`,
@@ -119,33 +121,33 @@ export const LOCAL_BUSINESS_SCHEMA = {
   currenciesAccepted: 'XAF',
   paymentAccepted: PAYMENT_TERMS.methods.join(', '),
   areaServed: [
-    ...ACTIVE_CITIES.map((c) => ({ '@type': 'City', name: c })),
-    ...activeZones.map((z) => ({ '@type': 'Place', name: `${z.name}, ${z.city}` })),
+    ...c.villes.map((v) => ({ '@type': 'City', name: v })),
+    ...c.quartiers.flatMap((g) => g.noms.map((q) => ({ '@type': 'Place', name: `${q}, ${g.ville}` }))),
   ],
   sameAs: [SOCIAL_MEDIA.facebook, SOCIAL_MEDIA.instagram, SOCIAL_MEDIA.tiktok, SOCIAL_MEDIA.linkedin].filter(Boolean),
-};
+});
 
-export const serviceSchema = (s: Service) => ({
+export const serviceSchema = (s: Service, villes: string[]) => ({
   '@context': 'https://schema.org',
   '@type': 'Service',
   name: s.name,
   description: s.seo.description,
   url: `${SITE_URL}${getServiceHref(s)}`,
   provider: { '@id': `${SITE_URL}/#organization` },
-  areaServed: ACTIVE_CITIES.map((c) => ({ '@type': 'City', name: c })),
+  areaServed: villes.map((v) => ({ '@type': 'City', name: v })),
 });
 
 // ─── Schema.org — Services ───────────────────────────────────
-export const SERVICES_SCHEMA = {
+export const servicesSchema = (villes: string[]) => ({
   '@context': 'https://schema.org',
   '@type': 'ItemList',
   name: 'Services NexClean',
   itemListElement: services.map((s, i) => ({
     '@type': 'ListItem',
     position: i + 1,
-    item: serviceSchema(s),
+    item: serviceSchema(s, villes),
   })),
-};
+});
 
 export const productSchema = (p: Product) => {
   const priced = p.formats.filter((f) => f.price !== null);
@@ -194,15 +196,15 @@ export const breadcrumbSchema = (items: { name: string; path: string }[]) => ({
 });
 
 // ─── Schema.org — WebSite ────────────────────────────────────
-export const WEBSITE_SCHEMA = {
+export const websiteSchema = (villes: string) => ({
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: SITE_NAME,
   url: SITE_URL,
-  description: DEFAULT_DESCRIPTION,
+  description: descriptionParDefaut(villes),
   potentialAction: {
     '@type': 'ContactAction',
     target: getWhatsAppLink(),
     name: 'Contacter NEXCLEAN SARL sur WhatsApp',
   },
-};
+});

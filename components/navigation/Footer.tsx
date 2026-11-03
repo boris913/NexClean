@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Linkedin } from 'lucide-react';
-import { CONTACT, COMPANY, SOCIAL_MEDIA, BUSINESS_HOURS, CITIES_LABEL, TEL_LINK, getWhatsAppLink } from '@/lib/constants';
+import { CONTACT, COMPANY, SOCIAL_MEDIA, BUSINESS_HOURS, TEL_LINK, getWhatsAppLink } from '@/lib/constants';
 import { services, getServiceHref } from '@/content/services-data';
 import WhatsAppIcon from '@/components/ui/WhatsAppIcon';
 import Logo from '@/components/ui/Logo';
@@ -38,7 +38,7 @@ const socialLinks = [
   { name: 'LinkedIn', href: SOCIAL_MEDIA.linkedin, Icon: Linkedin },
 ].filter((s) => s.href);
 
-export default function Footer() {
+export default function Footer({ villes }: { villes: string }) {
   return (
     <footer className="relative overflow-hidden bg-brand-950 text-brand-100/80 pb-20 lg:pb-0">
       <div aria-hidden="true" className="pointer-events-none absolute -top-40 -right-40 w-[480px] h-[480px] rounded-full bg-brand-500/20 blur-3xl" />
@@ -48,7 +48,7 @@ export default function Footer() {
           <div>
             <Logo variant="blanc" height={44} className="mb-5 h-11 w-auto" />
             <p className="text-sm leading-relaxed text-brand-100/70 mb-6">
-              Nettoyage professionnel, entretien des espaces verts et produits d&apos;entretien à {CITIES_LABEL}, Cameroun.
+              Nettoyage professionnel, entretien des espaces verts et produits d&apos;entretien à {villes}, Cameroun.
             </p>
             <div className="flex gap-3">
               {socialLinks.map(({ name, href, Icon }) => (

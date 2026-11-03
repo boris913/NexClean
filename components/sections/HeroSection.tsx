@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Check, ShoppingBag, Trees, Clock, MapPin } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import WhatsAppIcon from '@/components/ui/WhatsAppIcon';
-import { PROMO, CITIES_LABEL, getWhatsAppLink } from '@/lib/constants';
+import { PROMO, getWhatsAppLink } from '@/lib/constants';
 import { products, formatPrice } from '@/content/products-data';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -16,7 +16,7 @@ const fadeUp = (delay: number) => ({
   transition: { duration: 0.8, ease: EASE, delay },
 });
 
-export default function HeroSection() {
+export default function HeroSection({ villes }: { villes: string }) {
   const product = products[0];
 
   return (
@@ -46,7 +46,7 @@ export default function HeroSection() {
           </motion.h1>
 
           <motion.p {...fadeUp(0.16)} className="text-ink-600 text-lg sm:text-xl leading-relaxed max-w-xl mb-8">
-            Maisons, bureaux, fins de chantier et espaces verts à {CITIES_LABEL}. Envoyez vos photos, recevez votre devis.
+            Maisons, bureaux, fins de chantier et espaces verts à {villes}. Envoyez vos photos, recevez votre devis.
           </motion.p>
 
           <motion.div {...fadeUp(0.24)} className="flex flex-col sm:flex-row gap-3 mb-8">
@@ -164,7 +164,7 @@ export default function HeroSection() {
           </motion.div>
 
           <div className="absolute -bottom-12 left-[46%] hidden sm:flex items-center gap-1.5 text-xs font-medium text-ink-500">
-            <MapPin className="w-3.5 h-3.5 text-primary" /> {CITIES_LABEL}, Cameroun
+            <MapPin className="w-3.5 h-3.5 text-primary" /> {villes}, Cameroun
           </div>
         </div>
       </div>

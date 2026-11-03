@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { lireCouverture } from '@/lib/geo/couverture';
 import Link from 'next/link';
 import { MapPin, Briefcase, Users, ShieldCheck, Clock, Heart, ArrowRight, Building2 } from 'lucide-react';
 import PageHero from '@/components/ui/PageHero';
@@ -21,7 +22,7 @@ const values = [
   { icon: Heart, title: 'Soin du détail', text: 'La qualité du résultat est notre meilleure publicité.' },
 ];
 
-export default function RecrutementPage() {
+export default async function RecrutementPage() {
   const sortedJobs = [...openJobs, ...jobs.filter((j) => j.status === 'closed')];
 
   return (
@@ -145,7 +146,7 @@ export default function RecrutementPage() {
             </p>
           </div>
           <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-6 lg:p-8">
-            <ApplicationForm />
+            <ApplicationForm villes={(await lireCouverture()).villes} />
           </div>
         </div>
       </section>

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { lireCouverture } from '@/lib/geo/couverture';
 import { Camera, MessageCircle, CalendarCheck } from 'lucide-react';
 import PageHero from '@/components/ui/PageHero';
 import Button from '@/components/ui/Button';
@@ -8,14 +9,17 @@ import PricingSection from '@/components/sections/PricingSection';
 import FAQSection from '@/components/sections/FAQSection';
 import CTASection from '@/components/sections/CTASection';
 import { services } from '@/content/services-data';
-import { FAQ, CITIES_LABEL, getWhatsAppLink } from '@/lib/constants';
+import { FAQ, getWhatsAppLink } from '@/lib/constants';
 import { pageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = pageMetadata({
-  title: `Nettoyage maison et appartement à ${CITIES_LABEL} — Particuliers`,
-  description: `Nettoyage de maisons, appartements et studios à ${CITIES_LABEL} : entretien, grand nettoyage, emménagement, vitres, espaces verts. Devis rapide avec photos sur WhatsApp.`,
-  path: '/particuliers',
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const { libelle: villes } = await lireCouverture();
+  return pageMetadata({
+    title: `Nettoyage maison et appartement à ${villes} — Particuliers`,
+    description: `Nettoyage de maisons, appartements et studios à ${villes} : entretien, grand nettoyage, emménagement, vitres, espaces verts. Devis rapide avec photos sur WhatsApp.`,
+    path: '/particuliers',
+  });
+}
 
 const QUICK_QUOTE_MSG =
   'Bonjour NexClean, je souhaite un devis pour mon logement. Type de logement : … / Quartier : … / Je vous envoie des photos.';

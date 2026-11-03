@@ -7,7 +7,7 @@ import Button from '@/components/ui/Button';
 import WhatsAppIcon from '@/components/ui/WhatsAppIcon';
 import { inputClass, labelClass } from '@/components/forms/WhatsAppForm';
 import { JOB_CATEGORIES, CV_MAX_SIZE_MB } from '@/content/jobs-data';
-import { CONTACT, ACTIVE_CITIES, getWhatsAppLink } from '@/lib/constants';
+import { CONTACT, getWhatsAppLink } from '@/lib/constants';
 import { trackEvent } from '@/lib/analytics';
 
 type Status = { kind: 'idle' } | { kind: 'sending' } | { kind: 'success'; reference: string } | { kind: 'error'; message: string } | { kind: 'fallback'; message: string };
@@ -21,7 +21,7 @@ const Field = ({ label, name, required, children }: { label: string; name: strin
   </div>
 );
 
-export default function ApplicationForm({ defaultPosition = '' }: { defaultPosition?: string }) {
+export default function ApplicationForm({ defaultPosition = '', villes }: { defaultPosition?: string; villes: string[] }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
   const [fileName, setFileName] = useState('');
@@ -120,9 +120,9 @@ export default function ApplicationForm({ defaultPosition = '' }: { defaultPosit
         <input id="cand-firstName" name="firstName" required maxLength={80} autoComplete="given-name" className={inputClass} />
       </Field>
       <Field label="Ville" name="city" required>
-        <input id="cand-city" name="city" required maxLength={80} list="cand-cities" defaultValue={ACTIVE_CITIES[0]} className={inputClass} />
+        <input id="cand-city" name="city" required maxLength={80} list="cand-cities" defaultValue={villes[0]} className={inputClass} />
         <datalist id="cand-cities">
-          {ACTIVE_CITIES.map((c) => (
+          {villes.map((c) => (
             <option key={c} value={c} />
           ))}
         </datalist>

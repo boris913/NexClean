@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { lireCouverture } from '@/lib/geo/couverture';
 import { notFound } from 'next/navigation';
 import { Check } from 'lucide-react';
 import PageHero from '@/components/ui/PageHero';
@@ -86,7 +87,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
       <ProcessSection />
       <ServicesSection items={related} title="Autres services" subtitle="Découvrez nos autres prestations." />
       <CTASection whatsappMessage={quoteMessage} />
-      <JsonLd data={serviceSchema(service)} />
+      <JsonLd data={serviceSchema(service, (await lireCouverture()).villes)} />
       <JsonLd data={breadcrumbSchema([{ name: 'Services', path: '/services' }, { name: service.name, path: `/services/${slug}` }])} />
     </>
   );
