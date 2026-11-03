@@ -43,6 +43,13 @@
       "when": 1793720999907,
       "tag": "0005_geo_affiche_site",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793733963721,
+      "tag": "0006_candidats",
+      "breakpoints": true
     }
   ]
 }

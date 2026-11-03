@@ -15,7 +15,8 @@ export type AnalyticsEvent =
   | 'quote_form_fallback'
   | 'job_application_submit'
   | 'product_order_click'
-  | 'staff_request_submit';
+  | 'staff_request_submit'
+  | 'candidate_signup';
 
 declare global {
   interface Window {
