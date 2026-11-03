@@ -62,6 +62,11 @@ describe('Expérience', () => {
   it('lit les durées saisies librement', () => {
     expect(anneesDepuisDuree('2 ans')).toBe(2);
     expect(anneesDepuisDuree('1 an')).toBe(1);
+    // Tranches du formulaire court de candidature : borne basse.
+    expect(anneesDepuisDuree('Moins de 1 an')).toBe(0);
+    expect(anneesDepuisDuree('1 à 3 ans')).toBe(1);
+    expect(anneesDepuisDuree('3 à 5 ans')).toBe(3);
+    expect(anneesDepuisDuree('Plus de 5 ans')).toBe(5);
     expect(anneesDepuisDuree('18 mois')).toBe(1.5);
     expect(anneesDepuisDuree('1 an et 6 mois')).toBe(1.5);
     expect(anneesDepuisDuree(' 3 ')).toBe(3);

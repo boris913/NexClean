@@ -189,11 +189,15 @@ export function zonesCouvrent(z: ZonesCandidat, lieu: { villeId: number; arrondi
 /**
  * Années d'une durée saisie librement (« 2 ans », « 18 mois », « 1 an et 6 mois », « 3 »).
  * Règle reprise en SQL dans ./vivier.ts : nombre devant « an », plus nombre devant « mois » / 12,
- * ou nombre seul = années. Illisible → 0.
+ * ou nombre seul = années. Tranches : « moins de… » → 0, « 1 à 3 ans » → 1. Illisible → 0.
  */
 export function anneesDepuisDuree(duree: string | null | undefined): number {
   if (!duree) return 0;
   const d = duree.toLowerCase();
+  // Tranches du formulaire court de candidature (MVP2-02) : borne basse.
+  if (/^\s*moins/.test(d)) return 0;
+  const tranche = /([0-9]+)\s*(?:à|a|-)\s*[0-9]+/.exec(d);
+  if (tranche) return Number(tranche[1]);
   const an = /([0-9]+)\s*an/.exec(d);
   const mois = /([0-9]+)\s*mois/.exec(d);
   const seul = /^\s*([0-9]+)\s*$/.exec(d);

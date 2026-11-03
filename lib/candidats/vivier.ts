@@ -24,11 +24,13 @@ const texteCandidat = sql`concat_ws(' ', array_to_string(${c.metiers}, ' '), arr
   (select string_agg(concat_ws(' ', ${e.poste}, ${e.missions}), ' ') from ${e} where ${e.candidatId} = ${c.id}))`;
 
 /** Somme des durées d'expérience en années (règle d'anneesDepuisDuree, ./recherche.ts). */
-export const anneesExperience = sql<number>`coalesce((select sum(
-    coalesce(substring(lower(${e.duree}) from '([0-9]+)[[:space:]]*an')::numeric, 0)
-    + coalesce(substring(lower(${e.duree}) from '([0-9]+)[[:space:]]*mois')::numeric, 0) / 12
-    + case when ${e.duree} ~ '^[[:space:]]*[0-9]+[[:space:]]*$' then btrim(${e.duree})::numeric else 0 end
-  ) from ${e} where ${e.candidatId} = ${c.id}), 0)`.mapWith(Number);
+export const anneesExperience = sql<number>`coalesce((select sum(case
+    when lower(${e.duree}) ~ '^[[:space:]]*moins' then 0
+    when lower(${e.duree}) ~ '[0-9]+[[:space:]]*(à|a|-)[[:space:]]*[0-9]+' then substring(lower(${e.duree}) from '([0-9]+)[[:space:]]*(?:à|a|-)[[:space:]]*[0-9]+')::numeric
+    else coalesce(substring(lower(${e.duree}) from '([0-9]+)[[:space:]]*an')::numeric, 0)
+      + coalesce(substring(lower(${e.duree}) from '([0-9]+)[[:space:]]*mois')::numeric, 0) / 12
+      + case when ${e.duree} ~ '^[[:space:]]*[0-9]+[[:space:]]*$' then btrim(${e.duree})::numeric else 0 end
+  end) from ${e} where ${e.candidatId} = ${c.id}), 0)`.mapWith(Number);
 
 const aUnCv = sql<boolean>`exists (select 1 from ${d} where ${d.candidatId} = ${c.id} and ${d.categorie} = 'cv')`;
 

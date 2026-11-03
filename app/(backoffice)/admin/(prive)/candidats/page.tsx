@@ -94,7 +94,11 @@ export default async function PageCandidats({ searchParams }: { searchParams: Pr
 
   return (
     <>
-      <TitrePage titre="Candidats" />
+      <TitrePage titre="Candidats">
+        <Link href="/admin/candidats/reinitialisations" className={classeBouton('secondaire')}>
+          Demandes de réinitialisation
+        </Link>
+      </TitrePage>
       <nav aria-label="Onglets des candidats" className="flex gap-1 overflow-x-auto border-b border-ink-100 mb-4 -mx-4 px-4">
         {onglets.map((o) => (
           <Link
