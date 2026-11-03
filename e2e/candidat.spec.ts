@@ -134,14 +134,15 @@ test('déconnexion, puis connexion par téléphone ; numéro déjà inscrit refu
   // Un autre visiteur tente de s'inscrire avec le même numéro.
   const autre = await ctx.browser()!.newContext({ baseURL: page.url().split('/candidat')[0], viewport: { width: 375, height: 812 } });
   const p2 = await autre.newPage();
-  await p2.goto('/candidat/inscription');
-  await p2.evaluate(() =>
+  // Brouillon injecté avant tout script de la page (sinon la page, hydratée plus tard,
+  // enregistre son propre brouillon vide par-dessus).
+  await p2.addInitScript(() =>
     localStorage.setItem(
       'nexclean:inscription-candidat:v1',
       JSON.stringify({ etape: 7, b: { nom: 'X', prenom: 'Y', telephone: '699 12 34 56', whatsappIdentique: true, villeId: null, villeAutre: 'Kribi', quartierAutre: 'Centre', zonesTouteVille: true, metiers: ['Serveur'], typesContrat: ['CDI'], niveauEtudes: 'Probatoire', disponibilite: 'immediate' } }),
     ),
   );
-  await p2.reload();
+  await p2.goto('/candidat/inscription');
   await p2.getByLabel(/^Mot de passe/).fill(MDP);
   await p2.getByLabel(/^Confirmez le mot de passe/).fill(MDP);
   for (const c of await p2.getByRole('checkbox').all()) if (!(await c.isChecked()) && (await c.isVisible())) await c.check();
