@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Outfit, Plus_Jakarta_Sans } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 import {
   DEFAULT_TITLE,
@@ -11,17 +11,20 @@ import {
   OG_IMAGE,
 } from '@/lib/seo';
 
-const fontBody = Plus_Jakarta_Sans({
-  subsets: ['latin'],
+// Polices intégrées au dépôt (fichiers variables, sous-ensemble latin, licence OFL 1.1 dans
+// app/fonts/) : le build ne dépend plus du téléchargement depuis Google Fonts, qui échouait
+// par intermittence en CI.
+const fontBody = localFont({
+  src: './fonts/plus-jakarta-sans-latin-wght-normal.woff2',
   variable: '--font-body',
-  weight: ['400', '500', '600', '700', '800'],
+  weight: '200 800',
   display: 'swap',
 });
 
-const fontDisplay = Outfit({
-  subsets: ['latin'],
+const fontDisplay = localFont({
+  src: './fonts/outfit-latin-wght-normal.woff2',
   variable: '--font-display',
-  weight: ['500', '600', '700', '800'],
+  weight: '100 900',
   display: 'swap',
 });
 
