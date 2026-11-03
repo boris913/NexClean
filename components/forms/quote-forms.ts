@@ -1,6 +1,7 @@
-import type { FormField } from '@/components/forms/WhatsAppForm';
+// Configuration des formulaires de devis (MVP1-04). Partagée navigateur / serveur :
+// le serveur valide la saisie avec ces mêmes champs (libellés, options, obligatoires).
+import type { ConfigDevis, FormField } from '@/lib/dossiers/formulaire-devis';
 import { serviceNames } from '@/content/services-data';
-import { ACTIVE_CITIES } from '@/lib/constants';
 
 const PHOTO_NOTE = 'Vous serez redirigé vers WhatsApp : joignez-y vos photos ou vidéos pour un devis plus précis.';
 
@@ -12,12 +13,12 @@ export const generalQuoteForm = {
     { name: 'name', label: 'Nom complet', required: true, placeholder: 'Votre nom' },
     { name: 'phone', label: 'Téléphone / WhatsApp', type: 'tel', required: true, placeholder: '+237 6XX XXX XXX' },
     { name: 'service', label: 'Service souhaité', type: 'select', required: true, options: [...serviceNames, 'Autre'] },
-    { name: 'city', label: 'Ville', type: 'select', required: true, options: [...ACTIVE_CITIES, 'Autre'] },
-    { name: 'location', label: 'Quartier', required: true, placeholder: 'Bonapriso, Akwa…' },
+    // Ville + Quartier du référentiel ; message : « Ville : … » puis « Quartier : … » (RG-02).
+    { name: 'location', label: 'Ville / quartier', type: 'lieu', required: true },
     { name: 'date', label: 'Date souhaitée', type: 'date' },
     { name: 'message', label: 'Précisions (surface, état, accès…)', type: 'textarea', placeholder: 'Décrivez votre besoin' },
   ] satisfies FormField[],
-};
+} satisfies ConfigDevis;
 
 export const proQuoteForm = {
   formId: 'devis-pro',
@@ -34,7 +35,7 @@ export const proQuoteForm = {
     },
     { name: 'contact', label: 'Nom du contact', required: true },
     { name: 'phone', label: 'Téléphone', type: 'tel', required: true, placeholder: '+237 6XX XXX XXX' },
-    { name: 'location', label: 'Ville / quartier', required: true },
+    { name: 'location', label: 'Ville / quartier', type: 'lieu', required: true, messageCombine: true },
     { name: 'surface', label: 'Surface approximative', placeholder: 'ex. 250 m²' },
     {
       name: 'frequency',
@@ -46,7 +47,7 @@ export const proQuoteForm = {
     { name: 'date', label: 'Date souhaitée', type: 'date' },
     { name: 'need', label: 'Votre besoin', type: 'textarea', required: true, placeholder: 'Prestations attendues, horaires, contraintes…' },
   ] satisfies FormField[],
-};
+} satisfies ConfigDevis;
 
 export const greenSpacesQuoteForm = {
   formId: 'devis-espaces-verts',
@@ -62,7 +63,7 @@ export const greenSpacesQuoteForm = {
       required: true,
       options: ['Jardin privé', 'Cour', 'Résidence', 'Entreprise', 'Hôtel', 'Administration', 'Terrain', 'Autre'],
     },
-    { name: 'location', label: 'Ville / quartier', required: true },
+    { name: 'location', label: 'Ville / quartier', type: 'lieu', required: true, messageCombine: true },
     { name: 'surface', label: 'Superficie approximative', placeholder: 'ex. 500 m²' },
     {
       name: 'frequency',
@@ -72,4 +73,10 @@ export const greenSpacesQuoteForm = {
     },
     { name: 'need', label: 'Travaux souhaités', type: 'textarea', placeholder: 'Tonte, débroussaillage, taille de haies…' },
   ] satisfies FormField[],
+} satisfies ConfigDevis;
+
+export const FORMULAIRES_DEVIS: Record<string, ConfigDevis> = {
+  [generalQuoteForm.formId]: generalQuoteForm,
+  [proQuoteForm.formId]: proQuoteForm,
+  [greenSpacesQuoteForm.formId]: greenSpacesQuoteForm,
 };

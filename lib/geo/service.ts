@@ -129,4 +129,12 @@ export async function listesLieux() {
   }));
 }
 
+/** Noms de la ville et du quartier choisis dans le référentiel (null si non trouvés). */
+export async function nomsLieu(villeId: number | null, quartierId: number | null): Promise<{ ville: string | null; quartier: string | null }> {
+  const db = getDb();
+  const [v] = villeId ? await db.select({ nom: schema.ville.nom }).from(schema.ville).where(eq(schema.ville.id, villeId)) : [];
+  const [q] = quartierId ? await db.select({ nom: schema.quartier.nom }).from(schema.quartier).where(eq(schema.quartier.id, quartierId)) : [];
+  return { ville: v?.nom ?? null, quartier: q?.nom ?? null };
+}
+
 export type ListesLieux = Awaited<ReturnType<typeof listesLieux>>;

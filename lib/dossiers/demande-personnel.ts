@@ -1,13 +1,13 @@
 // Envoi du formulaire public « Demander du personnel » (MVP1-03 RG-03..09).
 // Séparé de l'action serveur pour être testable sans requête HTTP.
-import { and, eq, gte, sql } from 'drizzle-orm';
-import { getDb, schema } from '@/lib/db';
 import { journaliser } from '@/lib/audit';
 import { env } from '@/lib/env';
 import { echapperHtml, envoyerEmail } from '@/lib/email';
 import { lireParametre } from '@/lib/parametres';
+import { nomsLieu } from '@/lib/geo/service';
 import { formaterTelephone } from '@/lib/telephone';
 import { creerDemande } from './service';
+import { controlerEnvoi } from './anti-abus';
 import {
   FORMULAIRE_PERSONNEL,
   MENTION_ESTIMATION,
@@ -19,10 +19,7 @@ import {
   type Estimation,
 } from './formulaire-personnel';
 
-/** Limitation de débit par IP (§3 étape 4) : 10 envois par fenêtre de 10 minutes. */
-export const MAX_ENVOIS_IP = 10;
-export const FENETRE_ENVOIS_MS = 10 * 60 * 1000;
-const ACTION_ENVOI = 'formulaire.envoi';
+export { MAX_ENVOIS_IP } from './anti-abus';
 
 /** Texte de la case de consentement, conservé avec la Demande. */
 export const TEXTE_CONSENTEMENT = 'J’accepte que NEXCLEAN traite ces informations pour répondre à ma demande et me contacte sur WhatsApp.';
@@ -32,34 +29,11 @@ export type ResultatEnvoi =
   | { ok: true; numero: string; lienSuivi: string; estimation: Estimation; doublon: boolean }
   | { ok: false; erreur: string; erreurs?: Record<string, string> };
 
-async function envoisRecents(ip: string): Promise<number> {
-  const j = schema.journalAudit;
-  const [r] = await getDb()
-    .select({ n: sql<number>`count(*)`.mapWith(Number) })
-    .from(j)
-    .where(and(eq(j.action, ACTION_ENVOI), eq(j.ip, ip), gte(j.horodatage, new Date(Date.now() - FENETRE_ENVOIS_MS))));
-  return r?.n ?? 0;
-}
-
-async function nomsLieu(villeId: number | null, quartierId: number | null) {
-  const db = getDb();
-  const [v] = villeId ? await db.select({ nom: schema.ville.nom }).from(schema.ville).where(eq(schema.ville.id, villeId)) : [];
-  const [q] = quartierId ? await db.select({ nom: schema.quartier.nom }).from(schema.quartier).where(eq(schema.quartier.id, quartierId)) : [];
-  return { ville: v?.nom ?? null, quartier: q?.nom ?? null };
-}
-
 export async function soumettreDemandePersonnel(entree: unknown, ctx: { ip: string | null }): Promise<ResultatEnvoi> {
   const brut = (entree && typeof entree === 'object' ? entree : {}) as Record<string, unknown>;
 
-  // Champ piège : invisible pour un humain, rempli par les robots.
-  if (typeof brut.siteWeb === 'string' && brut.siteWeb.trim()) {
-    await journaliser({ acteurType: 'anonyme', action: 'formulaire.robot', ip: ctx.ip, details: { formulaire: FORMULAIRE_PERSONNEL } });
-    return { ok: false, erreur: 'Envoi refusé.' };
-  }
-  if (ctx.ip && (await envoisRecents(ctx.ip)) >= MAX_ENVOIS_IP) {
-    return { ok: false, erreur: 'Trop d’envois depuis cette connexion. Réessayez dans quelques minutes ou envoyez votre demande sur WhatsApp.' };
-  }
-  await journaliser({ acteurType: 'anonyme', action: ACTION_ENVOI, ip: ctx.ip, details: { formulaire: FORMULAIRE_PERSONNEL } });
+  const refus = await controlerEnvoi(FORMULAIRE_PERSONNEL, brut.siteWeb, ctx.ip);
+  if (refus) return { ok: false, erreur: refus };
 
   const v = validerDemandePersonnel(brut);
   if (!v.ok) return { ok: false, erreur: 'Certains champs sont à corriger.', erreurs: v.erreurs };
