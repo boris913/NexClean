@@ -8,6 +8,8 @@ import { DOSSIER_TYPES, type DossierType } from '@/lib/domain/referentiels';
 import { listerNotifications } from '@/lib/notifications';
 import { formatHorodatage } from '@/lib/audit-lecture';
 import { Carte, TitrePage } from '@/components/backoffice/ui';
+import { peutAccederVivier } from '@/lib/candidats/acces';
+import { compterCandidatsNonAttribues, compterNouveauxCandidats } from '@/lib/candidats/vivier';
 
 export const metadata = { title: 'Accueil' };
 
@@ -58,7 +60,11 @@ export default async function Accueil({ searchParams }: { searchParams: Promise<
   const estReferent = c.roles.includes('referent');
   const estDirection = c.roles.includes('direction');
 
-  const [moi, dir, notifs] = await Promise.all([estReferent ? compteursReferent(c.id) : null, estDirection ? compteursDirection(periode) : null, listerNotifications(c.id, 20)]);
+  const [moi, dir, notifs, vivier] = await Promise.all([estReferent ? compteursReferent(c.id) : null, estDirection ? compteursDirection(periode) : null, listerNotifications(c.id, 20), peutAccederVivier(c)]);
+  // MVP2-02 : file « Nouveaux candidats » du référent, « Non attribués » pour la Direction.
+  const [nouveauxCandidats, candidatsNonAttribues] = vivier
+    ? await Promise.all([estReferent && !estDirection ? compterNouveauxCandidats(c.id) : null, estDirection ? compterCandidatsNonAttribues() : null])
+    : [null, null];
   const nonLues = notifs.filter((n) => !n.luLe).slice(0, 5);
 
   const raccourcis = [
@@ -107,6 +113,16 @@ export default async function Accueil({ searchParams }: { searchParams: Promise<
               ))}
             </ul>
           </Carte>
+        )}
+
+        {(nouveauxCandidats !== null || candidatsNonAttribues !== null) && (
+          <section className="space-y-3">
+            <h2 className="font-semibold text-ink-900">Candidats</h2>
+            <div className="grid grid-cols-2 gap-3">
+              {nouveauxCandidats !== null && <Chiffre valeur={nouveauxCandidats} libelle="nouveaux candidats à traiter" href="/admin/candidats" alerte />}
+              {candidatsNonAttribues !== null && <Chiffre valeur={candidatsNonAttribues} libelle="candidats non attribués" href="/admin/candidats?onglet=non_attribues" alerte />}
+            </div>
+          </section>
         )}
 
         {moi && (
