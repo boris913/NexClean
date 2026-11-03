@@ -2,7 +2,7 @@
 # - verifications : types, tests unitaires + intégration sur un vrai PostgreSQL 16, build Next.js
 # - docker        : image de production + PostgreSQL (composition du VPS), migrations au démarrage,
 #                   pages publiques et Back-Office, script d'initialisation, tâche planifiée
-# - audit         : vulnérabilités des dépendances (informatif tant que Next.js n'est pas mis à jour)
+# - audit         : aucune vulnérabilité critique dans les dépendances de production
 name: CI
 
 on:
@@ -119,8 +119,9 @@ jobs:
     name: Audit des dépendances
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Informatif : une vulnérabilité critique connue concerne next@15.5.11 (mise à jour à faire).
-    continue-on-error: true
+    # Bloquant pour les vulnérabilités critiques. Restent connues et acceptées (niveau inférieur) :
+    # postcss embarqué par Next.js (compilation de nos propres CSS au build) et esbuild de drizzle-kit
+    # (outil de développement, absent de l'image de production).
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
