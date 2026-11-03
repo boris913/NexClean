@@ -13,6 +13,14 @@ import { listesLieux } from '@/lib/geo/service';
 import { env } from '@/lib/env';
 import { Carte, Pastille, TitrePage } from '@/components/backoffice/ui';
 import * as A from './Actions';
+import { formaterFCFA } from '@/lib/dossiers/formulaire-personnel';
+
+/** MVP1-03 RG-06 : estimation enregistrée dans la Demande (preuve de ce qui a été affiché). */
+function estimationMontree(donnees: unknown): string | null {
+  const e = (donnees as { estimation?: { commission?: unknown; personnes?: unknown; montant?: unknown } } | null)?.estimation;
+  if (!e || typeof e.montant !== 'number' || typeof e.commission !== 'number' || typeof e.personnes !== 'number') return null;
+  return `${formaterFCFA(e.montant)} (${e.personnes} × ${formaterFCFA(e.commission)})`;
+}
 
 export const metadata = { title: 'Dossier' };
 
@@ -127,6 +135,7 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
           {fiche.demandes.map((dem) => (
             <Carte key={dem.id} titre={`Demande n° ${dem.id}`} actions={<span className="text-xs text-ink-500">{formatHorodatage(dem.creeLe)}</span>}>
               <p className="text-sm text-ink-600 mb-2">Canal : {dem.canal} · Formulaire : {dem.formulaire}</p>
+              {estimationMontree(dem.donnees) && <p className="text-sm text-ink-800 mb-2">Estimation montrée au client : {estimationMontree(dem.donnees)}</p>}
               <details>
                 <summary className="cursor-pointer text-sm text-primary py-1">Données reçues (non modifiables)</summary>
                 <pre className="text-xs bg-ink-50 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all">{JSON.stringify(dem.donnees, null, 2)}</pre>

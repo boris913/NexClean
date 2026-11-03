@@ -13,7 +13,8 @@ export type AnalyticsEvent =
   | 'email_click'
   | 'quote_form_submit'
   | 'job_application_submit'
-  | 'product_order_click';
+  | 'product_order_click'
+  | 'staff_request_submit';
 
 declare global {
   interface Window {

@@ -16,6 +16,7 @@ export default async function LayoutPrive({ children }: { children: React.ReactN
     { href: '/admin/dossiers', libelle: 'Dossiers', visible: peut(c.roles, 'dossier.voir_siens') || peut(c.roles, 'dossier.voir_tous') },
     { href: '/admin/collaborateurs', libelle: 'Collaborateurs', visible: peut(c.roles, 'collaborateurs.gerer') || peut(c.roles, 'collaborateurs.attributs') },
     { href: '/admin/referentiel', libelle: 'Référentiel', visible: peut(c.roles, 'referentiel.gerer') },
+    { href: '/admin/parametres', libelle: 'Paramètres', visible: peut(c.roles, 'tarifs.modifier') },
     { href: '/admin/journal', libelle: 'Journal', visible: peut(c.roles, 'audit.consulter') },
     { href: '/admin/securite', libelle: 'Sécurité', visible: true },
   ].filter((l) => l.visible);

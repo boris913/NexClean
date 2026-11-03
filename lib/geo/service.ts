@@ -1,5 +1,5 @@
 // Référentiel géographique : lecture et administration (M1-GEO-01..03, 05).
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { getDb, schema } from '@/lib/db';
 import { journaliser } from '@/lib/audit';
@@ -114,14 +114,19 @@ export async function modifierEntree(
   });
 }
 
-/** Listes pour les formulaires : villes actives (couvertes en tête) et leurs quartiers actifs. */
+/** Listes pour les formulaires : villes actives (couvertes en tête), leurs arrondissements et quartiers actifs. */
 export async function listesLieux() {
   const db = getDb();
-  const [villes, quartiers] = await Promise.all([
-    db.select({ id: schema.ville.id, nom: schema.ville.nom, couverte: schema.ville.couverte }).from(schema.ville).where(eq(schema.ville.actif, true)).orderBy(asc(schema.ville.ordre), asc(schema.ville.nom)),
-    db.select({ id: schema.quartier.id, nom: schema.quartier.nom, villeId: schema.quartier.villeId }).from(schema.quartier).where(eq(schema.quartier.actif, true)).orderBy(asc(schema.quartier.nom)),
+  const [villes, arrondissements, quartiers] = await Promise.all([
+    db.select({ id: schema.ville.id, nom: schema.ville.nom, couverte: schema.ville.couverte }).from(schema.ville).where(eq(schema.ville.actif, true)).orderBy(desc(schema.ville.couverte), asc(schema.ville.ordre), asc(schema.ville.nom)),
+    db.select({ id: schema.arrondissement.id, nom: schema.arrondissement.nom, villeId: schema.arrondissement.villeId }).from(schema.arrondissement).where(eq(schema.arrondissement.actif, true)).orderBy(asc(schema.arrondissement.nom)),
+    db.select({ id: schema.quartier.id, nom: schema.quartier.nom, villeId: schema.quartier.villeId, arrondissementId: schema.quartier.arrondissementId }).from(schema.quartier).where(eq(schema.quartier.actif, true)).orderBy(asc(schema.quartier.nom)),
   ]);
-  return villes.map((v) => ({ ...v, quartiers: quartiers.filter((q) => q.villeId === v.id).map(({ id, nom }) => ({ id, nom })) }));
+  return villes.map((v) => ({
+    ...v,
+    arrondissements: arrondissements.filter((a) => a.villeId === v.id).map(({ id, nom }) => ({ id, nom })),
+    quartiers: quartiers.filter((q) => q.villeId === v.id).map(({ id, nom, arrondissementId }) => ({ id, nom, arrondissementId })),
+  }));
 }
 
 export type ListesLieux = Awaited<ReturnType<typeof listesLieux>>;

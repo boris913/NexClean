@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { MapPin, Briefcase, Users, ShieldCheck, Clock, Heart, ArrowRight } from 'lucide-react';
+import { MapPin, Briefcase, Users, ShieldCheck, Clock, Heart, ArrowRight, Building2 } from 'lucide-react';
 import PageHero from '@/components/ui/PageHero';
 import Button from '@/components/ui/Button';
 import ApplicationForm from './ApplicationForm';
@@ -36,6 +36,25 @@ export default function RecrutementPage() {
           Déposer ma candidature
         </Button>
       </PageHero>
+
+      <section id="placement" className="py-12 bg-brand-50 scroll-mt-24">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-2xl bg-white border border-brand-100 shadow-card p-6 sm:p-8 flex flex-col md:flex-row md:items-center gap-6">
+            <Building2 className="w-10 h-10 text-primary flex-shrink-0" strokeWidth={1.5} />
+            <div className="flex-1">
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">Recrutement &amp; placement de personnel</p>
+              <h2 className="font-display font-bold text-2xl sm:text-3xl text-ink-900 mb-2">Vous cherchez du personnel ?</h2>
+              <p className="text-slate-600">
+                Entreprises, hôtels, restaurants, commerces ou particuliers : décrivez votre besoin, nous sélectionnons et vous présentons des candidats.
+                Estimation immédiate, paiement selon les placements réalisés.
+              </p>
+            </div>
+            <Button href="/recrutement/demander-du-personnel" variant="primary" size="lg" icon={ArrowRight} iconPosition="right">
+              Demander du personnel
+            </Button>
+          </div>
+        </div>
+      </section>
 
       <section className="py-14 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
