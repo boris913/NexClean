@@ -13,6 +13,7 @@ const quickLinks = [
   { name: 'Tarifs', href: '/tarifs' },
   { name: 'À propos', href: '/a-propos' },
   { name: 'Recrutement', href: '/recrutement' },
+  { name: 'Espace candidat', href: '/candidat/connexion' },
   { name: 'Blog', href: '/blog' },
   { name: 'Contact / Devis', href: '/contact' },
 ];

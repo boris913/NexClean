@@ -6,7 +6,7 @@ import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { inputClass, labelClass } from '@/components/forms/WhatsAppForm';
 import { connecter } from '../actions';
 
-export default function FormulaireConnexion() {
+export default function FormulaireConnexion({ retour = '/candidat/espace' }: { retour?: string }) {
   const router = useRouter();
   const [telephone, setTelephone] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
@@ -27,7 +27,7 @@ export default function FormulaireConnexion() {
         try {
           const r = await connecter({ telephone, motDePasse, resterConnecte });
           if (r.ok) {
-            router.replace('/candidat/espace');
+            router.replace(retour);
             router.refresh();
             return;
           }

@@ -4,6 +4,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { AlertTriangle, ChevronRight, FileText, User } from 'lucide-react';
 import { lireEspace } from '@/lib/candidats/service';
+import { lireCandidaturesCandidat } from '@/lib/candidats/candidatures';
+import { STATUTS_CANDIDATURE_CANDIDAT } from '@/lib/candidats/formulaire-candidature';
 import { exigerCandidat } from '@/lib/candidats/session';
 import { FUSEAU } from '@/lib/domain/referentiels';
 import Coque from '../Coque';
@@ -16,12 +18,24 @@ const date = (d: Date) => new Intl.DateTimeFormat('fr-FR', { timeZone: FUSEAU, d
 
 export default async function PageEspace() {
   const session = await exigerCandidat();
-  const e = await lireEspace(session.id);
+  const [e, { profilIncomplet, candidatures }] = await Promise.all([lireEspace(session.id), lireCandidaturesCandidat(session.id)]);
   const { pourcentage, manquants } = e.completude;
 
   return (
     <Coque titre={`Bonjour ${e.candidat.prenom}`} large>
       <div className="space-y-4">
+        {profilIncomplet && (
+          <div role="status" className="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            <AlertTriangle className="w-5 h-5 shrink-0" />
+            <p>
+              <strong>Profil incomplet.</strong> Votre candidature est bien enregistrée. Complétez votre profil (zones de travail, types de contrat, niveau d’études) pour être proposé(e) à d’autres offres :{' '}
+              <Link href="/candidat/espace/profil" className="underline font-semibold">
+                compléter mon profil
+              </Link>
+              .
+            </p>
+          </div>
+        )}
         {e.rappelMiseAJour && (
           <div role="status" className="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
             <AlertTriangle className="w-5 h-5 shrink-0" />
@@ -75,6 +89,28 @@ export default async function PageEspace() {
             Quand un conseiller souhaite présenter votre profil à un employeur, la proposition apparaît ici : vous acceptez ou refusez d’être présenté(e). Rien n’est transmis sans votre accord.
           </p>
           <p className="text-sm text-slate-500">Aucune proposition pour le moment.</p>
+          {candidatures.length > 0 ? (
+            <ul className="divide-y divide-slate-100">
+              {candidatures.map((k) => (
+                <li key={k.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                  <span className="min-w-0">
+                    <Link href={`/recrutement/${k.offreSlug}`} className="font-medium text-ink-900 underline">
+                      {k.offreTitre}
+                    </Link>
+                    <span className="block text-xs text-slate-500">Envoyée le {date(k.creeLe)}</span>
+                  </span>
+                  <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">{STATUTS_CANDIDATURE_CANDIDAT[k.statut]}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-slate-500">
+              Aucune candidature.{' '}
+              <Link href="/recrutement" className="text-primary underline">
+                Voir les offres
+              </Link>
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col gap-3 pt-2">

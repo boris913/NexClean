@@ -1,5 +1,6 @@
+// Fiche d'une offre (content/jobs-data.ts, ADR 0023) et candidature (MVP2-02 RG-07, RG-12).
+// Rendue à la demande : l'encadré « Postuler » dépend de la session candidat.
 import type { Metadata } from 'next';
-import { lireCouverture } from '@/lib/geo/couverture';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -14,12 +15,21 @@ import {
 } from 'lucide-react';
 import PageHero from '@/components/ui/PageHero';
 import Button from '@/components/ui/Button';
-import ApplicationForm from '../ApplicationForm';
-import { jobs, getJobBySlug, openJobs } from '@/content/jobs-data';
+import { getJobBySlug, openJobs } from '@/content/jobs-data';
 import { pageMetadata } from '@/lib/seo';
+import { listesLieux, type ListesLieux } from '@/lib/geo/service';
+import { candidatConnecte } from '@/lib/candidats/session';
+import { aDejaPostule } from '@/lib/candidats/candidatures';
+import { LIBELLE_OFFRE_POURVUE } from '@/lib/candidats/formulaire-candidature';
+import Postuler from './Postuler';
 
-export function generateStaticParams() {
-  return jobs.map((j) => ({ slug: j.slug }));
+export const dynamic = 'force-dynamic';
+
+/** Base injoignable : la fiche reste lisible, le formulaire passe en saisie libre (et en repli WhatsApp). */
+async function contexteCandidature(slug: string): Promise<{ listes: ListesLieux; connecte: { prenom: string } | null; dejaPostule: boolean }> {
+  const [listes, session] = await Promise.all([listesLieux().catch(() => [] as ListesLieux), candidatConnecte().catch(() => null)]);
+  const dejaPostule = session ? await aDejaPostule(session.id, slug).catch(() => false) : false;
+  return { listes, connecte: session ? { prenom: session.prenom } : null, dejaPostule };
 }
 
 export async function generateMetadata({
@@ -63,9 +73,13 @@ export default async function JobDetailPage({
           { name: job.title },
         ]}
       >
-        {job.status === 'open' && (
+        {job.status === 'open' ? (
           <Button href="#candidature" variant="primary" size="lg">
             Postuler à cette offre
+          </Button>
+        ) : (
+          <Button href="/candidat/inscription" variant="primary" size="lg">
+            {LIBELLE_OFFRE_POURVUE}
           </Button>
         )}
         <Button href="/recrutement" variant="secondary" size="lg">
@@ -113,11 +127,11 @@ export default async function JobDetailPage({
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-amber-900">
-              Cette offre est actuellement fermée. Vous pouvez néanmoins déposer une{' '}
-              <Link href="/recrutement#candidature" className="font-semibold underline">
-                candidature spontanée
-              </Link>
-              .
+              Cette offre est pourvue.{' '}
+              <Link href="/candidat/inscription" className="font-semibold underline">
+                Inscrivez-vous gratuitement
+              </Link>{' '}
+              pour être contacté(e) dès qu’une offre correspond à votre profil.
             </p>
           </div>
         </section>
@@ -225,24 +239,25 @@ export default async function JobDetailPage({
         </div>
       </section>
 
-      {/* Formulaire de candidature (offres ouvertes uniquement) */}
-      {job.status === 'open' && (
-        <section
-          id="candidature"
-          className="py-16 sm:py-20 bg-slate-50 scroll-mt-24"
-        >
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Candidature (offres ouvertes) ; offre pourvue : inscription au vivier */}
+      {job.status === 'open' ? (
+        <section id="candidature" className="py-16 sm:py-20 bg-slate-50 scroll-mt-24">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
-              <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink-900 mb-2">
-                Postuler à cette offre
-              </h2>
-              <p className="text-slate-500">
-                Quelques minutes suffisent. Vos données ne sont jamais publiées.
-              </p>
+              <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink-900 mb-2">Postuler à cette offre</h2>
+              <p className="text-slate-500">Quelques minutes suffisent. Vos données ne sont jamais publiées.</p>
             </div>
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-6 lg:p-8">
-              <ApplicationForm defaultPosition={job.category} villes={(await lireCouverture()).villes} />
-            </div>
+            <Postuler offre={{ slug: job.slug, titre: job.title }} metier={job.category === 'Candidature spontanée' ? '' : job.category} {...await contexteCandidature(job.slug)} />
+          </div>
+        </section>
+      ) : (
+        <section id="candidature" className="py-12 sm:py-16 bg-slate-50 scroll-mt-24">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="font-display font-bold text-2xl sm:text-3xl text-ink-900 mb-2">Offre pourvue</h2>
+            <p className="text-slate-600 mb-6">Créez votre profil candidat : un conseiller vous contacte dès qu’une offre vous correspond. C’est gratuit.</p>
+            <Button href="/candidat/inscription" variant="primary" size="lg">
+              {LIBELLE_OFFRE_POURVUE}
+            </Button>
           </div>
         </section>
       )}
