@@ -77,6 +77,8 @@ jobs:
           }
           verifier / 200
           verifier /robots.txt 200
+          verifier /api/version 200
+          grep -q '"commit"' /tmp/page
           verifier /contact 200
           verifier /recrutement 200
           verifier /recrutement/demander-du-personnel 200
@@ -153,15 +155,21 @@ jobs:
           reponse=$(curl -sS --fail-with-body -X POST "https://deploy.nexclean.xyz/api/v1/deploy?uuid=$APPLICATION"             -H "Authorization: Bearer $JETON")
           echo "$reponse"
           echo "$reponse" | grep -q 'deployment_uuid'
-      - name: Site en ligne après déploiement
+      - name: Nouvelle version en ligne
+        env:
+          ATTENDU: ${{ github.sha }}
         run: |
-          set -e
-          # Le build sur le VPS prend quelques minutes ; l'ancienne version reste servie pendant ce temps.
-          sleep 240
-          for i in $(seq 1 30); do
-            code=$(curl -s -o /dev/null -w '%{http_code}' https://nexclean.xyz/)
-            echo "tentative $i : HTTP $code"
-            [ "$code" = "200" ] && exit 0
+          # Le build sur le VPS prend plusieurs minutes ; l'ancienne version reste servie pendant ce temps.
+          # On attend que le site serve exactement le commit fusionné (SOURCE_COMMIT exposé par /api/version).
+          for i in $(seq 1 45); do
+            commit=$(curl -s https://nexclean.xyz/api/version | sed -n 's/.*"commit":"\([^"]*\)".*/\1/p')
+            echo "tentative $i : en ligne ${commit:-?} (attendu $ATTENDU)"
+            if [ "$commit" = "$ATTENDU" ]; then
+              code=$(curl -s -o /dev/null -w '%{http_code}' https://nexclean.xyz/)
+              echo "page d'accueil → HTTP $code"
+              [ "$code" = "200" ] && exit 0
+            fi
             sleep 20
           done
+          echo "::error::La nouvelle version n'est pas en ligne après 15 minutes. Voir les journaux de déploiement dans Coolify."
           exit 1
