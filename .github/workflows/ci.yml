@@ -3,6 +3,7 @@
 # - docker        : image de production + PostgreSQL (composition du VPS), migrations au démarrage,
 #                   pages publiques et Back-Office, script d'initialisation, tâche planifiée
 # - audit         : aucune vulnérabilité critique dans les dépendances de production
+# - e2e           : parcours principaux sur mobile 375 px (Playwright) contre l'image de production
 # - deploiement   : sur main uniquement, si tout est vert, déploiement en production via Coolify
 name: CI
 
@@ -132,10 +133,56 @@ jobs:
           node-version: 24
       - run: npm audit --omit=dev --audit-level=critical
 
+  e2e:
+    name: Parcours de bout en bout (mobile 375 px)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      POSTGRES_PASSWORD: ci-mot-de-passe-postgres
+      BETTER_AUTH_SECRET: ci-secret-uniquement-pour-les-tests-0123456789
+      BETTER_AUTH_URL: http://localhost:3000
+      COMPOSE: docker compose -f docker-compose.yml -f .github/ci/compose.ci.yml
+      E2E_BASE_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Navigateur Chromium (Playwright)
+        run: npx playwright install --with-deps chromium
+      - name: Application de production + PostgreSQL (base vierge)
+        run: $COMPOSE up -d --build --wait --wait-timeout 180
+      - name: Premier administrateur (lien d'activation pour le parcours)
+        run: |
+          set -e
+          lien=$($COMPOSE exec -T app node dist-scripts/initialiser.cjs --nom "CI Admin" --email ci@nexclean.test | grep -o 'http://localhost:3000/admin/activation/[A-Za-z0-9_-]*' | head -1)
+          [ -n "$lien" ]
+          echo "::add-mask::$lien"
+          echo "E2E_LIEN_ACTIVATION=$lien" >> "$GITHUB_ENV"
+      - name: Parcours Playwright
+        run: npx playwright test
+      - name: Rapport et traces en cas d'échec
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-playwright
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+      - name: Journaux de l'application en cas d'échec
+        if: failure()
+        run: $COMPOSE logs --no-color --tail 200
+      - name: Arrêt
+        if: always()
+        run: $COMPOSE down -v
+
   deploiement:
     name: Déploiement en production (Coolify)
     # Uniquement après un push sur main (fusion d'une PR), et seulement si toutes les vérifications sont vertes.
-    needs: [verifications, docker, audit]
+    needs: [verifications, docker, audit, e2e]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20

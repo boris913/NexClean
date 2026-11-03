@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "db:generer": "drizzle-kit generate",
     "db:migrer": "tsx --env-file-if-exists=.env.local scripts/migrer.ts",
     "initialiser": "tsx --env-file-if-exists=.env.local scripts/initialiser.ts",
@@ -34,6 +35,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^24.19.2",
     "@types/qrcode": "^1.5.6",
