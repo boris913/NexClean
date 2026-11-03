@@ -2,7 +2,8 @@
 # Sauvegarde quotidienne chiffrée (M1-SOC-05) : base PostgreSQL + documents → stockage
 # objet externe via restic. Rétention 30 jours. À lancer par cron sur le VPS (voir
 # docs/exploitation.md). Signale le succès / l'échec à un service de surveillance
-# (M1-SOC-06) via l'URL de ping SURVEILLANCE_PING_URL (ex. Healthchecks.io).
+# (M1-SOC-06) via l'URL de ping SURVEILLANCE_PING_URL (ex. Healthchecks.io), et envoie une
+# alerte e-mail en cas d'échec (alerte.sh).
 #
 # Variables attendues (fichier /etc/nexclean/sauvegarde.env, lisible par root seul) :
 #   RESTIC_REPOSITORY      ex. s3:https://eu2.contabostorage.com/nexclean-sauvegardes
@@ -18,7 +19,14 @@ set -euo pipefail
 set -a; source /etc/nexclean/sauvegarde.env; set +a
 
 ping() { [ -n "${SURVEILLANCE_PING_URL:-}" ] && curl -fsS -m 10 --retry 3 "${SURVEILLANCE_PING_URL}$1" >/dev/null || true; }
-trap 'ping /fail' ERR
+echec() {
+  ping /fail
+  # Alerte e-mail directe (M1-SOC-06), indépendante du service de ping.
+  [ -x /opt/nexclean/alerte.sh ] && /opt/nexclean/alerte.sh "Échec de la sauvegarde nocturne"     "La sauvegarde ${horodatage:-} a échoué (ligne $1 de sauvegarde.sh). Les sauvegardes précédentes restent intactes.
+
+Voir : tail -50 /var/log/nexclean-sauvegarde.log, puis relancer /opt/nexclean/sauvegarde.sh à la main." || true
+}
+trap 'echec $LINENO' ERR
 
 ping /start
 horodatage=$(date -u +%Y%m%dT%H%M%SZ)
@@ -43,4 +51,6 @@ restic forget --group-by host,tags --keep-daily 30 --prune
 restic check --read-data-subset=5%
 
 echo "$(date -u +%FT%TZ) sauvegarde ${horodatage} terminée"
+# Marque de la dernière réussite, lue par surveillance.sh (fraîcheur des sauvegardes).
+touch /var/lib/nexclean-sauvegarde-ok
 ping ""
