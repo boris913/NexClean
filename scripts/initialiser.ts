@@ -1,6 +1,7 @@
 // Initialisation d'une installation (M1-AUT-09, M1-GEO-02), à exécuter sur le serveur :
 //   npm run initialiser -- --nom "Prénom Nom" --email adresse@nexclean.xyz
 // - insère le référentiel géographique initial (idempotent) ;
+// - ajoute les modèles WhatsApp candidat manquants (MVP2-02, idempotent) ;
 // - crée le premier compte Administrateur + Direction s'il n'existe aucun administrateur,
 //   et affiche son lien d'activation (valable 48 h).
 import { parseArgs } from 'node:util';
@@ -8,12 +9,14 @@ import { and, eq } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { initialiserReferentiel } from '@/lib/geo/service';
 import { creerCollaborateur } from '@/lib/collaborateurs/service';
+import { initialiserModelesCandidat } from '@/lib/candidats/fiche';
 
 const { values } = parseArgs({ options: { nom: { type: 'string' }, email: { type: 'string' } } });
 
 async function main() {
   const ref = await initialiserReferentiel();
   console.log(`Référentiel : ${ref.villes} ville(s), ${ref.arrondissements} arrondissement(s), ${ref.quartiers} quartier(s) ajoutés.`);
+  console.log(`Modèles WhatsApp candidat : ${await initialiserModelesCandidat()} ajouté(s).`);
 
   const admins = await getDb()
     .select({ id: schema.user.id })

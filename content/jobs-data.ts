@@ -284,5 +284,3 @@ export const jobs: Job[] = [
 export const openJobs = jobs.filter((j) => j.status === 'open');
 
 export const getJobBySlug = (slug: string) => jobs.find((j) => j.slug === slug);
-
-export const CV_MAX_SIZE_MB = 4;

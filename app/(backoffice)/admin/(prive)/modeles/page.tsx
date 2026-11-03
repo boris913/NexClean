@@ -13,7 +13,7 @@ export default async function PageModeles() {
     <>
       <TitrePage titre="Modèles de messages WhatsApp" />
       <p className="text-sm text-ink-600 mb-4">
-        Proposés dans chaque dossier (« Envoyer sur WhatsApp »). Le référent peut modifier le texte avant l’envoi ; aucun message n’est envoyé automatiquement.
+        Proposés dans chaque dossier, ou sur la fiche candidat pour les modèles qui utilisent des variables « candidat » (« Envoyer sur WhatsApp »). Le référent peut modifier le texte avant l’envoi ; aucun message n’est envoyé automatiquement.
       </p>
       <div className="space-y-3">
         <EditeurModele modele={null} />

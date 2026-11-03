@@ -12,6 +12,7 @@ import { getStockage, nouvelleCle } from '@/lib/fichiers/stockage';
 import { validerFichier } from '@/lib/fichiers/validation';
 import { idsDirection, notifier } from '@/lib/notifications';
 import { normaliserTelephone } from '@/lib/telephone';
+import { attribuerCandidat } from './attribution';
 import {
   CONSENTEMENTS,
   JOURS_AVANT_SUPPRESSION,
@@ -108,6 +109,8 @@ export async function inscrireCandidat(
       (Object.keys(CONSENTEMENTS) as TypeConsentement[]).map((type) => ({ candidatId: c.id, type, version: CONSENTEMENTS[type].version, canal, ip: contexte.ip })),
     );
     await journaliser({ ...acteur(c.id, contexte.ip), action: 'candidat.inscrit', objetType: 'candidat', objetId: c.id, details: { canal } }, tx);
+    // MVP2-02 RG-01 : file « Nouveaux candidats » du référent recrutement de sa ville.
+    await attribuerCandidat(tx, c.id);
     return { candidatId: c.id };
   });
 }
@@ -466,6 +469,8 @@ export async function executerSuppressionsDues(maintenant = new Date()): Promise
       await tx.delete(schema.candidatSession).where(eq(schema.candidatSession.candidatId, c.id));
       await tx.delete(schema.candidatJeton).where(eq(schema.candidatJeton.candidatId, c.id));
       await tx.delete(schema.candidatDemandeReinitialisation).where(eq(schema.candidatDemandeReinitialisation.candidatId, c.id));
+      // RG-17 : les Candidatures sont supprimées (MVP2-02).
+      await tx.delete(schema.candidature).where(eq(schema.candidature.candidatId, c.id));
       await tx
         .update(schema.candidat)
         .set({

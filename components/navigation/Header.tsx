@@ -36,6 +36,8 @@ export const navLinks: NavLink[] = [
     href: '/recrutement',
     children: [
       { name: 'Offres d’emploi & candidature', href: '/recrutement', description: 'Rejoindre NexClean' },
+      { name: 'Créer mon profil candidat', href: '/candidat/inscription', description: 'Inscription gratuite des demandeurs d’emploi' },
+      { name: 'Espace candidat', href: '/candidat/connexion', description: 'Profil, CV et candidatures' },
       { name: 'Demander du personnel', href: '/recrutement/demander-du-personnel', description: 'Recrutement & placement pour votre structure' },
     ],
   },

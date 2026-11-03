@@ -9,6 +9,7 @@ import { DOSSIER_TYPES } from '@/lib/domain/referentiels';
 import { dateLocale, estApresHuitHeuresUnJourOuvre, prochaineEscalade } from '@/lib/dossiers/heures-ouvrees';
 import { STATUTS_FINAUX } from '@/lib/dossiers/statuts';
 import { executerSuppressionsDues } from '@/lib/candidats/service';
+import { alerterCandidatsNonTraites, escaladerCandidatsNonAttribues } from '@/lib/candidats/escalade';
 
 const JOUR_MS = 24 * 60 * 60 * 1000;
 
@@ -90,7 +91,10 @@ export async function executerTaches(maintenant = new Date()) {
   const sansAction = await signalerSansAction(maintenant);
   // MVP2-01 RG-16 : suppressions de comptes candidats arrivées à échéance.
   const suppressionsCandidats = await executerSuppressionsDues(maintenant);
+  // MVP2-02 RG-03 : candidats non attribués (Direction) et nouveaux candidats non traités (référent).
+  const escaladesCandidats = await escaladerCandidatsNonAttribues(maintenant);
+  const candidatsNonTraites = await alerterCandidatsNonTraites(maintenant);
   const emails = await envoyerNotificationsEnAttente(200);
-  return { escalades, sansAction, suppressionsCandidats, emails };
+  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, emails };
 }
 

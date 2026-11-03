@@ -10,6 +10,7 @@ import { ErreurMetier } from '@/lib/collaborateurs/service';
 import { controlerEnvoi } from '@/lib/dossiers/anti-abus';
 import { brouillonCandidatVide, type BrouillonCandidat } from '@/lib/candidats/domaine';
 import * as svc from '@/lib/candidats/service';
+import { marquerProfilComplet } from '@/lib/candidats/candidatures';
 import { candidatConnecte, exigerCandidat, fermerSession, ouvrirSession } from '@/lib/candidats/session';
 
 const ip = async () => ipDepuisEnTetes(await headers());
@@ -80,7 +81,10 @@ export async function reinitialiser(jeton: string, motDePasse: string, confirmat
 export async function modifierProfil(entree: unknown): Promise<ResultatAction> {
   return executer(async () => {
     const c = await exigerCandidat();
-    await svc.modifierProfil(c.id, brouillon(entree), await ip());
+    const adresse = await ip();
+    await svc.modifierProfil(c.id, brouillon(entree), adresse);
+    // Profil complet validé (MVP2-01) : un compte léger créé par une candidature (MVP2-02 RG-07) ne l'est plus.
+    await marquerProfilComplet(c.id, adresse);
     return 'Profil enregistré.';
   });
 }

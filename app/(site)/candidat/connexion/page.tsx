@@ -9,8 +9,12 @@ import FormulaireConnexion from './FormulaireConnexion';
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Connexion candidat', robots: { index: false, follow: false } };
 
-export default async function PageConnexion() {
-  if (await candidatConnecte()) redirect('/candidat/espace');
+/** Retour après connexion (ex. fiche d'offre pour postuler, MVP2-02) : chemin interne du site seulement. */
+const retourSur = (r: string | undefined) => (r && /^\/(recrutement|candidat\/espace)([/#?]|$)/.test(r) ? r : '/candidat/espace');
+
+export default async function PageConnexion({ searchParams }: { searchParams: Promise<{ retour?: string }> }) {
+  const retour = retourSur((await searchParams).retour);
+  if (await candidatConnecte()) redirect(retour);
   return (
     <Coque
       titre="Se connecter"
@@ -23,7 +27,7 @@ export default async function PageConnexion() {
         </p>
       }
     >
-      <FormulaireConnexion />
+      <FormulaireConnexion retour={retour} />
     </Coque>
   );
 }

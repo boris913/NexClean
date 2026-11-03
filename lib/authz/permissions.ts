@@ -11,7 +11,14 @@ export const PERMISSIONS = {
   'dossier.reaffecter': ['direction'],
   'dossier.rouvrir': ['direction'],
   'ligne_poste.voir_salaire': ['referent', 'direction'],
+  /** Vivier et fiches candidats. Pour un Référent, il faut en plus le service Recrutement (lib/candidats/acces.ts). */
   'candidat.voir': ['referent', 'direction'],
+  /** Statut, notes, réinitialisation assistée, changement de numéro (MVP2-02). */
+  'candidat.traiter': ['referent', 'direction'],
+  /** Réaffecter un candidat ou une candidature, traiter la file « Non attribués ». */
+  'candidat.reaffecter': ['direction'],
+  /** Désigner le référent responsable d'une offre (MVP2-02 RG-10). */
+  'offre.responsables': ['direction'],
   'encaissement.enregistrer': ['referent', 'finances', 'direction'],
   'remboursement.valider': ['direction'],
   'finances.tableau_de_bord': ['finances', 'direction'],

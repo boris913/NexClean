@@ -19,6 +19,9 @@ import { evaluerCandidats } from '@/lib/dossiers/attribution';
 import { contexteDossier, listerModeles } from '@/lib/modeles/service';
 import { rendreMessage } from '@/lib/modeles/variables';
 import { estFinal } from '@/lib/dossiers/statuts';
+import { peutAccederVivier } from '@/lib/candidats/acces';
+import { lienTrouverCandidats } from '@/lib/candidats/recherche';
+import { quartiersGeolocalises } from '@/lib/candidats/vivier';
 
 /** MVP1-03 RG-06 : estimation enregistrée dans la Demande (preuve de ce qui a été affiché). */
 function estimationMontree(donnees: unknown): string | null {
@@ -87,6 +90,11 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
       : [];
   // Dossier sans référent : l'attribution est l'action principale (en tête) ; sinon en fin de résumé.
   const reaffectation = peutReaffecter ? <A.Reaffecter dossierId={d.id} referentActuel={d.referentId} candidats={candidats.map(({ id, nom, charge, raisons }) => ({ id, nom, charge, raisons }))} /> : null;
+  // MVP2-02 RG-16 : « Trouver des candidats » depuis une ligne de poste (accès au vivier requis).
+  const trouver =
+    onglet === 'postes' && d.type === 'REC' && fiche.lignes.length > 0 && (await peutAccederVivier(c))
+      ? { villeId: d.villeId, quartierId: d.quartierId, quartierGeolocalise: !!d.quartierId && (await quartiersGeolocalises([d.quartierId])).has(d.quartierId) }
+      : null;
   const coordonneesDifferentes = !!recu && (recu.nom !== client.nom || (recu.contact ?? null) !== (client.contact ?? null) || (!!recu.email && recu.email !== client.email));
 
   return (
@@ -179,6 +187,20 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
                 </li>
               ))}
             </ul>
+          )}
+          {trouver && (
+            <div className="mt-4 pt-3 border-t border-ink-100">
+              <h3 className="text-sm font-semibold text-ink-900 mb-2">Trouver des candidats</h3>
+              <ul className="flex flex-wrap gap-2">
+                {fiche.lignes.map((l) => (
+                  <li key={l.id}>
+                    <Link href={lienTrouverCandidats(l, trouver)} className="inline-flex items-center min-h-11 px-3 rounded-lg border border-ink-200 text-sm font-medium text-primary hover:border-primary">
+                      Trouver des candidats : {l.intitule}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </Carte>
       )}
