@@ -13,6 +13,7 @@ export default async function LayoutPrive({ children }: { children: React.ReactN
 
   const liens = [
     { href: '/admin', libelle: 'Accueil', visible: true },
+    { href: '/admin/dossiers', libelle: 'Dossiers', visible: peut(c.roles, 'dossier.voir_siens') || peut(c.roles, 'dossier.voir_tous') },
     { href: '/admin/collaborateurs', libelle: 'Collaborateurs', visible: peut(c.roles, 'collaborateurs.gerer') || peut(c.roles, 'collaborateurs.attributs') },
     { href: '/admin/referentiel', libelle: 'Référentiel', visible: peut(c.roles, 'referentiel.gerer') },
     { href: '/admin/journal', libelle: 'Journal', visible: peut(c.roles, 'audit.consulter') },

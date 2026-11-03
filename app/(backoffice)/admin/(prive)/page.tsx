@@ -7,6 +7,7 @@ import { Carte, TitrePage } from '@/components/backoffice/ui';
 export default async function Accueil() {
   const c = await exigerCollaborateur();
   const raccourcis = [
+    { href: '/admin/dossiers', titre: peut(c.roles, 'dossier.voir_tous') ? 'Dossiers' : 'Mes dossiers', texte: 'Demandes, statuts, documents, suivi client', visible: peut(c.roles, 'dossier.voir_siens') || peut(c.roles, 'dossier.voir_tous') },
     { href: '/admin/collaborateurs', titre: 'Collaborateurs', texte: 'Comptes, rôles, services et villes', visible: peut(c.roles, 'collaborateurs.gerer') || peut(c.roles, 'collaborateurs.attributs') },
     { href: '/admin/referentiel', titre: 'Référentiel géographique', texte: 'Villes, arrondissements, quartiers', visible: peut(c.roles, 'referentiel.gerer') },
     { href: '/admin/journal', titre: "Journal d'audit", texte: 'Actions sensibles et connexions', visible: peut(c.roles, 'audit.consulter') },

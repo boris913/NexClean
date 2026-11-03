@@ -176,7 +176,8 @@ export async function creerDemande(entree: NouvelleDemande, auteur?: Acteur | nu
       if (doublon) return { dossierId: doublon.dossierId, numero: doublon.numero, jetonSuivi: doublon.jeton, doublon: true, coordonneesDifferentes };
     }
 
-    const donneesDemande = { ...d.donnees };
+    // Instantané des coordonnées saisies, pour proposer leur mise à jour au référent (RG-04).
+    const donneesDemande = { ...d.donnees, client: { ...d.client, whatsapp, autreTelephone } };
     const valeursDemande = { clientId, canal: d.canal, formulaire: d.formulaire, donnees: donneesDemande, empreinte, auteurId: auteur?.id ?? null };
 
     // Rattachement direct à un dossier existant (saisie manuelle).

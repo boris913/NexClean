@@ -23,7 +23,8 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: process.cwd(),
 
   // forbidden() / unauthorized() pour les refus d'accès du Back-Office (M1-ROL-03).
-  experimental: { authInterrupts: true },
+  // Documents jusqu'à 5 Mo via les actions serveur (M1-DOC-02).
+  experimental: { authInterrupts: true, serverActions: { bodySizeLimit: '6mb' } },
 
   // Module natif : ne pas l'empaqueter.
   serverExternalPackages: ['@node-rs/argon2'],

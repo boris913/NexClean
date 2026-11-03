@@ -113,3 +113,15 @@ export async function modifierEntree(
     await journaliser({ ...auteurAudit(auteur), action: `referentiel.${entite}_modifie`, objetType: entite, objetId: id, avant, apres }, tx);
   });
 }
+
+/** Listes pour les formulaires : villes actives (couvertes en tête) et leurs quartiers actifs. */
+export async function listesLieux() {
+  const db = getDb();
+  const [villes, quartiers] = await Promise.all([
+    db.select({ id: schema.ville.id, nom: schema.ville.nom, couverte: schema.ville.couverte }).from(schema.ville).where(eq(schema.ville.actif, true)).orderBy(asc(schema.ville.ordre), asc(schema.ville.nom)),
+    db.select({ id: schema.quartier.id, nom: schema.quartier.nom, villeId: schema.quartier.villeId }).from(schema.quartier).where(eq(schema.quartier.actif, true)).orderBy(asc(schema.quartier.nom)),
+  ]);
+  return villes.map((v) => ({ ...v, quartiers: quartiers.filter((q) => q.villeId === v.id).map(({ id, nom }) => ({ id, nom })) }));
+}
+
+export type ListesLieux = Awaited<ReturnType<typeof listesLieux>>;
