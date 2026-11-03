@@ -3,6 +3,7 @@
 # - docker        : image de production + PostgreSQL (composition du VPS), migrations au démarrage,
 #                   pages publiques et Back-Office, script d'initialisation, tâche planifiée
 # - audit         : aucune vulnérabilité critique dans les dépendances de production
+# - deploiement   : sur main uniquement, si tout est vert, déploiement en production via Coolify
 name: CI
 
 on:
@@ -128,3 +129,39 @@ jobs:
         with:
           node-version: 24
       - run: npm audit --omit=dev --audit-level=critical
+
+  deploiement:
+    name: Déploiement en production (Coolify)
+    # Uniquement après un push sur main (fusion d'une PR), et seulement si toutes les vérifications sont vertes.
+    needs: [verifications, docker, audit]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Un déploiement en cours n'est jamais interrompu par le suivant : ils s'enchaînent.
+    concurrency:
+      group: deploiement-production
+      cancel-in-progress: false
+    steps:
+      # Seul point d'entrée public de Coolify : POST https://deploy.nexclean.xyz/api/v1/deploy (route Traefik dédiée),
+      # avec un jeton limité au droit « deploy » (ne peut ni lire ni modifier la configuration).
+      - name: Lancement du déploiement
+        env:
+          JETON: ${{ secrets.COOLIFY_DEPLOY_TOKEN }}
+          APPLICATION: ${{ vars.COOLIFY_APP_UUID }}
+        run: |
+          set -e
+          reponse=$(curl -sS --fail-with-body -X POST "https://deploy.nexclean.xyz/api/v1/deploy?uuid=$APPLICATION"             -H "Authorization: Bearer $JETON")
+          echo "$reponse"
+          echo "$reponse" | grep -q 'deployment_uuid'
+      - name: Site en ligne après déploiement
+        run: |
+          set -e
+          # Le build sur le VPS prend quelques minutes ; l'ancienne version reste servie pendant ce temps.
+          sleep 240
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' https://nexclean.xyz/)
+            echo "tentative $i : HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 20
+          done
+          exit 1
