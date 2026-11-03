@@ -12,6 +12,7 @@ import { getStockage, nouvelleCle } from '@/lib/fichiers/stockage';
 import { validerFichier } from '@/lib/fichiers/validation';
 import { idsDirection, notifier } from '@/lib/notifications';
 import { normaliserTelephone } from '@/lib/telephone';
+import { attribuerCandidat } from './attribution';
 import {
   CONSENTEMENTS,
   JOURS_AVANT_SUPPRESSION,
@@ -108,6 +109,8 @@ export async function inscrireCandidat(
       (Object.keys(CONSENTEMENTS) as TypeConsentement[]).map((type) => ({ candidatId: c.id, type, version: CONSENTEMENTS[type].version, canal, ip: contexte.ip })),
     );
     await journaliser({ ...acteur(c.id, contexte.ip), action: 'candidat.inscrit', objetType: 'candidat', objetId: c.id, details: { canal } }, tx);
+    // MVP2-02 RG-01 : file « Nouveaux candidats » du référent recrutement de sa ville.
+    await attribuerCandidat(tx, c.id);
     return { candidatId: c.id };
   });
 }

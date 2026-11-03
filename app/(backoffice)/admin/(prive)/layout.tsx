@@ -7,15 +7,18 @@ import { peut } from '@/lib/authz/permissions';
 import { ROLES } from '@/lib/domain/referentiels';
 import BoutonDeconnexion from './BoutonDeconnexion';
 import { compterNonLues } from '@/lib/notifications';
+import { peutAccederVivier } from '@/lib/candidats/acces';
 
 export default async function LayoutPrive({ children }: { children: React.ReactNode }) {
   const c = await collaborateurCourant();
   if (!c) redirect('/admin/connexion');
-  const nonLues = await compterNonLues(c.id);
+  const [nonLues, vivier] = await Promise.all([compterNonLues(c.id), peutAccederVivier(c)]);
 
   const liens = [
     { href: '/admin', libelle: 'Accueil', visible: true },
     { href: '/admin/dossiers', libelle: 'Dossiers', visible: peut(c.roles, 'dossier.voir_siens') || peut(c.roles, 'dossier.voir_tous') },
+    { href: '/admin/candidats', libelle: 'Candidats', visible: vivier },
+    { href: '/admin/candidatures', libelle: 'Candidatures', visible: vivier },
     { href: '/admin/attribution', libelle: 'Attribution', visible: peut(c.roles, 'dossier.reaffecter') },
     { href: '/admin/collaborateurs', libelle: 'Collaborateurs', visible: peut(c.roles, 'collaborateurs.gerer') || peut(c.roles, 'collaborateurs.attributs') },
     { href: '/admin/referentiel', libelle: 'Référentiel', visible: peut(c.roles, 'referentiel.gerer') },
