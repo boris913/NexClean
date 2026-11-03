@@ -1,0 +1,130 @@
+# Intégration continue NEXCLEAN.
+# - verifications : types, tests unitaires + intégration sur un vrai PostgreSQL 16, build Next.js
+# - docker        : image de production + PostgreSQL (composition du VPS), migrations au démarrage,
+#                   pages publiques et Back-Office, script d'initialisation, tâche planifiée
+# - audit         : aucune vulnérabilité critique dans les dépendances de production
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verifications:
+    name: Types, tests (PostgreSQL 16), build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          # Le garde-fou des tests exige un nom de base en « _test ».
+          POSTGRES_DB: nexclean_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d nexclean_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+      DATABASE_URL_TEST: postgresql://postgres:postgres@localhost:5432/nexclean_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Vérification des types
+        run: npm run typecheck
+      - name: Tests unitaires et d'intégration
+        run: npm test
+      - name: Build Next.js
+        run: npm run build
+      - name: Build des scripts d'exploitation
+        run: npm run build:scripts
+
+  docker:
+    name: Image Docker + PostgreSQL (essai de démarrage)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      POSTGRES_PASSWORD: ci-mot-de-passe-postgres
+      BETTER_AUTH_SECRET: ci-secret-uniquement-pour-les-tests-0123456789
+      BETTER_AUTH_URL: http://localhost:3000
+      COMPOSE: docker compose -f docker-compose.yml -f .github/ci/compose.ci.yml
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construction et démarrage (migrations appliquées par l'entrypoint)
+        run: $COMPOSE up -d --build --wait --wait-timeout 180
+      - name: Pages publiques et Back-Office
+        run: |
+          set -e
+          verifier() {
+            code=$(curl -s -o /tmp/page -w '%{http_code}' "http://localhost:3000$1")
+            echo "$1 → HTTP $code"
+            [ "$code" = "$2" ] || { head -c 2000 /tmp/page; exit 1; }
+          }
+          verifier / 200
+          verifier /robots.txt 200
+          verifier /contact 200
+          verifier /recrutement 200
+          verifier /recrutement/demander-du-personnel 200
+          verifier /admin/connexion 200
+          verifier /suivi/jeton-inexistant 200
+          grep -q 'Lien invalide ou expiré' /tmp/page
+          # Sans session, le Back-Office renvoie vers la connexion.
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/admin/dossiers)
+          echo "/admin/dossiers (sans session) → HTTP $code"
+          [ "$code" = "307" ]
+      - name: Initialisation (référentiel + premier administrateur)
+        run: |
+          set -e
+          $COMPOSE exec -T app node dist-scripts/initialiser.cjs --nom "CI Admin" --email ci@nexclean.test | tee /tmp/init
+          grep -q "Lien d'activation" /tmp/init
+          lien=$(grep -o 'http://localhost:3000/admin/activation/[A-Za-z0-9_-]*' /tmp/init | head -1)
+          code=$(curl -s -o /tmp/page -w '%{http_code}' "$lien")
+          echo "page d'activation → HTTP $code"
+          [ "$code" = "200" ]
+          grep -q 'Activer mon compte' /tmp/page
+      - name: Tâche planifiée et purge
+        run: |
+          set -e
+          $COMPOSE exec -T app node dist-scripts/taches.cjs
+          $COMPOSE exec -T app node dist-scripts/purger-documents.cjs
+      - name: Redémarrage (migrations déjà appliquées, données conservées)
+        run: |
+          set -e
+          $COMPOSE restart app
+          $COMPOSE up -d --wait --wait-timeout 120
+          $COMPOSE exec -T app node dist-scripts/initialiser.cjs --nom "CI Admin" --email ci@nexclean.test | tee /tmp/init2
+          grep -q 'Un administrateur actif existe déjà' /tmp/init2
+      - name: Journaux en cas d'échec
+        if: failure()
+        run: $COMPOSE logs --no-color --tail 200
+      - name: Arrêt
+        if: always()
+        run: $COMPOSE down -v
+
+  audit:
+    name: Audit des dépendances
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Bloquant pour les vulnérabilités critiques. Restent connues et acceptées (niveau inférieur) :
+    # postcss embarqué par Next.js (compilation de nos propres CSS au build) et esbuild de drizzle-kit
+    # (outil de développement, absent de l'image de production).
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm audit --omit=dev --audit-level=critical

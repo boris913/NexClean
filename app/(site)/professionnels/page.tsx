@@ -65,6 +65,22 @@ export default function ProfessionnelsPage() {
       />
       <SubscriptionsSection />
 
+      <section className="py-12 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-2xl border border-brand-100 bg-brand-50 p-6 sm:p-8 flex flex-col md:flex-row md:items-center gap-5">
+            <div className="flex-1">
+              <h2 className="font-display font-bold text-2xl text-ink-900 mb-1">Besoin de personnel pour votre structure ?</h2>
+              <p className="text-slate-600">
+                Agents d&apos;entretien, serveurs, cuisiniers, réceptionnistes, gardiens… NEXCLEAN recrute et place des candidats sélectionnés.
+              </p>
+            </div>
+            <Button href="/recrutement/demander-du-personnel" variant="primary" size="lg">
+              Demander du personnel
+            </Button>
+          </div>
+        </div>
+      </section>
+
       <section id="devis-pro" className="py-16 sm:py-20 bg-slate-50 scroll-mt-24">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">

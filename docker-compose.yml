@@ -1,0 +1,40 @@
+# Composition de référence pour Coolify (ADR 0002). PostgreSQL n'est exposé qu'au
+# réseau interne : aucun port publié (M1-SOC-02). Les secrets sont définis dans
+# l'interface Coolify, jamais dans ce fichier (M1-SOC-07).
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://nexclean:${POSTGRES_PASSWORD}@db:5432/nexclean
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-https://nexclean.xyz}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      BACKOFFICE_FROM_EMAIL: ${BACKOFFICE_FROM_EMAIL:-NexClean <no-reply@nexclean.xyz>}
+      STORAGE_DIR: /data/documents
+    volumes:
+      - documents:/data/documents
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "3000"
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nexclean
+      POSTGRES_USER: nexclean
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexclean -d nexclean"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  documents:
+  pgdata:

@@ -31,7 +31,14 @@ export const navLinks: NavLink[] = [
   { name: 'Boutique', href: '/boutique' },
   { name: 'Tarifs', href: '/tarifs' },
   { name: 'À propos', href: '/a-propos' },
-  { name: 'Recrutement', href: '/recrutement' },
+  {
+    name: 'Recrutement',
+    href: '/recrutement',
+    children: [
+      { name: 'Offres d’emploi & candidature', href: '/recrutement', description: 'Rejoindre NexClean' },
+      { name: 'Demander du personnel', href: '/recrutement/demander-du-personnel', description: 'Recrutement & placement pour votre structure' },
+    ],
+  },
   { name: 'Blog', href: '/blog' },
 ];
 
@@ -39,8 +46,9 @@ export default function Header() {
   const pathname = usePathname() || '/';
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  // Sous-menu ouvert (un seul à la fois) ; la référence englobe toute la navigation.
+  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -58,12 +66,12 @@ export default function Header() {
   // Fermer menus à chaque navigation
   useEffect(() => {
     setMenuOpen(false);
-    setDropdownOpen(false);
+    setDropdownOpen(null);
   }, [pathname]);
 
   useEffect(() => {
     const onClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setDropdownOpen(false);
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setDropdownOpen(null);
     };
     document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
@@ -89,22 +97,22 @@ export default function Header() {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden xl:flex items-center gap-5 xl:gap-7" aria-label="Navigation principale">
+          <nav ref={dropdownRef} className="hidden xl:flex items-center gap-5 xl:gap-7" aria-label="Navigation principale">
             {navLinks.filter((l) => l.href !== '/').map((link) =>
               link.children ? (
-                <div key={link.name} className="relative" ref={dropdownRef}>
+                <div key={link.name} className="relative">
                   <button
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    aria-expanded={dropdownOpen}
+                    onClick={() => setDropdownOpen(dropdownOpen === link.name ? null : link.name)}
+                    aria-expanded={dropdownOpen === link.name}
                     aria-haspopup="true"
                     className={`flex items-center gap-1 text-sm font-medium transition-colors ${
                       isActive(link) ? 'text-primary' : 'text-slate-700 hover:text-primary'
                     }`}
                   >
                     {link.name}
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${dropdownOpen === link.name ? 'rotate-180' : ''}`} />
                   </button>
-                  {dropdownOpen && (
+                  {dropdownOpen === link.name && (
                     <div className="absolute left-1/2 -translate-x-1/2 top-full mt-4 w-80 bg-white rounded-2xl border border-ink-100 shadow-card-hover p-2 animate-slide-down">
                       {link.children.map((child) => (
                         <Link

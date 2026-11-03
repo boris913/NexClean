@@ -35,3 +35,7 @@ next-env.d.ts
 # env files
 .env
 /.next-preview/
+
+# documents du Back-Office (ADR 0003) — jamais versionnés
+/storage/
+/dist-scripts/

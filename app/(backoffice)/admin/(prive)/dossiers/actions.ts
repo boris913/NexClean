@@ -1,0 +1,134 @@
+'use server';
+// Actions sur les dossiers. Les droits sont revérifiés côté serveur à chaque appel
+// (exigerCollaborateur + contrôles par dossier dans lib/dossiers/service.ts).
+import { revalidatePath } from 'next/cache';
+import { exigerCollaborateur } from '@/lib/authz/session';
+import { executer } from '@/lib/actions';
+import { ErreurMetier } from '@/lib/collaborateurs/service';
+import * as svc from '@/lib/dossiers/service';
+import type { Statut } from '@/lib/dossiers/statuts';
+import type { DossierType } from '@/lib/domain/referentiels';
+
+async function acteur() {
+  const c = await exigerCollaborateur({ permission: 'dossier.traiter' });
+  return { id: c.id, roles: c.roles, ip: c.ip };
+}
+
+const rafraichir = (id: number) => {
+  revalidatePath(`/admin/dossiers/${id}`);
+  revalidatePath('/admin/dossiers');
+};
+
+export async function saisirDemande(entree: svc.NouvelleDemande) {
+  return executer(async () => {
+    const r = await svc.creerDemande(entree, await acteur());
+    revalidatePath('/admin/dossiers');
+    return String(r.dossierId);
+  });
+}
+
+export async function changerStatut(id: number, vers: Statut, commentaire: string) {
+  return executer(async () => {
+    await svc.changerStatut(id, vers, commentaire || null, await acteur());
+    rafraichir(id);
+    return 'Statut mis à jour.';
+  });
+}
+
+export async function ajouterNote(id: number, texte: string) {
+  return executer(async () => {
+    await svc.ajouterNote(id, texte, await acteur());
+    rafraichir(id);
+    return 'Note ajoutée.';
+  });
+}
+
+export async function televerserDocument(id: number, form: FormData) {
+  return executer(async () => {
+    const fichier = form.get('fichier');
+    if (!(fichier instanceof File) || fichier.size === 0) throw new ErreurMetier('Choisissez un fichier.');
+    const categorie = String(form.get('categorie') ?? 'autre') as svc.CategorieDocument;
+    if (!(categorie in svc.CATEGORIES_DOCUMENT)) throw new ErreurMetier('Catégorie inconnue.');
+    await svc.ajouterDocument(id, { nom: fichier.name, octets: new Uint8Array(await fichier.arrayBuffer()) }, categorie, await acteur());
+    rafraichir(id);
+    return 'Document ajouté.';
+  });
+}
+
+export async function supprimerDocument(dossierId: number, documentId: number) {
+  return executer(async () => {
+    await svc.supprimerDocument(documentId, await acteur());
+    rafraichir(dossierId);
+    return 'Document supprimé.';
+  });
+}
+
+export async function rattacherDemande(dossierId: number, demandeId: number, cibleId: number) {
+  return executer(async () => {
+    await svc.rattacherDemande(demandeId, cibleId, await acteur());
+    rafraichir(dossierId);
+    rafraichir(cibleId);
+    return 'Demande rattachée.';
+  });
+}
+
+export async function regenererLien(id: number) {
+  return executer(async () => {
+    const jeton = await svc.regenererJetonSuivi(id, await acteur());
+    rafraichir(id);
+    return jeton;
+  });
+}
+
+export async function modifierLieu(id: number, champs: Parameters<typeof svc.modifierLieu>[1]) {
+  return executer(async () => {
+    await svc.modifierLieu(id, champs, await acteur());
+    rafraichir(id);
+    return 'Informations enregistrées.';
+  });
+}
+
+export async function remplacerLignes(id: number, lignes: svc.LignePosteSaisie[]) {
+  return executer(async () => {
+    await svc.remplacerLignes(id, lignes, await acteur());
+    rafraichir(id);
+    return 'Postes enregistrés.';
+  });
+}
+
+export async function changerType(id: number, type: DossierType) {
+  return executer(async () => {
+    await svc.changerType(id, type, await acteur());
+    rafraichir(id);
+    return 'Type modifié (le numéro reste inchangé).';
+  });
+}
+
+export async function mettreAJourClient(dossierId: number, clientId: number, champs: Record<string, string | null>) {
+  return executer(async () => {
+    await svc.mettreAJourClient(clientId, champs, { ...(await acteur()), dossierId });
+    rafraichir(dossierId);
+    return 'Coordonnées du client mises à jour.';
+  });
+}
+
+// ─── MVP1-05 ──────────────────────────────────────────────────
+
+export async function reaffecterDossier(id: number, nouveauId: string, motif: string) {
+  return executer(async () => {
+    const c = await exigerCollaborateur({ permission: 'dossier.reaffecter' });
+    const { reaffecter } = await import('@/lib/dossiers/attribution');
+    const r = await reaffecter(id, nouveauId, motif, { id: c.id, roles: c.roles, ip: c.ip });
+    rafraichir(id);
+    revalidatePath('/admin/attribution');
+    return r.avertissements.length ? `Dossier réaffecté (attention : ${r.avertissements.join(', ')}).` : 'Dossier réaffecté.';
+  });
+}
+
+export async function noterWhatsApp(id: number, modele: string, texte: string) {
+  return executer(async () => {
+    await svc.noterMessageWhatsApp(id, modele, texte, await acteur());
+    rafraichir(id);
+    return 'Message enregistré dans l’historique.';
+  });
+}

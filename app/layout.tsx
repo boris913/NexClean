@@ -1,13 +1,6 @@
 import type { Metadata, Viewport } from 'next';
-import { Outfit, Plus_Jakarta_Sans } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
-import Header from '@/components/navigation/Header';
-import Footer from '@/components/navigation/Footer';
-import WhatsAppButton from '@/components/ui/WhatsAppButton';
-import MobileCTABar from '@/components/ui/MobileCTABar';
-import Analytics from '@/components/analytics/Analytics';
-import JsonLd from '@/components/ui/JsonLd';
-import { MotionProvider } from '@/components/ui/Reveal';
 import {
   DEFAULT_TITLE,
   DEFAULT_DESCRIPTION,
@@ -16,22 +9,22 @@ import {
   SITE_URL,
   SITE_NAME,
   OG_IMAGE,
-  LOCAL_BUSINESS_SCHEMA,
-  SERVICES_SCHEMA,
-  WEBSITE_SCHEMA,
 } from '@/lib/seo';
 
-const fontBody = Plus_Jakarta_Sans({
-  subsets: ['latin'],
+// Polices intégrées au dépôt (fichiers variables, sous-ensemble latin, licence OFL 1.1 dans
+// app/fonts/) : le build ne dépend plus du téléchargement depuis Google Fonts, qui échouait
+// par intermittence en CI.
+const fontBody = localFont({
+  src: './fonts/plus-jakarta-sans-latin-wght-normal.woff2',
   variable: '--font-body',
-  weight: ['400', '500', '600', '700', '800'],
+  weight: '200 800',
   display: 'swap',
 });
 
-const fontDisplay = Outfit({
-  subsets: ['latin'],
+const fontDisplay = localFont({
+  src: './fonts/outfit-latin-wght-normal.woff2',
   variable: '--font-display',
-  weight: ['500', '600', '700', '800'],
+  weight: '100 900',
   display: 'swap',
 });
 
@@ -108,25 +101,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://wa.me" />
         <link rel="dns-prefetch" href="https://api.whatsapp.com" />
       </head>
-      <body className="font-sans antialiased">
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:bg-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow"
-        >
-          Aller au contenu
-        </a>
-        <Header />
-        <main id="main-content" className="pt-20 overflow-x-clip">
-          <MotionProvider>{children}</MotionProvider>
-        </main>
-        <Footer />
-        <WhatsAppButton />
-        <MobileCTABar />
-        <Analytics />
-        <JsonLd data={LOCAL_BUSINESS_SCHEMA} />
-        <JsonLd data={SERVICES_SCHEMA} />
-        <JsonLd data={WEBSITE_SCHEMA} />
-      </body>
+      <body className="font-sans antialiased">{children}</body>
     </html>
   );
 }
