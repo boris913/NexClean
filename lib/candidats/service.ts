@@ -469,6 +469,8 @@ export async function executerSuppressionsDues(maintenant = new Date()): Promise
       await tx.delete(schema.candidatSession).where(eq(schema.candidatSession.candidatId, c.id));
       await tx.delete(schema.candidatJeton).where(eq(schema.candidatJeton.candidatId, c.id));
       await tx.delete(schema.candidatDemandeReinitialisation).where(eq(schema.candidatDemandeReinitialisation.candidatId, c.id));
+      // RG-17 : les Candidatures sont supprimées (MVP2-02).
+      await tx.delete(schema.candidature).where(eq(schema.candidature.candidatId, c.id));
       await tx
         .update(schema.candidat)
         .set({

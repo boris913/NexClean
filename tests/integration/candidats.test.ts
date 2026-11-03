@@ -186,6 +186,7 @@ describe.skipIf(!baseDisponible)('Espace candidat (intégration)', async () => {
       const { prevueLe } = await svc.demanderSuppression(id, 'nouveau-mdp-1', null);
       expect(prevueLe.getTime()).toBeGreaterThan(Date.now() + 6 * 86_400_000);
       await expect(svc.verifierConnexion('690000001', 'nouveau-mdp-1', null)).rejects.toThrow(svc.MESSAGE_SUPPRESSION_EN_COURS);
+      await getDb().insert(schema.candidature).values({ candidatId: id, offreSlug: 'agent-de-caisse', offreTitre: 'Agent de caisse' });
 
       expect(await svc.executerSuppressionsDues()).toBe(0); // pas encore échu
       expect(await svc.executerSuppressionsDues(new Date(prevueLe.getTime() + 1000))).toBe(1);
@@ -195,6 +196,7 @@ describe.skipIf(!baseDisponible)('Espace candidat (intégration)', async () => {
       for (const cle of cles) expect(await fichierExiste(cle)).toBe(false);
       expect(await getDb().select().from(schema.candidatDocument).where(eq(schema.candidatDocument.candidatId, id))).toHaveLength(0);
       expect(await getDb().select().from(schema.candidatConsentement).where(eq(schema.candidatConsentement.candidatId, id))).toHaveLength(0);
+      expect(await getDb().select().from(schema.candidature).where(eq(schema.candidature.candidatId, id))).toHaveLength(0);
       const audit = await getDb().select().from(schema.journalAudit).where(eq(schema.journalAudit.action, 'candidat.donnees_supprimees'));
       expect(audit).toHaveLength(1);
       // Le numéro est libéré : la personne peut se réinscrire.
