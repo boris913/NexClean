@@ -15,6 +15,13 @@
       "when": 1793660030695,
       "tag": "0001_journal_immuable",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793666921226,
+      "tag": "0002_dossiers",
+      "breakpoints": true
     }
   ]
 }
