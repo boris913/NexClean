@@ -1,0 +1,6 @@
+# Surcharge pour la CI uniquement : publie le port de l'application pour les essais HTTP.
+# En production (Coolify), le port n'est pas publié : Traefik route vers le conteneur.
+services:
+  app:
+    ports:
+      - "3000:3000"
