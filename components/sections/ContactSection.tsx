@@ -2,10 +2,12 @@ import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 import SectionLabel from '@/components/ui/SectionLabel';
 import ContactForm from '@/components/forms/ContactForm';
 import { CONTACT, BUSINESS_HOURS, TEL_LINK, getWhatsAppLink } from '@/lib/constants';
-import { activeZones } from '@/content/zones-coverage';
+import { lireCouverture } from '@/lib/geo/couverture';
 import WhatsAppIcon from '@/components/ui/WhatsAppIcon';
 
-export default function ContactSection() {
+export default async function ContactSection() {
+  const { quartiers } = await lireCouverture();
+  const quartiersCites = quartiers.flatMap((g) => g.noms).slice(0, 5);
   return (
     <section id="contact" className="py-20 sm:py-24 bg-slate-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,7 +81,7 @@ export default function ContactSection() {
               <div>
                 <p className="text-xs font-medium text-slate-500 mb-0.5">Localisation</p>
                 <p className="text-sm font-semibold text-slate-900">{CONTACT.address}</p>
-                <p className="text-xs text-slate-400 mt-0.5">{activeZones.slice(0, 5).map((z) => z.name).join(' · ')} et plus</p>
+                <p className="text-xs text-slate-400 mt-0.5">{quartiersCites.join(' · ')} et plus</p>
               </div>
             </div>
 

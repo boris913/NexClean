@@ -1,17 +1,20 @@
 import type { Metadata } from 'next';
+import { lireCouverture } from '@/lib/geo/couverture';
 import Image from 'next/image';
 import PageHero from '@/components/ui/PageHero';
 import CTASection from '@/components/sections/CTASection';
 import RealisationsGallery from './RealisationsGallery';
 import { realisations, fieldPhotos } from '@/content/realisations-data';
-import { CITIES_LABEL } from '@/lib/constants';
 import { pageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = pageMetadata({
-  title: `Nos réalisations — avant / après à ${CITIES_LABEL}`,
-  description: `Avant / après des interventions NexClean à ${CITIES_LABEL} : nettoyage intérieur, bureaux, fin de chantier, espaces verts, vitres.`,
-  path: '/realisations',
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const { libelle: villes } = await lireCouverture();
+  return pageMetadata({
+    title: `Nos réalisations — avant / après à ${villes}`,
+    description: `Avant / après des interventions NexClean à ${villes} : nettoyage intérieur, bureaux, fin de chantier, espaces verts, vitres.`,
+    path: '/realisations',
+  });
+}
 
 export default function RealisationsPage() {
   return (

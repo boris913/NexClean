@@ -31,14 +31,7 @@ export const SOCIAL_MEDIA = {
   linkedin: '',
 };
 
-/** Villes d'intervention. Passer `active: true` uniquement si la zone est réellement opérationnelle. */
-export const CITIES = [
-  { name: 'Douala', active: true },
-  { name: 'Yaoundé', active: false },
-];
-
-export const ACTIVE_CITIES = CITIES.filter((c) => c.active).map((c) => c.name);
-export const CITIES_LABEL = ACTIVE_CITIES.join(' et ');
+// Villes d'intervention : référentiel géographique en base (M1-GEO-05), voir lib/geo/couverture.ts.
 
 export const BUSINESS_HOURS = {
   weekdays: 'Lundi – Vendredi : 7h00 – 19h00',

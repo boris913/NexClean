@@ -5,10 +5,16 @@ import MobileCTABar from '@/components/ui/MobileCTABar';
 import Analytics from '@/components/analytics/Analytics';
 import JsonLd from '@/components/ui/JsonLd';
 import { MotionProvider } from '@/components/ui/Reveal';
-import { LOCAL_BUSINESS_SCHEMA, SERVICES_SCHEMA, WEBSITE_SCHEMA } from '@/lib/seo';
+import { localBusinessSchema, servicesSchema, websiteSchema } from '@/lib/seo';
+import { lireCouverture } from '@/lib/geo/couverture';
+
+// Pages pré-générées, régénérées au plus toutes les 10 min pour suivre le référentiel géographique
+// (M1-GEO-05) ; une modification dans le Back-Office les régénère immédiatement (revaliderCouverture).
+export const revalidate = 600;
 
 /** Habillage du site public (en-tête, pied de page, WhatsApp, analytics, données structurées). */
-export default function SiteLayout({ children }: { children: React.ReactNode }) {
+export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  const couverture = await lireCouverture();
   return (
     <>
       <a
@@ -21,13 +27,13 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <main id="main-content" className="pt-20 overflow-x-clip">
         <MotionProvider>{children}</MotionProvider>
       </main>
-      <Footer />
+      <Footer villes={couverture.libelle} />
       <WhatsAppButton />
       <MobileCTABar />
       <Analytics />
-      <JsonLd data={LOCAL_BUSINESS_SCHEMA} />
-      <JsonLd data={SERVICES_SCHEMA} />
-      <JsonLd data={WEBSITE_SCHEMA} />
+      <JsonLd data={localBusinessSchema(couverture)} />
+      <JsonLd data={servicesSchema(couverture.villes)} />
+      <JsonLd data={websiteSchema(couverture.libelle)} />
     </>
   );
 }

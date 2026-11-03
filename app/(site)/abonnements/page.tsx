@@ -1,17 +1,21 @@
 import type { Metadata } from 'next';
+import { lireCouverture } from '@/lib/geo/couverture';
 import PageHero from '@/components/ui/PageHero';
 import SubscriptionsSection from '@/components/sections/SubscriptionsSection';
 import PricingSection from '@/components/sections/PricingSection';
 import FAQSection from '@/components/sections/FAQSection';
 import CTASection from '@/components/sections/CTASection';
-import { CITIES_LABEL, PAYMENT_TERMS } from '@/lib/constants';
+import { PAYMENT_TERMS } from '@/lib/constants';
 import { pageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = pageMetadata({
-  title: `Abonnement nettoyage et entretien régulier à ${CITIES_LABEL}`,
-  description: `Formules d'entretien régulier NexClean à ${CITIES_LABEL} pour particuliers, entreprises et espaces verts. Passages planifiés et tarif préférentiel.`,
-  path: '/abonnements',
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const { libelle: villes } = await lireCouverture();
+  return pageMetadata({
+    title: `Abonnement nettoyage et entretien régulier à ${villes}`,
+    description: `Formules d'entretien régulier NexClean à ${villes} pour particuliers, entreprises et espaces verts. Passages planifiés et tarif préférentiel.`,
+    path: '/abonnements',
+  });
+}
 
 const subscriptionFaq = [
   {

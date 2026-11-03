@@ -1,18 +1,21 @@
 import type { Metadata } from 'next';
+import { lireCouverture } from '@/lib/geo/couverture';
 import Image from 'next/image';
 import { Target, Eye, Heart, ClipboardCheck } from 'lucide-react';
 import PageHero from '@/components/ui/PageHero';
 import WhyUsSection from '@/components/sections/WhyUsSection';
 import ClientProcess from '@/components/sections/ClientProcess';
 import CTASection from '@/components/sections/CTASection';
-import { CITIES_LABEL } from '@/lib/constants';
 import { pageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = pageMetadata({
-  title: 'À propos',
-  description: `NexClean SARL : entreprise camerounaise de nettoyage professionnel et d'entretien des espaces verts basée à ${CITIES_LABEL}. Mission, valeurs et méthode qualité.`,
-  path: '/a-propos',
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const { libelle: villes } = await lireCouverture();
+  return pageMetadata({
+    title: 'À propos',
+    description: `NexClean SARL : entreprise camerounaise de nettoyage professionnel et d'entretien des espaces verts basée à ${villes}. Mission, valeurs et méthode qualité.`,
+    path: '/a-propos',
+  });
+}
 
 const pillars = [
   {
@@ -39,13 +42,14 @@ const qualitySteps = [
   'Retour du client recueilli après la prestation pour corriger et progresser.',
 ];
 
-export default function AProposPage() {
+export default async function AProposPage() {
+  const { libelle: villes } = await lireCouverture();
   return (
     <>
       <PageHero
         label="À propos"
         title="NexClean, la propreté organisée"
-        subtitle={`NexClean SARL est une entreprise camerounaise implantée à ${CITIES_LABEL}. Nous accompagnons particuliers et professionnels dans le nettoyage de leurs espaces, l'entretien de leurs espaces verts et, désormais, avec nos propres produits d'entretien.`}
+        subtitle={`NexClean SARL est une entreprise camerounaise implantée à ${villes}. Nous accompagnons particuliers et professionnels dans le nettoyage de leurs espaces, l'entretien de leurs espaces verts et, désormais, avec nos propres produits d'entretien.`}
         breadcrumb={[{ name: 'À propos' }]}
       />
 

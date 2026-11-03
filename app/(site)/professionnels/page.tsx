@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { lireCouverture } from '@/lib/geo/couverture';
 import { Building2, UtensilsCrossed, Hotel, Store, Landmark, GraduationCap, PartyPopper, HardHat, Home } from 'lucide-react';
 import PageHero from '@/components/ui/PageHero';
 import Button from '@/components/ui/Button';
@@ -8,14 +9,16 @@ import CTASection from '@/components/sections/CTASection';
 import WhatsAppForm from '@/components/forms/WhatsAppForm';
 import { proQuoteForm } from '@/components/forms/quote-forms';
 import { services } from '@/content/services-data';
-import { CITIES_LABEL } from '@/lib/constants';
 import { pageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = pageMetadata({
-  title: `Nettoyage professionnel pour entreprises à ${CITIES_LABEL}`,
-  description: `Nettoyage de bureaux, commerces, hôtels, restaurants, résidences et chantiers à ${CITIES_LABEL}. Visite technique et devis professionnel, contrats d'entretien réguliers.`,
-  path: '/professionnels',
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const { libelle: villes } = await lireCouverture();
+  return pageMetadata({
+    title: `Nettoyage professionnel pour entreprises à ${villes}`,
+    description: `Nettoyage de bureaux, commerces, hôtels, restaurants, résidences et chantiers à ${villes}. Visite technique et devis professionnel, contrats d'entretien réguliers.`,
+    path: '/professionnels',
+  });
+}
 
 const sectors = [
   { icon: Building2, name: 'Bureaux' },

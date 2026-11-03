@@ -27,14 +27,33 @@ function Ajout({ placeholder, onAjout }: { placeholder: string; onAjout: (nom: s
 
 function LigneQuartier({ q }: { q: Quartier }) {
   const [edition, setEdition] = useState(false);
+  const [affiche, setAffiche] = useState(q.afficheSite);
   const [r, setR] = useState<ResultatAction | null>(null);
   return (
     <li className="py-1.5">
-      <div className="flex items-center justify-between gap-2">
-        <span className={q.actif ? '' : 'line-through text-ink-400'}>
+      {/* Sur mobile, les commandes passent à la ligne : le nom reste aligné sur la première. */}
+      <div className="flex items-start justify-between gap-2">
+        <span className={`pt-2 min-w-0 break-words ${q.actif ? '' : 'line-through text-ink-400'}`}>
           {q.nom} {q.latitude != null && <span className="text-xs text-ink-400">📍</span>}
         </span>
-        <span className="flex gap-1">
+        <span className="flex flex-wrap items-center justify-end gap-x-1 shrink-0 max-w-[65%]">
+          <label className="text-xs text-ink-600 px-2 py-2 flex items-center gap-1.5 cursor-pointer" title="Afficher dans « Où intervenons-nous ? » sur le site public">
+            <input
+              type="checkbox"
+              checked={affiche}
+              disabled={!q.actif}
+              onChange={async (e) => {
+                // Mise à jour immédiate de la case ; retour à l'état précédent si l'enregistrement échoue.
+                const voulu = e.target.checked;
+                setAffiche(voulu);
+                const res = await actions.modifier('quartier', q.id, { afficheSite: voulu });
+                if (!res.ok) setAffiche(!voulu);
+                setR(res);
+              }}
+              className="w-4 h-4 accent-primary"
+            />
+            Sur le site
+          </label>
           <button type="button" className="text-xs text-primary px-2 py-2" onClick={() => setEdition((e) => !e)}>Modifier</button>
           <button type="button" className="text-xs text-ink-600 px-2 py-2" onClick={async () => setR(await actions.modifier('quartier', q.id, { actif: !q.actif }))}>
             {q.actif ? 'Désactiver' : 'Réactiver'}

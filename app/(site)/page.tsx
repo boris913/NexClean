@@ -12,34 +12,41 @@ import CoverageSection from '@/components/sections/CoverageSection';
 import FAQSection from '@/components/sections/FAQSection';
 import CTASection from '@/components/sections/CTASection';
 import JsonLd from '@/components/ui/JsonLd';
-import { SITE_URL, OG_IMAGE, DEFAULT_TITLE, DEFAULT_DESCRIPTION, FAQ_SCHEMA } from '@/lib/seo';
+import { SITE_URL, OG_IMAGE, titreParDefaut, descriptionParDefaut, FAQ_SCHEMA } from '@/lib/seo';
+import { lireCouverture } from '@/lib/geo/couverture';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: { absolute: DEFAULT_TITLE },
-  description: DEFAULT_DESCRIPTION,
-  alternates: {
-    canonical: SITE_URL,
-  },
-  openGraph: {
-    title: DEFAULT_TITLE,
+export async function generateMetadata(): Promise<Metadata> {
+  const { libelle } = await lireCouverture();
+  const DEFAULT_TITLE = titreParDefaut(libelle);
+  const DEFAULT_DESCRIPTION = descriptionParDefaut(libelle);
+  return {
+    title: { absolute: DEFAULT_TITLE },
     description: DEFAULT_DESCRIPTION,
-    url: SITE_URL,
-    images: [
-      {
-        url: OG_IMAGE.url,
-        width: OG_IMAGE.width,
-        height: OG_IMAGE.height,
-        alt: OG_IMAGE.alt,
-      },
-    ],
-  },
-};
+    alternates: {
+      canonical: SITE_URL,
+    },
+    openGraph: {
+      title: DEFAULT_TITLE,
+      description: DEFAULT_DESCRIPTION,
+      url: SITE_URL,
+      images: [
+        {
+          url: OG_IMAGE.url,
+          width: OG_IMAGE.width,
+          height: OG_IMAGE.height,
+          alt: OG_IMAGE.alt,
+        },
+      ],
+    },
+  };
+}
 
-export default function Home() {
+export default async function Home() {
+  const { libelle } = await lireCouverture();
   return (
     <>
-      <HeroSection />
+      <HeroSection villes={libelle} />
       <ServicesMarquee />
       <ServicesSection />
       <AudienceSection />
