@@ -36,6 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page('/recrutement', 0.7, 'weekly'),
     page('/recrutement/demander-du-personnel', 0.8, 'monthly'),
     ...openJobs.map((j) => page(`/recrutement/${j.slug}`, 0.6, 'weekly')),
+    page('/candidat/inscription', 0.7, 'monthly'),
     page('/contact', 0.8, 'yearly'),
     page('/blog', 0.7, 'daily'),
     ...slugs.map((slug) => page(`/blog/${slug}`, 0.6, 'monthly')),
