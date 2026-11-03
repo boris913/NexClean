@@ -54,6 +54,8 @@ export const collaborateurProfil = pgTable('collaborateur_profil', {
   capacite: integer('capacite'),
   absentDu: date('absent_du'),
   absentAu: date('absent_au'),
+  /** Dernière attribution reçue : départage « tour de rôle » (MVP1-05 RG-03). */
+  derniereAttributionLe: timestamp('derniere_attribution_le', { withTimezone: true }),
 });
 
 /** Lien d'activation de compte (48 h, usage unique). Seule l'empreinte SHA-256 est stockée. */

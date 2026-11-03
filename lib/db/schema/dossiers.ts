@@ -75,6 +75,10 @@ export const dossier = pgTable(
     fermeLe: timestamp('ferme_le', { withTimezone: true }),
     creeLe: timestamp('cree_le', { withTimezone: true }).notNull().defaultNow(),
     derniereActionLe: timestamp('derniere_action_le', { withTimezone: true }).notNull().defaultNow(),
+    /** Entrée dans la file « Non attribués » (MVP1-05 RG-05, RG-06) ; null si attribué. */
+    enFileDepuis: timestamp('en_file_depuis', { withTimezone: true }),
+    /** Dernière relance d'escalade envoyée à la Direction (RG-06). */
+    derniereRelanceLe: timestamp('derniere_relance_le', { withTimezone: true }),
   },
   (t) => [
     index('dossier_referent_idx').on(t.referentId),

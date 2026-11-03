@@ -34,7 +34,28 @@ export const METIERS_PAR_DEFAUT = [
   'Technicien de maintenance',
 ];
 
+const plage = z
+  .object({ debut: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Heure invalide (HH:MM)'), fin: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Heure invalide (HH:MM)') })
+  .refine((p) => p.debut < p.fin, 'L’heure de fin doit suivre l’heure de début');
+
+/** Heures ouvrées par jour (0 = dimanche … 6 = samedi), fuseau Africa/Douala (MVP1-05 RG-07). */
+export type HeuresOuvrees = ({ debut: string; fin: string } | null)[];
+export const HEURES_OUVREES_PAR_DEFAUT: HeuresOuvrees = [
+  null,
+  { debut: '07:00', fin: '19:00' },
+  { debut: '07:00', fin: '19:00' },
+  { debut: '07:00', fin: '19:00' },
+  { debut: '07:00', fin: '19:00' },
+  { debut: '07:00', fin: '19:00' },
+  { debut: '08:00', fin: '17:00' },
+];
+
 const DEFINITIONS = {
+  heures_ouvrees: { defaut: HEURES_OUVREES_PAR_DEFAUT, schema: z.array(plage.nullable()).length(7) },
+  /** RG-06 : délai avant escalade d'un dossier non attribué, en heures ouvrées. */
+  delai_escalade_heures: { defaut: 4, schema: z.number().int('Nombre entier').min(1).max(72) },
+  /** RG-11 : dossier « sans action » au-delà de ce nombre de jours. */
+  jours_sans_action: { defaut: 3, schema: z.number().int('Nombre entier').min(1).max(60) },
   commission_par_personne: { defaut: COMMISSION_PAR_DEFAUT, schema: z.number().int('Montant entier').min(0).max(1_000_000) },
   metiers: {
     defaut: METIERS_PAR_DEFAUT,

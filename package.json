@@ -13,7 +13,7 @@
     "db:generer": "drizzle-kit generate",
     "db:migrer": "tsx --env-file-if-exists=.env.local scripts/migrer.ts",
     "initialiser": "tsx --env-file-if-exists=.env.local scripts/initialiser.ts",
-    "build:scripts": "esbuild scripts/migrer.ts scripts/initialiser.ts scripts/purger-documents.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist-scripts --out-extension:.js=.cjs --external:@node-rs/argon2 --log-level=warning"
+    "build:scripts": "esbuild scripts/migrer.ts scripts/initialiser.ts scripts/purger-documents.ts scripts/taches.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist-scripts --out-extension:.js=.cjs --external:@node-rs/argon2 --log-level=warning"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.2.2",

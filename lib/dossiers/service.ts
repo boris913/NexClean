@@ -13,6 +13,8 @@ import { normaliserTelephone } from '@/lib/telephone';
 import { peutTraiter, peutVoir, type Demandeur } from './acces';
 import { anneeDouala, formaterNumero } from './numero';
 import { estFinal, STATUTS, verifierTransition, type Statut } from './statuts';
+import { attribuerAutomatiquement, signalerSiReferentIneligible } from './attribution';
+import { declencherEnvoi, notifier } from '@/lib/notifications';
 
 type Tx = Parameters<Parameters<ReturnType<typeof getDb>['transaction']>[0]>[0];
 
@@ -148,7 +150,7 @@ export async function creerDemande(entree: NouvelleDemande, auteur?: Acteur | nu
   if (d.type === 'REC' && d.lignes.length === 0 && !d.dossierExistantId) throw new ErreurMetier('Indiquez au moins un poste.');
   const empreinte = empreinteDonnees(d.donnees);
 
-  return getDb().transaction(async (tx) => {
+  const resultat = await getDb().transaction(async (tx) => {
     // Client : identifié par le numéro WhatsApp ; ses données existantes ne sont pas écrasées (RG-04).
     const [existant] = await tx.select().from(schema.client).where(eq(schema.client.whatsapp, whatsapp)).for('update');
     let clientId: number;
@@ -187,6 +189,8 @@ export async function creerDemande(entree: NouvelleDemande, auteur?: Acteur | nu
       if (estFinal(cible.statut)) throw new ErreurMetier('Impossible de rattacher une demande à un dossier fermé.');
       const [dem] = await tx.insert(schema.demande).values({ ...valeursDemande, dossierId: cible.id }).returning({ id: schema.demande.id });
       await evenement(tx, { dossierId: cible.id, auteurId: auteur.id, type: 'rattachement', commentaire: `Nouvelle demande n° ${dem!.id} saisie (${d.canal})` });
+      // MVP1-05 RG-11 : le référent du dossier est prévenu (sauf s'il est l'auteur).
+      if (cible.referentId !== auteur.id) await notifier({ destinataires: [cible.referentId], type: 'rattachement', dossierId: cible.id, titre: `Nouvelle demande sur ${cible.numero}`, texte: `Une nouvelle demande (${d.canal}) a été rattachée au dossier ${cible.numero}.`, lien: `/admin/dossiers/${cible.id}` }, tx);
       await journaliser({ ...auteurAudit(auteur), action: 'dossier.demande_rattachee', objetType: 'dossier', objetId: cible.id, details: { demandeId: dem!.id } }, tx);
       return { dossierId: cible.id, numero: cible.numero, jetonSuivi: cible.jetonSuivi, doublon: false, coordonneesDifferentes };
     }
@@ -217,10 +221,15 @@ export async function creerDemande(entree: NouvelleDemande, auteur?: Acteur | nu
     if (auteur && d.meLAttribuer) {
       await tx.update(schema.dossier).set({ referentId: auteur.id, statut: 'attribuee' }).where(eq(schema.dossier.id, dossier!.id));
       await evenement(tx, { dossierId: dossier!.id, auteurId: auteur.id, type: 'attribution', deStatut: 'nouvelle_demande', versStatut: 'attribuee', apres: { referentId: auteur.id, regle: 'saisie — moi-même' } });
+    } else {
+      // MVP1-05 RG-01 : attribution automatique de tout dossier sans référent choisi.
+      await attribuerAutomatiquement(tx, dossier!.id);
     }
     await journaliser({ ...auteurAudit(auteur), action: 'dossier.cree', objetType: 'dossier', objetId: dossier!.id, details: { numero, type: d.type, canal: d.canal } }, tx);
     return { dossierId: dossier!.id, numero, jetonSuivi: dossier!.jetonSuivi, doublon: false, coordonneesDifferentes };
   });
+  declencherEnvoi();
+  return resultat;
 }
 
 // ─── Transitions (RG-12..18) ──────────────────────────────────
@@ -262,6 +271,7 @@ export async function modifierLieu(dossierId: number, champs: z.input<typeof sch
     if (Object.keys(changes).length === 0) return;
     await tx.update(schema.dossier).set(changes).where(eq(schema.dossier.id, dossierId));
     await evenement(tx, { dossierId, auteurId: a.id, type: 'modification', avant: Object.fromEntries(Object.keys(changes).map((k) => [k, (avant as Record<string, unknown>)[k]])), apres: changes });
+    if ('villeId' in changes) await signalerSiReferentIneligible(tx, dossierId);
   });
 }
 
@@ -292,6 +302,16 @@ export async function ajouterNote(dossierId: number, texteNote: string, a: Acteu
   });
 }
 
+/** MVP1-05 RG-17 : trace du message WhatsApp préparé (l'envoi réel n'est pas connu). */
+export async function noterMessageWhatsApp(dossierId: number, modele: string, texteMessage: string, a: Acteur): Promise<void> {
+  const nom = z.string().trim().min(1).max(80).parse(modele);
+  const t = z.string().trim().min(1, 'Message vide').max(4000).parse(texteMessage);
+  await getDb().transaction(async (tx) => {
+    await chargerPourEcriture(tx, dossierId, a);
+    await evenement(tx, { dossierId, auteurId: a.id, type: 'whatsapp', commentaire: `Message WhatsApp préparé : ${nom}`, apres: { texte: t } });
+  });
+}
+
 /** Statuts antérieurs à « Devis envoyé » : changement de type autorisé (MVP1-02 §10). */
 const STATUTS_TYPE_MODIFIABLE: Statut[] = ['nouvelle_demande', 'attribuee', 'en_qualification', 'a_completer', 'devis_pret'];
 
@@ -308,6 +328,7 @@ export async function changerType(dossierId: number, type: DossierType, a: Acteu
     await tx.update(schema.dossier).set({ type }).where(eq(schema.dossier.id, dossierId));
     await evenement(tx, { dossierId, auteurId: a.id, type: 'modification', commentaire: 'Type de dossier modifié', avant: { type: d.type }, apres: { type } });
     await journaliser({ ...auteurAudit(a), action: 'dossier.type_modifie', objetType: 'dossier', objetId: dossierId, avant: d.type, apres: type }, tx);
+    await signalerSiReferentIneligible(tx, dossierId);
   });
 }
 
@@ -328,6 +349,7 @@ export async function rattacherDemande(demandeId: number, dossierCibleId: number
 
     await tx.update(schema.demande).set({ dossierId: cible.id }).where(eq(schema.demande.id, demandeId));
     await evenement(tx, { dossierId: cible.id, auteurId: a.id, type: 'rattachement', commentaire: `Demande n° ${demandeId} rattachée depuis ${source.numero}` });
+    if (cible.referentId !== a.id) await notifier({ destinataires: [cible.referentId], type: 'rattachement', dossierId: cible.id, titre: `Nouvelle demande sur ${cible.numero}`, texte: `La demande n° ${demandeId} (venant de ${source.numero}) a été rattachée au dossier ${cible.numero}.`, lien: `/admin/dossiers/${cible.id}` }, tx);
     await evenement(tx, { dossierId: source.id, auteurId: a.id, type: 'rattachement', commentaire: `Demande n° ${demandeId} rattachée à ${cible.numero}` });
 
     const [{ restantes }] = (await tx

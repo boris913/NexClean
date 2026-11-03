@@ -141,8 +141,13 @@ export async function desactiverCollaborateur(userId: string, auteur: Auteur): P
     const maj = await tx.update(schema.user).set({ active: false, updatedAt: new Date() }).where(and(eq(schema.user.id, userId), eq(schema.user.active, true))).returning({ id: schema.user.id });
     if (maj.length === 0) throw new ErreurMetier('Collaborateur introuvable ou déjà désactivé.');
     await tx.delete(schema.session).where(eq(schema.session.userId, userId));
-    await journaliser({ ...auteurAudit(auteur), action: 'collaborateur.desactive', objetType: 'user', objetId: userId }, tx);
+    // MVP1-05 : ses dossiers ouverts retournent en « Non attribués », la Direction est prévenue.
+    const { libererDossiersDe } = await import('@/lib/dossiers/attribution');
+    const liberes = await libererDossiersDe(tx, userId, auteur.id);
+    await journaliser({ ...auteurAudit(auteur), action: 'collaborateur.desactive', objetType: 'user', objetId: userId, details: liberes ? { dossiersLiberes: liberes } : undefined }, tx);
   });
+  const { declencherEnvoi } = await import('@/lib/notifications');
+  declencherEnvoi();
 }
 
 export async function reactiverCollaborateur(userId: string, auteur: Auteur): Promise<void> {

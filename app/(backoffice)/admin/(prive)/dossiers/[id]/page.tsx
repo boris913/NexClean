@@ -14,6 +14,11 @@ import { env } from '@/lib/env';
 import { Carte, Pastille, TitrePage } from '@/components/backoffice/ui';
 import * as A from './Actions';
 import { formaterFCFA } from '@/lib/dossiers/formulaire-personnel';
+import { getDb } from '@/lib/db';
+import { evaluerCandidats } from '@/lib/dossiers/attribution';
+import { contexteDossier, listerModeles } from '@/lib/modeles/service';
+import { rendreMessage } from '@/lib/modeles/variables';
+import { estFinal } from '@/lib/dossiers/statuts';
 
 /** MVP1-03 RG-06 : estimation enregistrée dans la Demande (preuve de ce qui a été affiché). */
 function estimationMontree(donnees: unknown): string | null {
@@ -70,6 +75,18 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
     onglet === 'demandes' && traiter
       ? (await dossiersDuClient(client.id, d.id, c)).filter((x) => !['cloture', 'refuse', 'sans_suite'].includes(x.statut)).map((x) => ({ id: x.id, numero: x.numero }))
       : [];
+  // MVP1-05 : réaffectation (Direction) et modèles WhatsApp (référent du dossier).
+  const peutReaffecter = onglet === 'resume' && c.roles.includes('direction') && !estFinal(d.statut);
+  const candidats = peutReaffecter ? (await evaluerCandidats(getDb(), d)).sort((x, y) => x.raisons.length - y.raisons.length || x.charge - y.charge) : [];
+  const modeles =
+    onglet === 'resume' && traiter
+      ? await (async () => {
+          const ctx = await contexteDossier(d.id, { id: c.id, nom: c.nom });
+          return (await listerModeles({ type: d.type, actifsSeulement: true })).map((m) => ({ id: m.id, nom: m.nom, texte: rendreMessage(m.texte, ctx) }));
+        })()
+      : [];
+  // Dossier sans référent : l'attribution est l'action principale (en tête) ; sinon en fin de résumé.
+  const reaffectation = peutReaffecter ? <A.Reaffecter dossierId={d.id} referentActuel={d.referentId} candidats={candidats.map(({ id, nom, charge, raisons }) => ({ id, nom, charge, raisons }))} /> : null;
   const coordonneesDifferentes = !!recu && (recu.nom !== client.nom || (recu.contact ?? null) !== (client.contact ?? null) || (!!recu.email && recu.email !== client.email));
 
   return (
@@ -93,6 +110,7 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
 
       {onglet === 'resume' && (
         <div className="space-y-4">
+          {peutReaffecter && !d.referentId && reaffectation}
           {traiter && <A.ChangerStatut dossierId={d.id} options={transitionsProposees(d.type, d.statut, direction).map((s) => ({ code: s, libelle: STATUTS[s] }))} />}
           <Carte titre="Client">
             <dl className="text-sm grid grid-cols-[auto,1fr] gap-x-3 gap-y-1">
@@ -103,6 +121,7 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
               {client.autreTelephone && (<><dt className="text-ink-500">Autre tél.</dt><dd><a className="text-primary" href={`tel:${client.autreTelephone}`}>{formaterTelephone(client.autreTelephone)}</a></dd></>)}
               {client.email && (<><dt className="text-ink-500">E-mail</dt><dd className="break-all">{client.email}</dd></>)}
             </dl>
+            {traiter && modeles.length > 0 && <A.EnvoyerWhatsApp dossierId={d.id} numero={client.whatsapp} modeles={modeles} />}
             {traiter && coordonneesDifferentes && recu && <A.CoordonneesRecues dossierId={d.id} clientId={client.id} recu={{ nom: recu.nom ?? null, contact: recu.contact ?? null, email: recu.email ?? null }} />}
           </Carte>
           <Carte titre="Lieu et besoin">
@@ -127,6 +146,7 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
             <p className="text-sm text-ink-600 mb-2">Phase affichée au client : <strong>{PHASES[phaseDe(d.statut)]}</strong></p>
             <A.LienSuivi dossierId={d.id} lien={lienSuivi} peutRegenerer={traiter} />
           </Carte>
+          {d.referentId && reaffectation}
         </div>
       )}
 
@@ -204,6 +224,12 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
                     <p>{ev.deStatut ? `${STATUTS[ev.deStatut]} → ` : ''}{ev.versStatut ? STATUTS[ev.versStatut] : ''}</p>
                   ) : null}
                   {ev.commentaire && <p className="whitespace-pre-wrap">{ev.commentaire}</p>}
+                  {(ev.type === 'attribution' || ev.type === 'reaffectation') && typeof (ev.apres as { regle?: unknown } | null)?.regle === 'string' && (
+                    <p className="text-xs text-ink-600">Règle : {(ev.apres as { regle: string }).regle}</p>
+                  )}
+                  {ev.type === 'whatsapp' && typeof (ev.apres as { texte?: unknown } | null)?.texte === 'string' && (
+                    <p className="whitespace-pre-wrap text-xs bg-ink-50 rounded p-2 mt-1">{(ev.apres as { texte: string }).texte}</p>
+                  )}
                   {(ev.avant != null || ev.apres != null) && ev.type !== 'note' && (
                     <details>
                       <summary className="cursor-pointer text-xs text-primary py-1">Avant / après</summary>

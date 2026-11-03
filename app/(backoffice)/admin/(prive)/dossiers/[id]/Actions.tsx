@@ -242,3 +242,100 @@ export function CoordonneesRecues({ dossierId, clientId, recu }: { dossierId: nu
     </div>
   );
 }
+
+// ─── MVP1-05 : réaffectation (Direction) ──────────────────────
+
+export function Reaffecter({ dossierId, referentActuel, candidats }: { dossierId: number; referentActuel: string | null; candidats: { id: string; nom: string; charge: number; raisons: string[] }[] }) {
+  const { lancer, envoi, retour } = useAction();
+  const [cible, setCible] = useState('');
+  const [motif, setMotif] = useState('');
+  const choisi = candidats.find((c) => c.id === cible);
+  return (
+    <Carte titre={referentActuel ? 'Réaffecter' : 'Attribuer'}>
+      <form
+        className="space-y-3"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          const r = await lancer(() => actions.reaffecterDossier(dossierId, cible, motif));
+          if (r.ok) {
+            setCible('');
+            setMotif('');
+          }
+        }}
+      >
+        {retour}
+        <div>
+          <label htmlFor="cible" className={classeLibelle}>Nouveau référent</label>
+          <select id="cible" required value={cible} onChange={(e) => setCible(e.target.value)} className={classeChamp}>
+            <option value="">Choisir…</option>
+            {candidats
+              .filter((c) => c.id !== referentActuel)
+              .map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nom} · {c.charge} ouvert{c.charge > 1 ? 's' : ''}
+                  {c.raisons.length ? ' · non éligible' : ''}
+                </option>
+              ))}
+          </select>
+          {choisi && choisi.raisons.length > 0 && <p className="text-xs text-amber-700 mt-1">Attention : {choisi.raisons.join(', ')}.</p>}
+        </div>
+        <div>
+          <label htmlFor="motif" className={classeLibelle}>Motif (obligatoire)</label>
+          <input id="motif" required minLength={3} maxLength={500} value={motif} onChange={(e) => setMotif(e.target.value)} className={classeChamp} />
+        </div>
+        <button type="submit" disabled={envoi || !cible} className={classeBouton('principal', true)}>
+          {referentActuel ? 'Réaffecter' : 'Attribuer'}
+        </button>
+      </form>
+    </Carte>
+  );
+}
+
+// ─── MVP1-05 RG-17 : envoyer sur WhatsApp à partir d'un modèle ─
+
+export function EnvoyerWhatsApp({ dossierId, numero, modeles }: { dossierId: number; numero: string; modeles: { id: number; nom: string; texte: string }[] }) {
+  const { lancer, retour } = useAction();
+  const [modeleId, setModeleId] = useState<number | ''>('');
+  const [texte, setTexte] = useState('');
+  const modele = modeles.find((m) => m.id === modeleId);
+  const lien = `https://wa.me/${numero.replace(/^\+/, '')}?text=${encodeURIComponent(texte)}`;
+  return (
+    <div className="mt-3 space-y-2">
+      {retour}
+      <label htmlFor="modele" className={classeLibelle}>Envoyer sur WhatsApp</label>
+      <select
+        id="modele"
+        value={modeleId}
+        onChange={(e) => {
+          const id = e.target.value ? Number(e.target.value) : '';
+          setModeleId(id);
+          setTexte(modeles.find((m) => m.id === id)?.texte ?? '');
+        }}
+        className={classeChamp}
+      >
+        <option value="">Choisir un modèle…</option>
+        {modeles.map((m) => (
+          <option key={m.id} value={m.id}>
+            {m.nom}
+          </option>
+        ))}
+      </select>
+      {modele && (
+        <>
+          <textarea aria-label="Aperçu du message" rows={7} value={texte} onChange={(e) => setTexte(e.target.value)} className={classeChamp} />
+          <a
+            href={lien}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => {
+              void lancer(() => actions.noterWhatsApp(dossierId, modele.nom, texte));
+            }}
+            className={`${classeBouton('principal', true)} !bg-[#25D366] text-center`}
+          >
+            Ouvrir WhatsApp
+          </a>
+        </>
+      )}
+    </div>
+  );
+}

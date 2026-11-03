@@ -111,3 +111,24 @@ export async function mettreAJourClient(dossierId: number, clientId: number, cha
     return 'Coordonnées du client mises à jour.';
   });
 }
+
+// ─── MVP1-05 ──────────────────────────────────────────────────
+
+export async function reaffecterDossier(id: number, nouveauId: string, motif: string) {
+  return executer(async () => {
+    const c = await exigerCollaborateur({ permission: 'dossier.reaffecter' });
+    const { reaffecter } = await import('@/lib/dossiers/attribution');
+    const r = await reaffecter(id, nouveauId, motif, { id: c.id, roles: c.roles, ip: c.ip });
+    rafraichir(id);
+    revalidatePath('/admin/attribution');
+    return r.avertissements.length ? `Dossier réaffecté (attention : ${r.avertissements.join(', ')}).` : 'Dossier réaffecté.';
+  });
+}
+
+export async function noterWhatsApp(id: number, modele: string, texte: string) {
+  return executer(async () => {
+    await svc.noterMessageWhatsApp(id, modele, texte, await acteur());
+    rafraichir(id);
+    return 'Message enregistré dans l’historique.';
+  });
+}

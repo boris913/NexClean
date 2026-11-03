@@ -4,7 +4,8 @@ import { forbidden } from 'next/navigation';
 import { asc, eq } from 'drizzle-orm';
 import { exigerCollaborateur } from '@/lib/authz/session';
 import { peut } from '@/lib/authz/permissions';
-import { JOURS_SANS_ACTION, listerDossiers, sansActionDepuis, type FiltresDossiers } from '@/lib/dossiers/lecture';
+import { listerDossiers, sansActionDepuis, type FiltresDossiers } from '@/lib/dossiers/lecture';
+import { lireParametre } from '@/lib/parametres';
 import { PHASES, STATUTS, type Phase } from '@/lib/dossiers/statuts';
 import { DOSSIER_TYPES, DOSSIER_TYPE_CODES, type DossierType } from '@/lib/domain/referentiels';
 import { getDb, schema } from '@/lib/db';
@@ -17,6 +18,7 @@ type Params = Record<string, string | undefined>;
 
 export default async function PageDossiers({ searchParams }: { searchParams: Promise<Params> }) {
   const c = await exigerCollaborateur();
+  const joursSansAction = await lireParametre('jours_sans_action');
   if (!peut(c.roles, 'dossier.voir_siens') && !peut(c.roles, 'dossier.voir_tous')) forbidden();
   const tous = peut(c.roles, 'dossier.voir_tous');
   const p = await searchParams;
@@ -137,7 +139,7 @@ export default async function PageDossiers({ searchParams }: { searchParams: Pro
                 </p>
                 <div className="flex flex-wrap items-center justify-between gap-2 mt-1 text-xs text-ink-500">
                   <span>{formatHorodatage(d.creeLe)}{tous && ` · ${d.referentNom ?? 'Non attribué'}`}</span>
-                  {jours >= JOURS_SANS_ACTION && !['cloture', 'refuse', 'sans_suite'].includes(d.statut) && <Pastille ton="orange">Sans action depuis {jours} j</Pastille>}
+                  {jours >= joursSansAction && !['cloture', 'refuse', 'sans_suite'].includes(d.statut) && <Pastille ton="orange">Sans action depuis {jours} j</Pastille>}
                 </div>
               </Link>
             </li>
