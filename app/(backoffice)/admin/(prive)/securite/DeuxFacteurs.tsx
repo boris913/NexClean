@@ -5,6 +5,15 @@ import QRCode from 'qrcode';
 import { authClient } from '@/lib/auth/client';
 import { Alerte, Carte, classeBouton, classeChamp, classeLibelle } from '@/components/backoffice/ui';
 
+/** Message lisible selon l'erreur Better Auth, au lieu d'un « Mot de passe incorrect » systématique. */
+function messageErreur(error: { code?: string; status?: number } | null | undefined, motDePasse: boolean): string {
+  if (error?.status === 429) return 'Trop de tentatives. Patientez une minute avant de réessayer.';
+  if (error?.code === 'INVALID_PASSWORD') return 'Mot de passe incorrect. Saisissez le mot de passe de votre compte (pas un code à 6 chiffres).';
+  if (!motDePasse && error?.code === 'INVALID_CODE') return 'Code incorrect. Vérifiez que l’heure de votre téléphone est automatique et réessayez.';
+  if (error?.status === 0 || error?.status === undefined) return 'Connexion au serveur impossible. Vérifiez votre connexion et réessayez.';
+  return motDePasse ? 'Impossible de vérifier votre mot de passe. Réessayez.' : 'Code refusé. Réessayez avec le code actuel de votre application.';
+}
+
 type Etape = { nom: 'repos' } | { nom: 'scan'; qr: string; secret: string; codes: string[] } | { nom: 'codes'; codes: string[] };
 
 export default function DeuxFacteurs({ active, obligatoire }: { active: boolean; obligatoire: boolean }) {
@@ -18,7 +27,7 @@ export default function DeuxFacteurs({ active, obligatoire }: { active: boolean;
     setErreur(null);
     const { data, error } = await authClient.twoFactor.enable({ password: String(form.get('password') ?? '') });
     setEnvoi(false);
-    if (error || !data) return setErreur('Mot de passe incorrect.');
+    if (error || !data) return setErreur(messageErreur(error, true));
     if (data.method !== 'totp') return setErreur('Méthode de double authentification inattendue.');
     const secret = new URL(data.totpURI).searchParams.get('secret') ?? '';
     setEtape({ nom: 'scan', qr: await QRCode.toDataURL(data.totpURI, { margin: 1, width: 220 }), secret, codes: data.backupCodes });
@@ -30,7 +39,7 @@ export default function DeuxFacteurs({ active, obligatoire }: { active: boolean;
     setErreur(null);
     const { error } = await authClient.twoFactor.verifyTotp({ code: String(form.get('code') ?? '').replace(/\s/g, '') });
     setEnvoi(false);
-    if (error) return setErreur('Code incorrect. Vérifiez l’heure de votre téléphone et réessayez.');
+    if (error) return setErreur(messageErreur(error, false));
     setEtape({ nom: 'codes', codes: etape.codes });
   }
 
@@ -39,7 +48,7 @@ export default function DeuxFacteurs({ active, obligatoire }: { active: boolean;
     setErreur(null);
     const { data, error } = await authClient.twoFactor.generateBackupCodes({ password: String(form.get('password') ?? '') });
     setEnvoi(false);
-    if (error || !data) return setErreur('Mot de passe incorrect.');
+    if (error || !data) return setErreur(messageErreur(error, true));
     setEtape({ nom: 'codes', codes: data.backupCodes });
   }
 
@@ -48,7 +57,7 @@ export default function DeuxFacteurs({ active, obligatoire }: { active: boolean;
     setErreur(null);
     const { error } = await authClient.twoFactor.disable({ password: String(form.get('password') ?? '') });
     setEnvoi(false);
-    if (error) return setErreur('Mot de passe incorrect.');
+    if (error) return setErreur(messageErreur(error, true));
     router.refresh();
   }
 
@@ -71,7 +80,7 @@ export default function DeuxFacteurs({ active, obligatoire }: { active: boolean;
 
   if (etape.nom === 'scan')
     return (
-      <Carte titre="Étape 2 : scannez le code">
+      <Carte titre="Étape 2 sur 2 : scannez le code QR">
         {erreur && <div className="mb-3"><Alerte>{erreur}</Alerte></div>}
         <ol className="text-sm text-ink-700 list-decimal pl-5 space-y-1 mb-4">
           <li>Installez une application d’authentification (Google Authenticator, Microsoft Authenticator…).</li>
@@ -116,13 +125,14 @@ export default function DeuxFacteurs({ active, obligatoire }: { active: boolean;
           )}
         </>
       ) : (
-        <Carte titre="Étape 1 : confirmez votre mot de passe">
+        <Carte titre="Étape 1 sur 2 : confirmez votre mot de passe">
           <form action={demarrer} className="space-y-3">
             <p className="text-sm text-ink-600">
               La double authentification ajoute un code à 6 chiffres, généré par votre téléphone, à chaque connexion.
               {obligatoire ? ' Elle est obligatoire pour votre rôle.' : ''}
             </p>
-            <input name="password" type="password" required placeholder="Votre mot de passe" autoComplete="current-password" className={classeChamp} />
+            <p className="text-sm text-ink-600">Saisissez le mot de passe de votre compte : le code QR à scanner s’affiche à l’étape suivante.</p>
+            <input name="password" type="password" required placeholder="Mot de passe de votre compte" autoComplete="current-password" className={classeChamp} />
             <button type="submit" disabled={envoi} className={classeBouton('principal', true)}>{envoi ? '…' : 'Continuer'}</button>
           </form>
         </Carte>

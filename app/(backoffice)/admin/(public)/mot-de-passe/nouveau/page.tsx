@@ -13,6 +13,7 @@ function Formulaire() {
 
   async function valider(form: FormData) {
     const motDePasse = String(form.get('password') ?? '');
+    if (motDePasse.length < 10) return setErreur(`Le mot de passe doit contenir au moins 10 caractères (actuellement ${motDePasse.length}).`);
     if (motDePasse !== String(form.get('confirmation') ?? '')) return setErreur('Les deux mots de passe ne correspondent pas.');
     const { error } = await authClient.resetPassword({ newPassword: motDePasse, token: token ?? '' });
     if (error) return setErreur(error.code === 'PASSWORD_TOO_SHORT' ? 'Au moins 10 caractères.' : 'Lien invalide ou expiré. Refaites une demande.');
@@ -27,7 +28,7 @@ function Formulaire() {
       </Alerte>
     );
   return (
-    <form action={valider} className="space-y-4">
+    <form action={valider} noValidate className="space-y-4">
       {erreur && <Alerte>{erreur}</Alerte>}
       <div>
         <label htmlFor="password" className={classeLibelle}>Nouveau mot de passe (10 caractères minimum)</label>
