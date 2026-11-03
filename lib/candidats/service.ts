@@ -26,7 +26,6 @@ import {
   type ProfilValide,
   type TypeConsentement,
 } from './domaine';
-import { fermerToutesLesSessions } from './session';
 
 export const MESSAGE_DEJA_INSCRIT = 'Ce numéro a déjà un compte.';
 export const MESSAGE_SUPPRESSION_EN_COURS =
@@ -37,6 +36,11 @@ export const MESSAGE_BLOQUE = 'Trop de tentatives. Réessayez dans 15 minutes.';
 export const MAX_ECHECS_CONNEXION = 5;
 export const FENETRE_ECHECS_MS = 15 * 60 * 1000;
 export const DUREE_REINITIALISATION_MS = 30 * 60 * 1000;
+
+/** Ferme toutes les sessions d'un candidat (mot de passe changé, suppression demandée). */
+export async function fermerToutesLesSessions(candidatId: number, tx: Pick<ReturnType<typeof getDb>, 'delete'> = getDb()): Promise<void> {
+  await tx.delete(schema.candidatSession).where(eq(schema.candidatSession.candidatId, candidatId));
+}
 
 const acteur = (candidatId: number, ip?: string | null) => ({ acteurType: 'candidat' as const, acteurId: String(candidatId), ip: ip ?? null });
 

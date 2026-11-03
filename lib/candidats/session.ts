@@ -67,8 +67,3 @@ export async function fermerSession(): Promise<void> {
   if (jeton) await getDb().delete(schema.candidatSession).where(eq(schema.candidatSession.empreinte, empreinteJeton(jeton)));
   jar.delete(COOKIE_CANDIDAT);
 }
-
-/** Ferme toutes les sessions d'un candidat (mot de passe changé, suppression demandée). */
-export async function fermerToutesLesSessions(candidatId: number, tx: Pick<ReturnType<typeof getDb>, 'delete'> = getDb()): Promise<void> {
-  await tx.delete(schema.candidatSession).where(eq(schema.candidatSession.candidatId, candidatId));
-}

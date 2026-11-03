@@ -8,6 +8,7 @@ import { envoyerNotificationsEnAttente, idsDirection, notifier } from '@/lib/not
 import { DOSSIER_TYPES } from '@/lib/domain/referentiels';
 import { dateLocale, estApresHuitHeuresUnJourOuvre, prochaineEscalade } from '@/lib/dossiers/heures-ouvrees';
 import { STATUTS_FINAUX } from '@/lib/dossiers/statuts';
+import { executerSuppressionsDues } from '@/lib/candidats/service';
 
 const JOUR_MS = 24 * 60 * 60 * 1000;
 
@@ -87,7 +88,9 @@ export async function signalerSansAction(maintenant = new Date()): Promise<numbe
 export async function executerTaches(maintenant = new Date()) {
   const escalades = await escaladerNonAttribues(maintenant);
   const sansAction = await signalerSansAction(maintenant);
+  // MVP2-01 RG-16 : suppressions de comptes candidats arrivées à échéance.
+  const suppressionsCandidats = await executerSuppressionsDues(maintenant);
   const emails = await envoyerNotificationsEnAttente(200);
-  return { escalades, sansAction, emails };
+  return { escalades, sansAction, suppressionsCandidats, emails };
 }
 

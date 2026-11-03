@@ -4,7 +4,7 @@
 import { executerTaches } from '@/lib/taches';
 
 executerTaches()
-  .then((r) => console.log(`Escalades : ${r.escalades} · dossiers sans action : ${r.sansAction} · e-mails envoyés : ${r.emails}`))
+  .then((r) => console.log(`Escalades : ${r.escalades} · dossiers sans action : ${r.sansAction} · comptes candidats supprimés : ${r.suppressionsCandidats} · e-mails envoyés : ${r.emails}`))
   .catch((e) => {
     console.error(e);
     process.exitCode = 1;
