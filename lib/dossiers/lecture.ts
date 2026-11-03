@@ -113,15 +113,26 @@ export async function lireDossier(id: number, c: Demandeur) {
       .orderBy(desc(schema.evenementDossier.horodatage), desc(schema.evenementDossier.id)),
   ]);
   const voirSalaire = peutVoirSalaire(c, d.dossier.referentId);
+  // Le salaire / budget n'est transmis à l'interface qu'aux personnes autorisées (ADR 0018) :
+  // lignes de poste, mais aussi données brutes des demandes et avant / après de l'historique.
+  const m = <T,>(v: T): T => (voirSalaire ? v : (masquerSalaire(v) as T));
   return {
     ...d,
-    demandes,
-    // Le salaire / budget n'est transmis à l'interface qu'aux personnes autorisées (ADR 0018).
+    demandes: demandes.map((dem) => ({ ...dem, donnees: m(dem.donnees) })),
     lignes: lignes.map((l) => (voirSalaire ? l : { ...l, salaire: null })),
     voirSalaire,
     documents,
-    evenements,
+    evenements: evenements.map((e) => ({ ...e, ev: { ...e.ev, avant: m(e.ev.avant), apres: m(e.ev.apres) } })),
   };
+}
+
+/** Retire récursivement toute clé « salaire » (données brutes, historique). */
+export function masquerSalaire(v: unknown): unknown {
+  if (Array.isArray(v)) return v.map(masquerSalaire);
+  if (v && typeof v === 'object' && !(v instanceof Date)) {
+    return Object.fromEntries(Object.entries(v as Record<string, unknown>).filter(([k]) => k !== 'salaire').map(([k, x]) => [k, masquerSalaire(x)]));
+  }
+  return v;
 }
 
 /** Dossiers ouverts du même client, cibles possibles d'un rattachement (RG-08). */
