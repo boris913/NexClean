@@ -1,10 +1,11 @@
 // Configuration Better Auth des collaborateurs (ADR 0016 ; M1-AUT-01..08).
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { APIError, createAuthMiddleware, isAPIError } from 'better-auth/api';
+import { APIError, createAuthMiddleware, getSessionFromCtx, isAPIError } from 'better-auth/api';
 import { nextCookies } from 'better-auth/next-js';
 import { twoFactor } from 'better-auth/plugins';
 import { eq } from 'drizzle-orm';
+import { exige2FA } from '@/lib/authz/permissions';
 import { getDb, schema } from '@/lib/db';
 import { env } from '@/lib/env';
 import { ipDepuisEnTetes, journaliser } from '@/lib/audit';
@@ -84,6 +85,15 @@ function creerAuth() {
     },
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
+        // M1-AUT-02 : un rôle sensible ne peut pas désactiver sa 2FA, même via l'API.
+        if (ctx.path === '/two-factor/disable') {
+          const session = await getSessionFromCtx(ctx);
+          if (session) {
+            const roles = (await getDb().select({ role: schema.collaborateurRole.role }).from(schema.collaborateurRole).where(eq(schema.collaborateurRole.userId, session.user.id))).map((r) => r.role);
+            if (exige2FA(roles)) throw new APIError('FORBIDDEN', { message: 'La double authentification est obligatoire pour votre rôle.' });
+          }
+          return;
+        }
         if (ctx.path !== '/sign-in/email') return;
         const email = String((ctx.body as { email?: string } | undefined)?.email ?? '').trim().toLowerCase();
         const ip = ctx.request ? ipDepuisEnTetes(ctx.request.headers) : null;

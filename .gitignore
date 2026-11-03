@@ -38,3 +38,4 @@ next-env.d.ts
 
 # documents du Back-Office (ADR 0003) — jamais versionnés
 /storage/
+/dist-scripts/

@@ -10,7 +10,9 @@ type Db = ReturnType<typeof drizzle<typeof schema>>;
 const globalForDb = globalThis as unknown as { pgClient?: ReturnType<typeof postgres>; db?: Db };
 
 function createDb(): Db {
-  const client = globalForDb.pgClient ?? postgres(env().DATABASE_URL, { max: 10 });
+  // DATABASE_POOL_MAX=1 pour une base de développement mono-processus (PGlite).
+  const max = Number(process.env.DATABASE_POOL_MAX) || 10;
+  const client = globalForDb.pgClient ?? postgres(env().DATABASE_URL, { max });
   if (process.env.NODE_ENV !== 'production') globalForDb.pgClient = client;
   return drizzle(client, { schema, casing: 'snake_case' });
 }

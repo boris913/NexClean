@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "db:generer": "drizzle-kit generate",
     "db:migrer": "tsx --env-file-if-exists=.env.local scripts/migrer.ts",
-    "initialiser": "tsx --env-file-if-exists=.env.local scripts/initialiser.ts"
+    "initialiser": "tsx --env-file-if-exists=.env.local scripts/initialiser.ts",
+    "build:scripts": "esbuild scripts/migrer.ts scripts/initialiser.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist-scripts --out-extension:.js=.cjs --external:@node-rs/argon2 --log-level=warning"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.2.2",
@@ -23,6 +24,7 @@
     "lucide-react": "^0.263.1",
     "next": "15.5.11",
     "postgres": "^4.0.0",
+    "qrcode": "^1.5.4",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-icons": "^5.5.0",
@@ -34,6 +36,7 @@
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^24.19.2",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",

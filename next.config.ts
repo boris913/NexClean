@@ -19,6 +19,8 @@ const nextConfig: NextConfig = {
 
   // Image Docker autonome pour le VPS (ADR 0002).
   output: 'standalone',
+  // Racine du traçage = le projet (évite qu'un lockfile parent soit pris pour la racine).
+  outputFileTracingRoot: process.cwd(),
 
   // forbidden() / unauthorized() pour les refus d'accès du Back-Office (M1-ROL-03).
   experimental: { authInterrupts: true },
