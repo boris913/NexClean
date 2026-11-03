@@ -1,0 +1,3 @@
+# Scripts exécutés sous Linux (conteneur, VPS) : fins de ligne LF obligatoires.
+*.sh text eol=lf
+Dockerfile text eol=lf
