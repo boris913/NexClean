@@ -10,6 +10,12 @@ export const VARIABLES = {
   'referent.prenom': 'Prénom du référent',
   'referent.telephone': 'Téléphone du référent',
   'postes.resume': 'Résumé des postes (recrutement)',
+  // Modèles candidat (MVP2-02) : proposés sur la fiche candidat, jamais dans un dossier.
+  'candidat.prenom': 'Prénom du candidat',
+  'candidat.nom': 'Nom du candidat',
+  'candidat.lien_espace': 'Lien de l’espace candidat',
+  'candidat.lien_profil': 'Lien pour compléter le profil candidat',
+  'candidat.lien_reinitialisation': 'Lien de réinitialisation du mot de passe (généré par le référent)',
 } as const;
 
 export type Variable = keyof typeof VARIABLES;
@@ -23,6 +29,9 @@ export const variablesDe = (texte: string) => [...texte.matchAll(RE)].map((m) =>
 export function variableInconnue(texte: string): string | null {
   return variablesDe(texte).find((v) => !(v in VARIABLES)) ?? null;
 }
+
+/** Modèle destiné aux candidats : il utilise au moins une variable `candidat.*` (MVP2-02). */
+export const estModeleCandidat = (texte: string) => variablesDe(texte).some((v) => v.startsWith('candidat.'));
 
 /** Remplace les variables ; une valeur absente donne une chaîne vide. */
 export const rendreMessage = (texte: string, ctx: ContexteMessage) => texte.replace(RE, (_, v: string) => ctx[v as Variable] ?? '');
