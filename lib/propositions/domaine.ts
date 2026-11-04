@@ -149,8 +149,9 @@ export function verifierCloture(e: EtatCloture): VerdictCloture {
 
 // ─── Présentation au client (RG-07, RG-08) ──────────────────
 
-/** « Awa N. » : prénom + initiale du nom. */
+/** « Awa N. » : prénom + initiale du nom. Candidat pseudonymisé (prénom vide) : « Candidat #8F3A ». */
 export function nomAffichable(prenom: string, nom: string): string {
+  if (!prenom.trim()) return nom.trim();
   const initiale = nom.trim().charAt(0).toUpperCase();
   return initiale ? `${prenom.trim()} ${initiale}.` : prenom.trim();
 }

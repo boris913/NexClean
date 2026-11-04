@@ -85,6 +85,7 @@ describe('Placements', () => {
 describe('Présentation au client', () => {
   it('RG-07 : prénom + initiale, 4 derniers chiffres, filigrane', () => {
     expect(nomAffichable('Awa', 'ngo Bassa')).toBe('Awa N.');
+    expect(nomAffichable('', 'Candidat #8F3A')).toBe('Candidat #8F3A');
     expect(quatreDerniersChiffres('+237 690 12 34 56')).toBe('3456');
     expect(texteFiligrane('Hôtel du Lac', new Date('2026-11-04T12:00:00Z'))).toBe('Transmis par NEXCLEAN à Hôtel du Lac le 4 novembre 2026');
   });
