@@ -1,19 +1,32 @@
+import { SparkleGlyph } from '@/components/ui/Decor';
+import { cx } from '@/components/ui/cx';
+import { PILLARS, type PillarKey } from '@/components/ui/pillars';
+
 interface SectionLabelProps {
   children: React.ReactNode;
   className?: string;
+  /** `light` sur fond clair (brand-800 sur brand-100), `dark` sur fond sombre. */
   tone?: 'light' | 'dark';
+  /** Colore le surtitre aux couleurs d'un pilier (fond clair uniquement). */
+  pillar?: PillarKey;
+  /**
+   * Étincelle décorative : réservée à la page Propreté (D-06). Désactivée par défaut.
+   */
+  sparkle?: boolean;
 }
 
-export default function SectionLabel({ children, className = '', tone = 'light' }: SectionLabelProps) {
+/** Surtitre (« eyebrow ») de section. */
+export default function SectionLabel({ children, className, tone = 'light', pillar, sparkle = false }: SectionLabelProps) {
+  const colors =
+    tone === 'dark'
+      ? 'text-brand-200 bg-white/10'
+      : pillar
+        ? cx(PILLARS[pillar].text, PILLARS[pillar].soft)
+        : 'text-brand-800 bg-brand-100';
+
   return (
-    <span
-      className={`inline-flex items-center gap-2 text-xs font-bold tracking-[0.14em] uppercase px-3.5 py-1.5 rounded-full ${
-        tone === 'light' ? 'text-brand-800 bg-brand-100' : 'text-brand-200 bg-white/10'
-      } ${className}`}
-    >
-      <svg viewBox="0 0 24 24" className="w-3 h-3 text-brand-500 animate-sparkle" fill="currentColor" aria-hidden="true">
-        <path d="M12 0l3.1 8.9L24 12l-8.9 3.1L12 24l-3.1-8.9L0 12l8.9-3.1z" />
-      </svg>
+    <span className={cx('inline-flex items-center gap-2 text-eyebrow uppercase px-3.5 py-1.5 rounded-full', colors, className)}>
+      {sparkle && <SparkleGlyph className="w-3 h-3 text-brand-600 animate-sparkle" />}
       {children}
     </span>
   );

@@ -1,19 +1,99 @@
 import React from 'react';
 import Link from 'next/link';
-import { LucideIcon } from 'lucide-react';
+import { Loader2, type LucideIcon } from 'lucide-react';
+import WhatsAppIcon from '@/components/ui/WhatsAppIcon';
+import { cx } from '@/components/ui/cx';
+
+/**
+ * Variantes :
+ * - `primary`   : lime + texte encre (9,04:1) — action principale.
+ * - `secondary` : vert profond + texte blanc (9,87:1) — action forte secondaire.
+ * - `outline`   : contour, texte vert profond — action tertiaire sur fond clair.
+ * - `ghost`     : texte seul (brand-700, 5,94:1).
+ * - `whatsapp`  : vert WhatsApp + texte encre (8,94:1).
+ * - `inverse`   : contour blanc sur fond sombre (Section `dark`, PageHero `dark`).
+ */
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'whatsapp' | 'inverse';
+
+/** Anciens noms, conservés pour compatibilité : `dark` → `secondary`, `outline-light` → `inverse`. */
+export type LegacyButtonVariant = 'dark' | 'outline-light';
+
+export type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps {
   children: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'ghost' | 'whatsapp' | 'dark' | 'outline-light';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: ButtonVariant | LegacyButtonVariant;
+  /** Toutes les tailles respectent la cible tactile de 44 px minimum. */
+  size?: ButtonSize;
   icon?: LucideIcon;
   iconPosition?: 'left' | 'right';
-  onClick?: () => void;
+  onClick?: React.MouseEventHandler<HTMLButtonElement | HTMLAnchorElement>;
+  /** Lien interne (`/…`) → next/link ; ancre ou tel: → <a> ; externe (`http…`) → nouvel onglet. */
   href?: string;
   className?: string;
   fullWidth?: boolean;
   type?: 'button' | 'submit' | 'reset';
   disabled?: boolean;
+  /** Affiche un indicateur de chargement et bloque l'action. */
+  loading?: boolean;
+  /** Texte lu par les lecteurs d'écran pendant le chargement. */
+  loadingLabel?: string;
+  /** Ajoute automatiquement l'icône WhatsApp à gauche (variante `whatsapp`). */
+  whatsappIcon?: boolean;
+  'aria-label'?: string;
+  id?: string;
+  name?: string;
+  value?: string;
+  form?: string;
+}
+
+const LEGACY: Record<LegacyButtonVariant, ButtonVariant> = {
+  dark: 'secondary',
+  'outline-light': 'inverse',
+};
+
+export function resolveButtonVariant(variant: ButtonVariant | LegacyButtonVariant): ButtonVariant {
+  return (LEGACY as Record<string, ButtonVariant>)[variant] ?? (variant as ButtonVariant);
+}
+
+const base =
+  'group/btn relative inline-flex items-center justify-center font-semibold rounded-full select-none ' +
+  'transition-[background-color,border-color,color,box-shadow,transform] duration-300 ease-out-expo ' +
+  'motion-safe:active:scale-[0.97] ' +
+  'disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50';
+
+export const buttonVariantClasses: Record<ButtonVariant, string> = {
+  primary:
+    'bg-cta text-ink-900 shadow-btn hover:bg-cta-hover hover:shadow-btn-hover active:bg-brand-500 motion-safe:hover:-translate-y-0.5',
+  secondary:
+    'bg-forest text-white shadow-btn hover:bg-forest-deep active:bg-forest-deep motion-safe:hover:-translate-y-0.5',
+  outline:
+    'border border-ink-300 bg-white text-forest hover:border-forest hover:bg-brand-50 active:bg-brand-100',
+  ghost: 'text-primary hover:text-primary-dark hover:bg-brand-50 active:bg-brand-100',
+  whatsapp:
+    'bg-whatsapp text-whatsapp-ink shadow-btn hover:bg-whatsapp-hover hover:shadow-whatsapp active:bg-whatsapp-hover motion-safe:hover:-translate-y-0.5',
+  inverse: 'border border-white/60 text-white hover:bg-white/10 hover:border-white active:bg-white/20',
+};
+
+export const buttonSizeClasses: Record<ButtonSize, string> = {
+  sm: 'min-h-tap px-4 py-2 text-sm gap-1.5',
+  md: 'min-h-12 px-6 py-2.5 text-sm gap-2',
+  lg: 'min-h-14 px-7 py-3.5 text-base gap-2',
+};
+
+/** Classes d'un bouton, pour styler un élément qui ne peut pas utiliser <Button> (ex. <summary>). */
+export function buttonClasses({
+  variant = 'primary',
+  size = 'md',
+  fullWidth = false,
+  className,
+}: {
+  variant?: ButtonVariant | LegacyButtonVariant;
+  size?: ButtonSize;
+  fullWidth?: boolean;
+  className?: string;
+} = {}): string {
+  return cx(base, buttonVariantClasses[resolveButtonVariant(variant)], buttonSizeClasses[size], fullWidth && 'w-full', className);
 }
 
 export default function Button({
@@ -24,70 +104,72 @@ export default function Button({
   iconPosition = 'left',
   onClick,
   href,
-  className = '',
+  className,
   fullWidth = false,
   type = 'button',
   disabled = false,
+  loading = false,
+  loadingLabel = 'Chargement…',
+  whatsappIcon = false,
+  'aria-label': ariaLabel,
+  id,
+  name,
+  value,
+  form,
 }: ButtonProps) {
-  const base =
-    'group/btn relative inline-flex items-center justify-center font-semibold rounded-full transition-all duration-300 ease-out-expo focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97] hover:-translate-y-0.5';
-
-  const variants: Record<string, string> = {
-    primary:
-      'bg-cta text-ink-900 shadow-btn hover:bg-brand-300 hover:shadow-btn-hover focus-visible:ring-brand-500',
-    secondary:
-      'border border-ink-200 text-ink-800 bg-white hover:border-brand-400 hover:bg-brand-50 shadow-btn focus-visible:ring-brand-400',
-    ghost:
-      'text-primary hover:text-primary-dark hover:bg-brand-50 focus-visible:ring-brand-400 hover:translate-y-0',
-    whatsapp:
-      'bg-[#25D366] text-white hover:bg-[#1FBE5B] shadow-btn hover:shadow-[0_10px_24px_-6px_rgba(37,211,102,0.6)] focus-visible:ring-[#25D366]',
-    dark:
-      'bg-ink-900 text-white hover:bg-brand-800 shadow-btn focus-visible:ring-ink-700',
-    'outline-light':
-      'border border-white/30 text-white hover:bg-white/10 hover:border-white/60 focus-visible:ring-white',
-  };
-
-  const sizes: Record<string, string> = {
-    sm: 'px-4 py-2 text-sm gap-1.5',
-    md: 'px-5 py-2.5 text-sm gap-2',
-    lg: 'px-7 py-3.5 text-[15px] gap-2',
-  };
-
-  const classes = [
-    base,
-    variants[variant],
-    sizes[size],
-    fullWidth ? 'w-full' : '',
-    className,
-  ]
-    .filter(Boolean)
-    .join(' ');
-
-  const iconClass = 'w-4 h-4 flex-shrink-0';
+  const classes = buttonClasses({ variant, size, fullWidth, className });
+  const inactive = disabled || loading;
+  const iconClass = size === 'lg' ? 'w-5 h-5 flex-shrink-0' : 'w-4 h-4 flex-shrink-0';
 
   const inner = (
     <>
-      {Icon && iconPosition === 'left' && <Icon className={iconClass} />}
+      {loading ? (
+        <Loader2 className={cx(iconClass, 'animate-spin')} aria-hidden="true" />
+      ) : (
+        <>
+          {whatsappIcon && <WhatsAppIcon className={iconClass} />}
+          {Icon && iconPosition === 'left' && <Icon className={iconClass} aria-hidden="true" />}
+        </>
+      )}
       {children}
-      {Icon && iconPosition === 'right' && <Icon className={`${iconClass} transition-transform group-hover/btn:translate-x-0.5`} />}
+      {loading && <span className="sr-only">{loadingLabel}</span>}
+      {Icon && iconPosition === 'right' && !loading && (
+        <Icon
+          className={cx(iconClass, 'transition-transform motion-safe:group-hover/btn:translate-x-0.5')}
+          aria-hidden="true"
+        />
+      )}
     </>
   );
 
-  if (href?.startsWith('/')) {
-    return (
-      <Link href={href} className={classes}>
-        {inner}
-      </Link>
-    );
-  }
-
   if (href) {
+    const linkProps = {
+      id,
+      className: classes,
+      'aria-label': ariaLabel,
+      'aria-disabled': inactive || undefined,
+      'aria-busy': loading || undefined,
+      tabIndex: inactive ? -1 : undefined,
+      onClick: inactive
+        ? (e: React.MouseEvent<HTMLAnchorElement>) => e.preventDefault()
+        : (onClick as React.MouseEventHandler<HTMLAnchorElement> | undefined),
+    };
+
+    if (href.startsWith('/')) {
+      return (
+        <Link href={href} {...linkProps}>
+          {inner}
+        </Link>
+      );
+    }
+
+    const external = href.startsWith('http');
     return (
       <a
         href={href}
-        className={classes}
-        target={href.startsWith('http') ? '_blank' : undefined}
-        rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+        target={external ? '_blank' : undefined}
+        rel={external ? 'noopener noreferrer' : undefined}
+        {...linkProps}
       >
         {inner}
       </a>
@@ -95,7 +177,18 @@ export default function Button({
   }
 
   return (
-    <button type={type} onClick={onClick} className={classes} disabled={disabled}>
+    <button
+      type={type}
+      id={id}
+      name={name}
+      value={value}
+      form={form}
+      onClick={onClick as React.MouseEventHandler<HTMLButtonElement> | undefined}
+      className={classes}
+      disabled={inactive}
+      aria-label={ariaLabel}
+      aria-busy={loading || undefined}
+    >
       {inner}
     </button>
   );

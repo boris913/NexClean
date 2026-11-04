@@ -1,32 +1,50 @@
 import Breadcrumb from '@/components/ui/Breadcrumb';
+import Container from '@/components/ui/Container';
+import PropreteDecor from '@/components/ui/Decor';
 import SectionLabel from '@/components/ui/SectionLabel';
 import Reveal from '@/components/ui/Reveal';
+import { cx } from '@/components/ui/cx';
+import type { PillarKey } from '@/components/ui/pillars';
 
 interface PageHeroProps {
   label?: string;
   title: string;
   subtitle?: string;
   breadcrumb: { name: string; href?: string }[];
+  /** Actions (boutons). En `tone="dark"`, utiliser `primary`, `whatsapp` ou `inverse`. */
   children?: React.ReactNode;
+  /** `light` (défaut) : fond brand-50 → blanc · `dark` : vert profond, texte blanc. */
+  tone?: 'light' | 'dark';
+  /** Colore le surtitre aux couleurs du pilier (fond clair). */
+  pillar?: PillarKey;
+  /** Décor blobs + étincelles : RÉSERVÉ À LA PAGE PROPRETÉ (D-06). */
+  decor?: boolean;
 }
 
 /** En-tête standard des pages internes. */
-export default function PageHero({ label, title, subtitle, breadcrumb, children }: PageHeroProps) {
+export default function PageHero({ label, title, subtitle, breadcrumb, children, tone = 'light', pillar, decor = false }: PageHeroProps) {
+  const dark = tone === 'dark';
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-brand-100 via-brand-50 to-white">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-28 right-[-10%] w-[420px] h-[420px] rounded-full bg-brand-200/80 blur-3xl animate-blob" />
-        <div className="absolute inset-0 bg-dots opacity-30 [mask-image:radial-gradient(ellipse_at_top_right,black,transparent_65%)]" />
-      </div>
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-14 sm:pt-14 sm:pb-20">
-        <Breadcrumb items={[{ name: 'Accueil', href: '/' }, ...breadcrumb]} />
+    <section
+      className={cx(
+        'relative overflow-hidden',
+        dark ? 'surface-dark bg-forest text-white' : 'bg-gradient-to-b from-brand-50 to-white border-b border-ink-100',
+      )}
+    >
+      {decor && <PropreteDecor variant="blobs" tone={tone} />}
+      <Container className="relative pt-10 pb-14 sm:pt-14 sm:pb-20">
+        <Breadcrumb tone={tone} items={[{ name: 'Accueil', href: '/' }, ...breadcrumb]} />
         <Reveal>
-          {label && <SectionLabel className="mb-5">{label}</SectionLabel>}
-          <h1 className="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl text-ink-900 mb-5 max-w-3xl">{title}</h1>
-          {subtitle && <p className="text-ink-600 text-lg sm:text-xl max-w-2xl leading-relaxed">{subtitle}</p>}
-          {children && <div className="mt-8 flex flex-col sm:flex-row gap-3">{children}</div>}
+          {label && (
+            <SectionLabel tone={tone} pillar={dark ? undefined : pillar} sparkle={decor} className="mb-5">
+              {label}
+            </SectionLabel>
+          )}
+          <h1 className={cx('font-display text-h1 mb-5 max-w-3xl', dark ? 'text-white' : 'text-ink-900')}>{title}</h1>
+          {subtitle && <p className={cx('text-lead max-w-2xl', dark ? 'text-brand-100' : 'text-ink-600')}>{subtitle}</p>}
+          {children && <div className="mt-8 flex flex-col sm:flex-row flex-wrap gap-3">{children}</div>}
         </Reveal>
-      </div>
+      </Container>
     </section>
   );
 }

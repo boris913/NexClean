@@ -4,6 +4,44 @@
 
 @layer base {
 
+  /* ─── Tokens du design system (source : tailwind.config.ts, doc : docs/design-system.md) ─── */
+  :root {
+    --ds-forest: theme('colors.forest.DEFAULT');
+    --ds-forest-deep: theme('colors.forest.deep');
+    --ds-cta: theme('colors.cta.DEFAULT');
+    --ds-cta-hover: theme('colors.cta.hover');
+    --ds-ink: theme('colors.ink.900');
+    --ds-text: theme('colors.ink.900');
+    --ds-text-muted: theme('colors.muted');
+    --ds-primary: theme('colors.primary');
+    --ds-whatsapp: theme('colors.whatsapp.DEFAULT');
+    --ds-whatsapp-hover: theme('colors.whatsapp.hover');
+    --ds-whatsapp-dark: theme('colors.whatsapp.dark');
+    --ds-success: theme('colors.success.DEFAULT');
+    --ds-danger: theme('colors.danger.DEFAULT');
+    --ds-warning: theme('colors.warning.DEFAULT');
+    --ds-info: theme('colors.info.DEFAULT');
+    --ds-pillar-proprete: theme('colors.pillar.proprete.DEFAULT');
+    --ds-pillar-recrutement: theme('colors.pillar.recrutement.DEFAULT');
+    --ds-pillar-espaces-verts: theme('colors.pillar.espaces-verts.DEFAULT');
+    --ds-pillar-emploi: theme('colors.pillar.emploi.DEFAULT');
+    --ds-pillar-boutique: theme('colors.pillar.boutique.DEFAULT');
+    --ds-container: theme('maxWidth.container');
+    --ds-container-narrow: theme('maxWidth.container-narrow');
+    --ds-section-y: theme('spacing.section');
+    --ds-section-y-sm: theme('spacing.section-sm');
+    --ds-tap: theme('spacing.tap');
+    /* Anneau de focus : brand-700 sur blanc = 5,94:1 (≥ 3:1 exigé). */
+    --ds-focus-ring: theme('colors.brand.700');
+    --ds-focus-offset: theme('colors.white');
+  }
+
+  /* Surfaces sombres : anneau lime brand-300 sur forest = 6,22:1. */
+  .surface-dark {
+    --ds-focus-ring: theme('colors.brand.300');
+    --ds-focus-offset: theme('colors.forest.DEFAULT');
+  }
+
   html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
@@ -22,16 +60,26 @@
     @apply bg-brand-200 text-ink-900;
   }
 
+  /* Focus homogène : anneau 2 px + liseré, contraste ≥ 3:1 sur fond clair comme sombre. */
   :focus-visible {
-    @apply outline-none ring-2 ring-brand-500 ring-offset-2;
+    outline: 2px solid transparent; /* reste visible en mode Contraste élevé */
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--ds-focus-offset), 0 0 0 4px var(--ds-focus-ring);
   }
 
   @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
+    }
+    /* Coupe net les animations décoratives Tailwind (marquee, blob, float, sparkle, pulse-ring…). */
+    [class*='animate-'] {
+      animation: none !important;
     }
   }
 
@@ -42,7 +90,70 @@
   }
 }
 
+@layer components {
+  /* Lien d'évitement : masqué jusqu'au focus clavier. */
+  .skip-link {
+    position: fixed;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 70;
+    display: inline-flex;
+    align-items: center;
+    min-height: theme('spacing.tap');
+    padding: 0.5rem 1rem;
+    border-radius: theme('borderRadius.lg');
+    background: theme('colors.white');
+    color: theme('colors.ink.900');
+    font-weight: 600;
+    box-shadow: theme('boxShadow.card');
+    transform: translateY(-200%);
+  }
+  .skip-link:focus,
+  .skip-link:focus-visible {
+    transform: translateY(0);
+  }
+
+  /* Conteneur unique (équivalent CSS du composant <Container />). */
+  .container-site {
+    width: 100%;
+    max-width: theme('maxWidth.container');
+    margin-inline: auto;
+    padding-inline: theme('spacing.4');
+  }
+  .container-narrow {
+    width: 100%;
+    max-width: theme('maxWidth.container-narrow');
+    margin-inline: auto;
+    padding-inline: theme('spacing.4');
+  }
+  @media (min-width: theme('screens.sm')) {
+    .container-site,
+    .container-narrow {
+      padding-inline: theme('spacing.6');
+    }
+  }
+  @media (min-width: theme('screens.lg')) {
+    .container-site,
+    .container-narrow {
+      padding-inline: theme('spacing.8');
+    }
+  }
+}
+
 @layer utilities {
+  /* Cible tactile minimale de 44 × 44 px (WCAG 2.5.5). */
+  .tap-target {
+    min-height: theme('spacing.tap');
+    min-width: theme('spacing.tap');
+  }
+
+  /* Anneau de focus explicite, pour les champs qui retirent l'outline (`outline-none`). */
+  .focus-ring:focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--ds-focus-offset), 0 0 0 4px var(--ds-focus-ring);
+  }
+
   /* Texte surligné vert clair (titres) */
   .highlight {
     background-image: linear-gradient(transparent 62%, theme('colors.brand.300') 62%, theme('colors.brand.300') 92%, transparent 92%);

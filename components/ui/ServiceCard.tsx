@@ -36,7 +36,7 @@ export default function ServiceCard({ service }: ServiceCardProps) {
       </ul>
 
       <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
-        <span className="text-xs text-slate-400 font-medium">{service.priceRange}</span>
+        <span className="text-xs text-muted font-medium">{service.priceRange}</span>
         <span className="inline-flex items-center gap-1 text-sm font-medium text-primary whitespace-nowrap">
           En savoir plus
           <LucideIcons.ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
