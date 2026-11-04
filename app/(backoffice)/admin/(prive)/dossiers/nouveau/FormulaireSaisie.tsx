@@ -1,7 +1,6 @@
 'use client';
 // RG-19 / RG-20 : saisie d'une demande reçue par téléphone, WhatsApp, e-mail ou visite.
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { DOSSIER_TYPES, DOSSIER_TYPE_CODES, type DossierType } from '@/lib/domain/referentiels';
 import type { ListesLieux } from '@/lib/geo/service';
 import type { LignePosteSaisie } from '@/lib/dossiers/service';
@@ -13,7 +12,6 @@ import { saisirDemande } from '../actions';
 const CANAUX = { whatsapp: 'WhatsApp', telephone: 'Téléphone', email: 'E-mail', visite: 'Visite', autre: 'Autre' } as const;
 
 export default function FormulaireSaisie({ listes }: { listes: ListesLieux }) {
-  const router = useRouter();
   const [type, setType] = useState<DossierType>('NET');
   const [lieu, setLieu] = useState<ValeurLieu>({ villeId: listes[0]?.id ?? null, villeAutre: null, quartierId: null, quartierAutre: null });
   const [lignes, setLignes] = useState<LignePosteSaisie[]>([ligneVide()]);
@@ -46,9 +44,9 @@ export default function FormulaireSaisie({ listes }: { listes: ListesLieux }) {
       donnees: { client, ...lieu, lieu: champ('lieu'), description: champ('description'), lignes: type === 'REC' ? lignes : [] },
       meLAttribuer: f.get('meLAttribuer') === 'on',
     });
+    // Succès : l'action redirige vers le dossier créé.
     setEnvoi(false);
-    if (!r.ok) return setErreur(r.erreur);
-    router.push(`/admin/dossiers/${r.message}`);
+    if (!r.ok) setErreur(r.erreur);
   }
 
   return (

@@ -72,7 +72,7 @@ export default function DeuxFacteurs({ active, obligatoire }: { active: boolean;
             <li key={c} className="bg-ink-50 border border-ink-100 rounded-md px-2 py-1.5 text-center">{c}</li>
           ))}
         </ul>
-        <button type="button" className={classeBouton('principal', true)} onClick={() => { setEtape({ nom: 'repos' }); router.replace('/admin'); router.refresh(); }}>
+        <button type="button" className={classeBouton('principal', true)} onClick={() => window.location.replace('/admin')}>
           J’ai noté mes codes
         </button>
       </Carte>
