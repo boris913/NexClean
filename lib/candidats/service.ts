@@ -1,6 +1,7 @@
 // Espace candidat (MVP2-01) : inscription, connexion, profil, documents, mot de passe oublié,
 // suppression des données. Logique serveur sans cookie (testable) ; les cookies sont dans session.ts.
-import { and, asc, count, eq, gt, gte, isNull, lte, or, sql } from 'drizzle-orm';
+import { and, asc, count, eq, gt, gte, inArray, isNull, lte, or, sql, type SQL } from 'drizzle-orm';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { getDb, schema } from '@/lib/db';
 import { journaliser } from '@/lib/audit';
 import { echapperHtml, envoyerEmail } from '@/lib/email';
@@ -12,7 +13,10 @@ import { getStockage, nouvelleCle } from '@/lib/fichiers/stockage';
 import { validerFichier } from '@/lib/fichiers/validation';
 import { idsDirection, notifier } from '@/lib/notifications';
 import { normaliserTelephone } from '@/lib/telephone';
-import { attribuerCandidat } from './attribution';
+import { FUSEAU } from '@/lib/domain/referentiels';
+import { nomAffichable, STATUTS_EN_COURS } from '@/lib/propositions/domaine';
+import { chargerProposition, evenementDossier, lienPropositionsDossier, type Tx } from '@/lib/propositions/effets';
+import { attribuerCandidat, lienFicheCandidat } from './attribution';
 import {
   CONSENTEMENTS,
   JOURS_AVANT_SUPPRESSION,
@@ -203,7 +207,9 @@ export async function lireEspace(candidatId: number, maintenant = new Date()) {
       profilMisAJourLe: c.profilMisAJourLe,
     },
     /** Seule information de statut montrée au candidat (RG-09, RG-12). */
-    enRecherche: c.statut !== 'indisponible',
+    enRecherche: enRecherche(c.statut),
+    /** Placement confirmé (ADR 0011 §4) : il peut se déclarer de nouveau en recherche. */
+    place: c.statut === 'place',
     experiences,
     documents,
     completude: completude({
@@ -282,17 +288,22 @@ export async function modifierProfil(candidatId: number, brouillon: BrouillonCan
   });
 }
 
-/** « Je suis toujours en recherche » / « Je ne cherche plus » (RG-10). */
-export async function definirRecherche(candidatId: number, enRecherche: boolean, ip: string | null): Promise<void> {
+/** Un candidat `placé` n'est plus proposé à d'autres Clients (ADR 0011 §4), comme un `indisponible`. */
+const enRecherche = (statut: string) => statut !== 'indisponible' && statut !== 'place';
+
+/**
+ * « Je suis toujours en recherche » / « Je ne cherche plus » (RG-10). Depuis `placé`, la reprise
+ * remet le candidat « à contacter » (ADR 0011 §4) ; `placé` n'est jamais restauré par une reprise.
+ */
+export async function definirRecherche(candidatId: number, actif: boolean, ip: string | null): Promise<void> {
   await getDb().transaction(async (tx) => {
     const [c] = await tx.select({ statut: schema.candidat.statut, avant: schema.candidat.statutAvantIndisponible }).from(schema.candidat).where(eq(schema.candidat.id, candidatId));
     if (!c) throw new ErreurMetier('Compte introuvable.');
-    if (enRecherche === (c.statut !== 'indisponible')) return;
-    const valeurs = enRecherche
-      ? { statut: c.avant ?? ('a_contacter' as const), statutAvantIndisponible: null }
-      : { statut: 'indisponible' as const, statutAvantIndisponible: c.statut };
+    if (actif === enRecherche(c.statut)) return;
+    const repris = c.statut === 'indisponible' && c.avant && c.avant !== 'place' ? c.avant : ('a_contacter' as const);
+    const valeurs = actif ? { statut: repris, statutAvantIndisponible: null } : { statut: 'indisponible' as const, statutAvantIndisponible: c.statut };
     await tx.update(schema.candidat).set({ ...valeurs, profilMisAJourLe: new Date() }).where(eq(schema.candidat.id, candidatId));
-    await journaliser({ ...acteur(candidatId, ip), action: enRecherche ? 'candidat.recherche_reprise' : 'candidat.recherche_arretee', objetType: 'candidat', objetId: candidatId, avant: { statut: c.statut }, apres: { statut: valeurs.statut } }, tx);
+    await journaliser({ ...acteur(candidatId, ip), action: actif ? 'candidat.recherche_reprise' : 'candidat.recherche_arretee', objetType: 'candidat', objetId: candidatId, avant: { statut: c.statut }, apres: { statut: valeurs.statut } }, tx);
   });
 }
 
@@ -432,6 +443,54 @@ export async function reinitialiserMotDePasse(jeton: string, motDePasse: string,
 
 // ─── Suppression des données (RG-15..18) ──────────────────────
 
+export const MOTIF_RETRAIT_SUPPRESSION = 'Retrait du candidat (suppression des données)';
+
+const jourLocal = (d: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: FUSEAU, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+
+/**
+ * RG-16 ; MVP2-03 RG-01 : les Propositions en cours passent à `retirée` (accès client révoqués),
+ * les Placements encore annoncés sont abandonnés ; le référent de chaque Dossier est prévenu.
+ */
+async function retirerPropositionsEnCours(tx: Tx, candidatId: number, maintenant: Date): Promise<number> {
+  const enCours = await tx
+    .select({ id: schema.proposition.id })
+    .from(schema.proposition)
+    .where(and(eq(schema.proposition.candidatId, candidatId), inArray(schema.proposition.statut, [...STATUTS_EN_COURS])))
+    .orderBy(asc(schema.proposition.id));
+  const auteur = { type: 'candidat' as const, candidatId };
+  for (const { id } of enCours) {
+    const p = await chargerProposition(tx, id);
+    await tx.update(schema.proposition).set({ statut: 'retiree', motif: MOTIF_RETRAIT_SUPPRESSION, accesRevoqueLe: maintenant, majLe: maintenant }).where(eq(schema.proposition.id, id));
+    await tx.update(schema.accesProfil).set({ revoqueLe: maintenant }).where(and(eq(schema.accesProfil.propositionId, id), isNull(schema.accesProfil.revoqueLe)));
+    const abandonnes = await tx
+      .update(schema.placement)
+      .set({ statut: 'abandonne', finLe: jourLocal(maintenant), finMotif: MOTIF_RETRAIT_SUPPRESSION })
+      .where(and(eq(schema.placement.propositionId, id), eq(schema.placement.statut, 'annonce')))
+      .returning({ id: schema.placement.id });
+    await evenementDossier(tx, p.dossierId, 'proposition', `${p.libelle} : proposition retirée — ${MOTIF_RETRAIT_SUPPRESSION.toLowerCase()}${abandonnes.length ? ', placement annoncé abandonné' : ''}`, auteur, {
+      propositionId: id,
+      statut: 'retiree',
+      placementsAbandonnes: abandonnes.map((a) => a.id),
+    });
+    await journaliser({ ...acteur(candidatId), action: 'proposition.retiree', objetType: 'proposition', objetId: id, avant: { statut: p.statut }, apres: { statut: 'retiree' }, details: { motif: MOTIF_RETRAIT_SUPPRESSION, placementsAbandonnes: abandonnes.map((a) => a.id) } }, tx);
+    if (p.referentId) {
+      await notifier(
+        {
+          destinataires: [p.referentId],
+          type: 'proposition_retiree',
+          titre: 'Proposition retirée',
+          texte: `${p.libelle} (${p.numero}) : le candidat a demandé la suppression de ses données ; la proposition à ${p.client} est retirée${abandonnes.length ? ' et le placement annoncé abandonné' : ''}.`,
+          lien: lienPropositionsDossier(p.dossierId),
+          dossierId: p.dossierId,
+          cle: `proposition_retiree_suppression:${id}`,
+        },
+        tx,
+      );
+    }
+  }
+  return enCours.length;
+}
+
 /** Demande de suppression : compte bloqué immédiatement, exécution différée (délai d'annulation). */
 export async function demanderSuppression(candidatId: number, motDePasse: string, ip: string | null, maintenant = new Date()): Promise<{ prevueLe: Date }> {
   const db = getDb();
@@ -444,20 +503,52 @@ export async function demanderSuppression(candidatId: number, motDePasse: string
     await tx.update(schema.candidat).set({ suppressionDemandeeLe: maintenant, suppressionPrevueLe: prevueLe }).where(eq(schema.candidat.id, candidatId));
     await fermerToutesLesSessions(candidatId, tx);
     await journaliser({ ...acteur(candidatId, ip), action: 'candidat.suppression_demandee', objetType: 'candidat', objetId: candidatId, details: { prevueLe: prevueLe.toISOString() } }, tx);
-    // Propositions en cours → « refusée — retrait du candidat » : avec MVP2-03 (les Propositions n'existent pas encore).
+    await retirerPropositionsEnCours(tx, candidatId, maintenant);
   });
   return { prevueLe };
 }
 
 /**
+ * RG-17 : les Propositions et Placements conservés ne doivent plus nommer la personne. Leur
+ * historique dans les Dossiers (événements portant leur identifiant) et les notifications des
+ * collaborateurs qui la citent reprennent le pseudonyme.
+ */
+async function pseudonymiserTraces(tx: Tx, candidatId: number, prenom: string, nom: string): Promise<void> {
+  if (!prenom.trim() && !nom.trim()) return;
+  const pseudo = pseudonyme(candidatId);
+  const formes = [...new Set([`${prenom} ${nom}`.trim(), nomAffichable(prenom, nom)])].filter((f) => f.length > 2);
+  const remplacer = (col: AnyPgColumn) => formes.reduce<SQL>((acc, f) => sql`replace(${acc}, ${f}, ${pseudo})`, sql`${col}`);
+  const propositions = await tx.select({ id: schema.proposition.id, dossierId: schema.proposition.dossierId }).from(schema.proposition).where(eq(schema.proposition.candidatId, candidatId));
+  const placements = await tx.select({ id: schema.placement.id }).from(schema.placement).where(eq(schema.placement.candidatId, candidatId));
+  const e = schema.evenementDossier;
+  const n = schema.notification;
+  const ids = (l: { id: number }[]) => l.map((x) => String(x.id));
+  if (propositions.length || placements.length) {
+    const lies = [
+      ...(propositions.length ? [inArray(sql<string>`${e.apres}->>'propositionId'`, ids(propositions))] : []),
+      ...(placements.length ? [inArray(sql<string>`${e.apres}->>'placementId'`, ids(placements))] : []),
+    ];
+    await tx.update(e).set({ commentaire: remplacer(e.commentaire) }).where(or(...lies));
+  }
+  const dossiers = [...new Set(propositions.map((x) => x.dossierId))];
+  await tx
+    .update(n)
+    .set({ titre: remplacer(n.titre), texte: remplacer(n.texte) })
+    .where(or(eq(n.lien, lienFicheCandidat(candidatId)), dossiers.length ? inArray(n.dossierId, dossiers) : undefined));
+}
+
+/**
  * Exécute les suppressions arrivées à échéance (tâche planifiée). Profil, expériences, documents,
- * consentements, sessions et jetons sont supprimés ; il ne reste qu'un pseudonyme (« Candidat #8F3A »)
- * pour les Propositions et Placements conservés. Le journal d'audit est conservé.
+ * consentements, sessions, jetons et notifications du candidat sont supprimés ; il ne reste qu'un
+ * pseudonyme (« Candidat #8F3A ») pour les Propositions et Placements conservés (MVP2-03, cas
+ * limites). Les captures d'accord WhatsApp et preuves de placement sont des pièces de preuve
+ * conservées ; ni les Propositions ni les Placements ne recopient de coordonnées du candidat.
+ * Le journal d'audit est conservé.
  */
 export async function executerSuppressionsDues(maintenant = new Date()): Promise<number> {
   const db = getDb();
   const dus = await db
-    .select({ id: schema.candidat.id, email: schema.candidat.email, prenom: schema.candidat.prenom })
+    .select({ id: schema.candidat.id, email: schema.candidat.email, prenom: schema.candidat.prenom, nom: schema.candidat.nom })
     .from(schema.candidat)
     .where(and(lte(schema.candidat.suppressionPrevueLe, maintenant), isNull(schema.candidat.supprimeLe)));
   for (const c of dus) {
@@ -471,6 +562,8 @@ export async function executerSuppressionsDues(maintenant = new Date()): Promise
       await tx.delete(schema.candidatDemandeReinitialisation).where(eq(schema.candidatDemandeReinitialisation.candidatId, c.id));
       // RG-17 : les Candidatures sont supprimées (MVP2-02).
       await tx.delete(schema.candidature).where(eq(schema.candidature.candidatId, c.id));
+      await tx.delete(schema.notificationCandidat).where(eq(schema.notificationCandidat.candidatId, c.id));
+      await pseudonymiserTraces(tx, c.id, c.prenom, c.nom);
       await tx
         .update(schema.candidat)
         .set({
