@@ -2,6 +2,7 @@
 // Actions sur les dossiers. Les droits sont revérifiés côté serveur à chaque appel
 // (exigerCollaborateur + contrôles par dossier dans lib/dossiers/service.ts).
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { exigerCollaborateur } from '@/lib/authz/session';
 import { executer } from '@/lib/actions';
 import { ErreurMetier } from '@/lib/collaborateurs/service';
@@ -19,12 +20,15 @@ const rafraichir = (id: number) => {
   revalidatePath('/admin/dossiers');
 };
 
+/** Succès : redirection serveur vers le dossier créé (pas de `router.push` en course avec la revalidation). */
 export async function saisirDemande(entree: svc.NouvelleDemande) {
-  return executer(async () => {
-    const r = await svc.creerDemande(entree, await acteur());
+  const r = await executer(async () => {
+    const d = await svc.creerDemande(entree, await acteur());
     revalidatePath('/admin/dossiers');
-    return String(r.dossierId);
+    return String(d.dossierId);
   });
+  if (r.ok) redirect(`/admin/dossiers/${r.message}`);
+  return r;
 }
 
 export async function changerStatut(id: number, vers: Statut, commentaire: string) {

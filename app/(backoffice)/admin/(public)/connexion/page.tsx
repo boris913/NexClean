@@ -2,13 +2,18 @@
 // M1-AUT-01/02/06 : connexion e-mail + mot de passe, puis code de double authentification si activée.
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth/client';
 import { Alerte, classeBouton, classeChamp, classeLibelle } from '@/components/backoffice/ui';
 import CadreAuth from '@/components/backoffice/CadreAuth';
 
+/**
+ * Session ouverte : navigation complète. Un `router.replace` suivi de `router.refresh` pouvait
+ * laisser l'utilisateur sur la page de connexion (le rafraîchissement de la page courante
+ * annulait la navigation en cours).
+ */
+const entrer = () => window.location.replace('/admin');
+
 export default function PageConnexion() {
-  const router = useRouter();
   const [etape, setEtape] = useState<'identifiants' | '2fa'>('identifiants');
   const [codeSecours, setCodeSecours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -30,8 +35,7 @@ export default function PageConnexion() {
       setEtape('2fa');
       return;
     }
-    router.replace('/admin');
-    router.refresh();
+    entrer();
   }
 
   async function verifier(form: FormData) {
@@ -44,8 +48,7 @@ export default function PageConnexion() {
       setErreur('Code incorrect ou expiré.');
       return;
     }
-    router.replace('/admin');
-    router.refresh();
+    entrer();
   }
 
   return (

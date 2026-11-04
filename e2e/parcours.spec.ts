@@ -181,7 +181,9 @@ test.describe('Back-Office', () => {
     await expect(bo.locator('main')).toContainText(numeroDevis);
     await sansDefilementHorizontal(bo);
 
-    await bo.goto('/admin/dossiers?q=' + encodeURIComponent(numeroPersonnel));
+    // Page au repos (hydratée, préchargements terminés) avant de cliquer : un clic pendant le
+    // préchargement du même lien peut être perdu par le routeur.
+    await bo.goto('/admin/dossiers?q=' + encodeURIComponent(numeroPersonnel), { waitUntil: 'networkidle' });
     await bo.getByRole('link', { name: new RegExp(numeroPersonnel) }).first().click();
     await expect(bo.locator('h1').first()).toContainText(numeroPersonnel);
     await expect(bo.locator('main')).toContainText('Hôtel Essai E2E');
@@ -227,7 +229,7 @@ test.describe('Back-Office', () => {
   });
 
   test('référentiel : la saisie « Autre quartier » du site est rattachée à un nouveau quartier', async () => {
-    await bo.goto('/admin/referentiel');
+    await bo.goto('/admin/referentiel', { waitUntil: 'networkidle' });
     await bo.getByRole('link', { name: 'Les rattacher au référentiel' }).click();
     await expect(bo).toHaveURL(/\/admin\/referentiel\/saisies/);
     await sansDefilementHorizontal(bo);
@@ -238,7 +240,7 @@ test.describe('Back-Office', () => {
     await expect(bo.getByText(/1 dossier\(s\) rattaché\(s\)/)).toBeVisible();
     await expect(bo.getByText('Aucune saisie à revoir.')).toBeVisible();
 
-    await bo.goto('/admin/dossiers?q=' + encodeURIComponent(numeroDevis));
+    await bo.goto('/admin/dossiers?q=' + encodeURIComponent(numeroDevis), { waitUntil: 'networkidle' });
     await bo.getByRole('link', { name: new RegExp(numeroDevis) }).first().click();
     await expect(bo.locator('main')).toContainText(QUARTIER_LIBRE);
   });
