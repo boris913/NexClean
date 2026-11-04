@@ -6,10 +6,13 @@ import { lireSuivi } from '@/lib/dossiers/service';
 import { LIBELLE_CLIENT, phaseDe, type Phase } from '@/lib/dossiers/statuts';
 import { DOSSIER_TYPES, FUSEAU } from '@/lib/domain/referentiels';
 import { getWhatsAppLink } from '@/lib/constants';
+import { chargerContexteSuivi, compterVisibles } from '@/lib/propositions/client';
+import SectionProfils from './SectionProfils';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'Suivi de votre demande',
+  referrer: 'no-referrer',
   robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
 };
 
@@ -32,6 +35,9 @@ export default async function PageSuivi({ params }: { params: Promise<{ jeton: s
     );
   }
 
+  // MVP2-03 RG-07 : profils transmis (dossier de recrutement), après vérification des 4 chiffres.
+  const ctx = vue.type === 'REC' ? await chargerContexteSuivi(jeton) : null;
+  const avecProfils = !!ctx && (await compterVisibles(ctx)) > 0;
   const phase = phaseDe(vue.statut);
   const rangActuel = ETAPES.indexOf(phase);
   return (
@@ -54,6 +60,7 @@ export default async function PageSuivi({ params }: { params: Promise<{ jeton: s
           ))}
         </ol>
       )}
+      {avecProfils && ctx && <SectionProfils ctx={ctx} />}
       <a href={getWhatsAppLink(`Bonjour NEXCLEAN, je vous contacte au sujet de ma demande n° ${vue.numero}.`)} className="inline-flex w-full justify-center min-h-11 items-center px-5 rounded-full bg-cta font-semibold">
         Écrire à NEXCLEAN sur WhatsApp
       </a>
