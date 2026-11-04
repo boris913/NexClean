@@ -268,11 +268,11 @@ export default async function PageCandidat({ params }: { params: Promise<{ id: s
 
         <Carte titre={`Propositions (${propositions.length})`}>
           {propositions.length === 0 ? (
-            <p className="text-sm text-ink-600">Aucune proposition.</p>
+            <p className="text-sm text-ink-500">Aucune proposition.</p>
           ) : (
-            <ul className="divide-y divide-ink-50">
+            <ul className="-my-2 divide-y divide-ink-100">
               {propositions.map((p) => (
-                <li key={p.id} className="py-2 text-sm">
+                <li key={p.id} className="py-2.5 text-sm">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="min-w-0">
                       {p.voirDossier ? <Link href={`/admin/dossiers/${p.dossierId}?onglet=propositions#propositions`} className="text-primary">{p.numero}</Link> : p.numero} · {p.intitule} · {p.client}
