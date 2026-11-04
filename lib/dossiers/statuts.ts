@@ -111,6 +111,9 @@ export interface ContexteTransition {
 
 export type Verdict = { ok: true; retourArriere: boolean } | { ok: false; erreur: string };
 
+/** MVP2-03 RG-22 : l'avancée vers « Placements confirmés » passe par la clôture de la recherche. */
+export const MESSAGE_CLOTURE_RECHERCHE = 'Pour passer à « Placements confirmés », utilisez « Clôturer la recherche » (onglet Propositions).';
+
 /**
  * Valide une transition manuelle selon RG-12..18 et les gardes transitoires RG-16.
  * Les droits (référent du dossier ou Direction) sont vérifiés par l'appelant.
@@ -173,8 +176,9 @@ export function verifierTransition(c: ContexteTransition): Verdict {
     if (!commentaire) return { ok: false, erreur: 'Indiquez le montant, le moyen de paiement et la référence.' };
     if (!c.aUnJustificatif) return { ok: false, erreur: 'Joignez le justificatif de paiement (document de catégorie « Justificatif »).' };
   }
-  if (vers === 'placements_confirmes' && !commentaire) {
-    return { ok: false, erreur: 'Indiquez le nombre de placements confirmés.' };
+  // MVP2-03 RG-21, RG-22 : « Placements confirmés » est fixé par la clôture de la recherche.
+  if (vers === 'placements_confirmes') {
+    return { ok: false, erreur: MESSAGE_CLOTURE_RECHERCHE };
   }
   return { ok: true, retourArriere: false };
 }
@@ -185,7 +189,8 @@ export function transitionsProposees(type: DossierType, de: Statut, direction: b
   const cycle = cycleDe(type);
   const suivant = de === 'a_completer' ? 'en_qualification' : cycle[rang(type, de) + 1];
   const liste: Statut[] = [];
-  if (suivant && suivant !== 'attribuee') liste.push(suivant);
+  // « Placements confirmés » : bouton « Clôturer la recherche » (MVP2-03 RG-22), pas une transition manuelle.
+  if (suivant && suivant !== 'attribuee' && suivant !== 'placements_confirmes') liste.push(suivant);
   if (de === 'en_qualification') liste.push('a_completer');
   liste.push('refuse', 'sans_suite');
   return liste;

@@ -15,6 +15,7 @@ import { anneeDouala, formaterNumero } from './numero';
 import { estFinal, STATUTS, verifierTransition, type Statut } from './statuts';
 import { attribuerAutomatiquement, signalerSiReferentIneligible } from './attribution';
 import { declencherEnvoi, notifier } from '@/lib/notifications';
+import { revoquerAccesNonPlaces } from '@/lib/propositions/revocation';
 
 type Tx = Parameters<Parameters<ReturnType<typeof getDb>['transaction']>[0]>[0];
 
@@ -257,6 +258,11 @@ export async function changerStatut(dossierId: number, vers: Statut, commentaire
       .where(eq(schema.dossier.id, dossierId));
     await evenement(tx, { dossierId, auteurId: a.id, type: 'transition', deStatut: d.statut, versStatut: vers, commentaire: commentaire?.trim() || null });
     await journaliser({ ...auteurAudit(a), action: 'dossier.transition', objetType: 'dossier', objetId: dossierId, avant: d.statut, apres: vers, details: commentaire ? { commentaire } : undefined }, tx);
+    // MVP2-03 RG-23 : à la fermeture du Dossier, l'accès client aux profils non placés est révoqué.
+    if (estFinal(vers) && d.type === 'REC') {
+      const n = await revoquerAccesNonPlaces(tx, dossierId);
+      if (n) await journaliser({ acteurType: 'systeme', action: 'proposition.acces_revoque', objetType: 'dossier', objetId: dossierId, details: { propositions: n, motif: 'fermeture du dossier' } }, tx);
+    }
   });
 }
 
