@@ -1,5 +1,6 @@
 // Tâches planifiées (MVP1-05) : escalade des dossiers non attribués (RG-06), récapitulatif
-// quotidien des dossiers sans action (RG-11), reprise des e-mails en attente (RG-13).
+// quotidien des dossiers sans action (RG-11), reprise des e-mails en attente (RG-13), expiration des
+// devis (MVP2-04 RG-14).
 // Exécution toutes les 15 minutes ; chaque tâche est idempotente (clés de notification).
 import { and, eq, isNotNull, isNull, lt, notInArray } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
@@ -11,6 +12,7 @@ import { STATUTS_FINAUX } from '@/lib/dossiers/statuts';
 import { executerSuppressionsDues } from '@/lib/candidats/service';
 import { alerterCandidatsNonTraites, escaladerCandidatsNonAttribues } from '@/lib/candidats/escalade';
 import { alerterEcheancesRecherche, signalerAccordsSansReponse } from '@/lib/propositions/service';
+import { expirerDevis } from '@/lib/devis/service';
 
 const JOUR_MS = 24 * 60 * 60 * 1000;
 
@@ -98,7 +100,9 @@ export async function executerTaches(maintenant = new Date()) {
   // MVP2-01 RG-14 : propositions sans réponse du candidat depuis 72 h ; MVP2-03 RG-20 : échéance de la recherche à J-5.
   const accordsSansReponse = await signalerAccordsSansReponse(maintenant);
   const echeancesRecherche = await alerterEcheancesRecherche(maintenant);
+  // MVP2-04 RG-14 : devis envoyés non acceptés à la date de validité → expirés, référent notifié.
+  const devisExpires = await expirerDevis(maintenant);
   const emails = await envoyerNotificationsEnAttente(200);
-  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, emails };
+  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, devisExpires, emails };
 }
 

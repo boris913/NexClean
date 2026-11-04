@@ -25,6 +25,11 @@ export const VARIABLES = {
   'entretien.lieu': 'Lieu de l’entretien',
   'placement.date': 'Date de prise de poste prévue',
   'placement.lien_attestation': 'Lien d’accès temporaire à l’attestation de prise de poste (généré à l’envoi)',
+  // Modèle « Envoi du devis » (MVP2-04 RG-10) : proposé par « Valider et envoyer », jamais dans la liste du dossier.
+  'devis.numero': 'Numéro et version du devis (ou de l’avenant)',
+  'devis.montant': 'Montant total TTC du devis',
+  'devis.acompte': 'Montant de l’acompte',
+  'devis.validite': 'Date limite de validité du devis',
 } as const;
 
 export type Variable = keyof typeof VARIABLES;
@@ -50,6 +55,9 @@ const PREFIXES_PROPOSITION = ['poste.', 'proposition.', 'entretien.', 'placement
  * aussi une variable `candidat.*`, sinon au client), jamais dans la liste du dossier ni de la fiche candidat.
  */
 export const estModeleProposition = (texte: string) => variablesDe(texte).some((v) => PREFIXES_PROPOSITION.some((p) => v.startsWith(p)));
+
+/** Modèle d'envoi d'un devis (MVP2-04) : il utilise au moins une variable `devis.*`. */
+export const estModeleDevis = (texte: string) => variablesDe(texte).some((v) => v.startsWith('devis.'));
 
 /** Remplace les variables ; une valeur absente donne une chaîne vide. */
 export const rendreMessage = (texte: string, ctx: ContexteMessage) => texte.replace(RE, (_, v: string) => ctx[v as Variable] ?? '');
