@@ -557,6 +557,7 @@ export async function donneesAttestation(placementId: number): Promise<(DonneesA
     datePrevue: r.datePrevue,
     garantieJours,
     confirmation,
+    mentionsLegales: await lireParametre('mentions_legales'),
   };
 }
 
