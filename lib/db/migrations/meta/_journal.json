@@ -92,6 +92,13 @@
       "when": 1793788941782,
       "tag": "0012_modele_envoi_devis",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793801820369,
+      "tag": "0013_encaissements",
+      "breakpoints": true
     }
   ]
 }

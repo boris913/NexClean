@@ -510,6 +510,7 @@ export const CATEGORIES_DOCUMENT_GENERE = {
   devis: 'Devis',
   facture: 'Facture / avoir',
   accuse_reception: 'Accusé de réception',
+  recu: 'Reçu',
   attestation: 'Attestation de prise de poste',
 } as const;
 export type CategorieDocumentGenere = keyof typeof CATEGORIES_DOCUMENT_GENERE;

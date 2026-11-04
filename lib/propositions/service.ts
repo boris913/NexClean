@@ -877,6 +877,10 @@ export interface EtatRecherche {
 }
 
 async function dateAcompte(db: Lecteur, dossierId: number): Promise<Date | null> {
+  // MVP2-05 RG-05 : date de l'Encaissement qui complète l'acompte ; à défaut (mode transitoire
+  // MVP-1, acompte posé à la main), date du passage à « Acompte reçu ».
+  const [dos] = await db.select({ le: schema.dossier.acompteCompletLe }).from(schema.dossier).where(eq(schema.dossier.id, dossierId));
+  if (dos?.le) return dos.le;
   const ev = schema.evenementDossier;
   const [r] = await db
     .select({ le: sql<Date | null>`max(${ev.horodatage})`.mapWith(ev.horodatage) })

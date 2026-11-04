@@ -94,6 +94,15 @@ export async function genererPdfFacture(factureId: number): Promise<Uint8Array> 
 }
 
 /**
+ * MVP2-05 RG-04 : reçu d'un Encaissement (REÇ-AAAA-NNNNN) — valeurs figées de la ligne
+ * `encaissement` (montant, moyen, référence, date de réception, Dossier, client).
+ * À IMPLÉMENTER (lot C) : modèle `pdfRecu` dans ./modeles.ts.
+ */
+export async function genererPdfRecu(encaissementId: number): Promise<Uint8Array> {
+  throw new ErreurMetier(`Rendu du reçu non disponible (encaissement ${encaissementId}).`);
+}
+
+/**
  * Accusé de réception d'un Dossier REC (numéro de dossier). Aucune valeur tarifaire : les
  * mentions légales sont celles en vigueur à la génération (document non figé, régénérable).
  */

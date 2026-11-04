@@ -50,8 +50,11 @@ export async function evenementDossier(tx: Tx, dossierId: number, commentaire: s
   await tx.update(schema.dossier).set({ derniereActionLe: new Date() }).where(eq(schema.dossier.id, dossierId));
 }
 
-/** Transition automatique du Dossier (RG-08), journalisée ; sans effet si le statut de départ ne correspond pas. */
-export async function transitionAutomatique(tx: Tx, dossierId: number, de: readonly string[], vers: 'devis_pret' | 'devis_envoye' | 'accepte' | 'refuse', motif: string): Promise<boolean> {
+/**
+ * Transition automatique du Dossier (MVP2-04 RG-08 ; MVP2-05 RG-05, RG-08, RG-11), journalisée ;
+ * sans effet si le statut de départ ne correspond pas.
+ */
+export async function transitionAutomatique(tx: Tx, dossierId: number, de: readonly string[], vers: 'devis_pret' | 'devis_envoye' | 'accepte' | 'refuse' | 'acompte_recu' | 'solde_recu', motif: string): Promise<boolean> {
   const [d] = await tx.select({ statut: schema.dossier.statut }).from(schema.dossier).where(eq(schema.dossier.id, dossierId)).for('update');
   if (!d || !de.includes(d.statut)) return false;
   await tx.update(schema.dossier).set({ statut: vers, fermeLe: vers === 'refuse' ? new Date() : null }).where(eq(schema.dossier.id, dossierId));
@@ -115,7 +118,7 @@ export async function emettreFacture(tx: Tx, f: NouvelleFacture, auteur: AuteurE
 }
 
 /** Archive un PDF généré dans les Documents du Dossier (RG-19). Retourne l'id du document et l'empreinte SHA-256. */
-export async function archiverPdf(dossierId: number, nom: string, octets: Uint8Array, categorie: 'devis' | 'facture' | 'accuse_reception' | 'attestation', auteur: AuteurEffet, tx?: Tx): Promise<{ documentId: number; empreinte: string }> {
+export async function archiverPdf(dossierId: number, nom: string, octets: Uint8Array, categorie: 'devis' | 'facture' | 'accuse_reception' | 'attestation' | 'recu', auteur: AuteurEffet, tx?: Tx): Promise<{ documentId: number; empreinte: string }> {
   const cle = nouvelleCle('dossiers', 'pdf');
   await getStockage().deposer(cle, octets);
   const empreinte = createHash('sha256').update(octets).digest('hex');
