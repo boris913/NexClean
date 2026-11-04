@@ -46,6 +46,13 @@ export interface Job {
   sector?: string;
   /** Nombre de postes à pourvoir (défaut : 1). */
   positions?: number;
+  /**
+   * Date de publication ISO (AAAA-MM-JJ), requise par Google pour le JSON-LD JobPosting (lib/seo.ts).
+   * Ne renseigner que la date réelle de publication.
+   */
+  datePosted?: string;
+  /** Date limite de candidature ISO, si l'offre en a une. */
+  validThrough?: string;
 }
 
 export const jobs: Job[] = [
@@ -68,7 +75,7 @@ export const jobs: Job[] = [
       'Orienté(e) résultats',
     ],
     intro:
-      "NEXCLEAN SARL, entreprise camerounaise de nettoyage professionnel, recrute un(e) Community Manager & Chargé(e) de prospection commerciale pour renforcer sa présence numérique et développer son portefeuille clients à Douala. Rejoignez une entreprise ambitieuse et participez activement à son développement !",
+      "NEXCLEAN SARL, entreprise camerounaise de services aux entreprises et aux particuliers (propreté, recrutement et placement de personnel, espaces verts), recrute un(e) Community Manager & Chargé(e) de prospection commerciale pour renforcer sa présence numérique et développer son portefeuille clients à Douala. Rejoignez une entreprise ambitieuse et participez activement à son développement !",
     missions: [
       'Assurer la veille commerciale et identifier de nouveaux clients chaque jour.',
       'Prospecter sur le terrain, par téléphone, WhatsApp et les réseaux sociaux.',
@@ -160,7 +167,7 @@ export const jobs: Job[] = [
       'Orienté(e) résultats',
     ],
     intro:
-      "NEXCLEAN SARL renforce son équipe marketing et recrute un(e) Community Manager pour développer sa visibilité et générer de nouveaux clients grâce au numérique. Vous travaillerez sur Facebook, TikTok et WhatsApp Business pour promouvoir nos prestations de nettoyage professionnel.",
+      "NEXCLEAN SARL renforce son équipe marketing et recrute un(e) Community Manager pour développer sa visibilité et générer de nouveaux clients grâce au numérique. Vous travaillerez sur Facebook, TikTok et WhatsApp Business pour promouvoir nos services : propreté, recrutement et placement de personnel, espaces verts.",
     missions: [
       'Gérer et animer nos pages Facebook, TikTok et nos autres réseaux sociaux.',
       'Créer des publications attractives présentant nos prestations et réalisations.',
@@ -204,10 +211,10 @@ export const jobs: Job[] = [
       'Disponible pour des déplacements quotidiens',
     ],
     intro:
-      "NEXCLEAN SARL recrute un(e) Chargé(e) de prospection commerciale terrain pour développer son portefeuille clients à Douala. Vous prospecterez quotidiennement les entreprises, restaurants, hôtels, bureaux et commerces pour présenter nos prestations de nettoyage professionnel.",
+      "NEXCLEAN SARL recrute un(e) Chargé(e) de prospection commerciale terrain pour développer son portefeuille clients à Douala. Vous prospecterez quotidiennement les entreprises, restaurants, hôtels, bureaux et commerces pour présenter nos services : propreté, recrutement et placement de personnel, espaces verts.",
     missions: [
       'Prospecter quotidiennement les entreprises, restaurants, hôtels, bureaux, commerces, résidences et autres établissements.',
-      'Identifier les besoins des prospects en nettoyage et entretien.',
+      'Identifier les besoins des prospects en propreté, entretien et personnel.',
       'Présenter clairement les prestations et les avantages de NexClean.',
       'Distribuer les supports commerciaux et recueillir les contacts professionnels.',
       'Obtenir des rendez-vous pour les visites techniques et les devis.',
