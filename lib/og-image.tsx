@@ -37,7 +37,7 @@ export async function renderOgImage(villes: string) {
           }}
         />
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={logoSrc} width={449} height={128} alt="" />
+        <img src={logoSrc} width={545} height={115} alt="" />
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div style={{ fontSize: 64, fontWeight: 800, color: '#FFFFFF', lineHeight: 1.05, letterSpacing: -2 }}>
             Nettoyage professionnel & entretien
