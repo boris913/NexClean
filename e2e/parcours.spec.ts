@@ -245,6 +245,8 @@ test.describe('Back-Office', () => {
 
   test('déconnexion', async () => {
     await bo.goto('/admin');
+    // Sur mobile, la déconnexion est dans le tiroir de navigation.
+    await bo.getByRole('button', { name: 'Menu', exact: true }).click();
     await bo.getByRole('button', { name: 'Déconnexion' }).click();
     await expect(bo).toHaveURL(/\/admin\/connexion/);
     await bo.goto('/admin/dossiers');

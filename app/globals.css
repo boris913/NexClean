@@ -128,3 +128,15 @@
     }
   }
 }
+/* ─── Back-Office ───────────────────────────────────────────── */
+/* Ouverture du tiroir de navigation mobile (neutralisée par prefers-reduced-motion). */
+@keyframes tiroir {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+/* Barres de défilement discrètes dans le Back-Office (le site garde les siennes). */
+.bo ::-webkit-scrollbar { width: 10px; height: 10px; }
+.bo ::-webkit-scrollbar-thumb { background: theme('colors.ink.200'); border-radius: 9999px; border: 2px solid transparent; background-clip: content-box; }
+.bo ::-webkit-scrollbar-thumb:hover { background: theme('colors.ink.300'); background-clip: content-box; }
+.bo ::-webkit-scrollbar-track { background: transparent; }

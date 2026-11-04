@@ -69,7 +69,7 @@ export default function DeuxFacteurs({ active, obligatoire }: { active: boolean;
         </p>
         <ul className="grid grid-cols-2 gap-2 font-mono text-sm mb-4">
           {etape.codes.map((c) => (
-            <li key={c} className="bg-ink-50 rounded px-2 py-1.5 text-center">{c}</li>
+            <li key={c} className="bg-ink-50 border border-ink-100 rounded-md px-2 py-1.5 text-center">{c}</li>
           ))}
         </ul>
         <button type="button" className={classeBouton('principal', true)} onClick={() => { setEtape({ nom: 'repos' }); router.replace('/admin'); router.refresh(); }}>

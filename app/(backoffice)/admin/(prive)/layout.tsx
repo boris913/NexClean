@@ -1,62 +1,135 @@
 // Habillage des pages connectées. L'affichage du menu dépend des droits, mais chaque
 // page vérifie elle-même l'accès côté serveur (exigerCollaborateur).
+// ≥ lg : barre latérale fixe. < lg : barre supérieure + tiroir (MenuMobile).
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { Bell, ShieldCheck } from 'lucide-react';
 import { collaborateurCourant } from '@/lib/authz/session';
 import { peut } from '@/lib/authz/permissions';
 import { ROLES } from '@/lib/domain/referentiels';
 import BoutonDeconnexion from './BoutonDeconnexion';
 import { compterNonLues } from '@/lib/notifications';
 import { peutAccederVivier } from '@/lib/candidats/acces';
+import { LiensNav, MenuMobile, type GroupeNav, type LienNav } from '@/components/backoffice/Navigation';
+
+function Marque() {
+  return (
+    <Link href="/admin" className="flex items-center gap-2.5 rounded-lg">
+      <span aria-hidden className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary font-display text-sm font-bold text-white shadow-sm">
+        N
+      </span>
+      <span className="leading-tight">
+        <span className="block font-display text-[15px] font-semibold tracking-tight text-ink-900">NEXCLEAN</span>
+        <span className="block text-[11px] font-medium text-ink-500">Back-Office</span>
+      </span>
+    </Link>
+  );
+}
+
+function Initiales({ nom }: { nom: string }) {
+  const initiales = nom
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((m) => m[0]!.toUpperCase())
+    .join('');
+  return (
+    <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-900">
+      {initiales}
+    </span>
+  );
+}
 
 export default async function LayoutPrive({ children }: { children: React.ReactNode }) {
   const c = await collaborateurCourant();
   if (!c) redirect('/admin/connexion');
   const [nonLues, vivier] = await Promise.all([compterNonLues(c.id), peutAccederVivier(c)]);
 
-  const liens = [
-    { href: '/admin', libelle: 'Accueil', visible: true },
-    { href: '/admin/dossiers', libelle: 'Dossiers', visible: peut(c.roles, 'dossier.voir_siens') || peut(c.roles, 'dossier.voir_tous') },
-    { href: '/admin/candidats', libelle: 'Candidats', visible: vivier },
-    { href: '/admin/candidatures', libelle: 'Candidatures', visible: vivier },
-    { href: '/admin/attribution', libelle: 'Attribution', visible: peut(c.roles, 'dossier.reaffecter') },
-    { href: '/admin/collaborateurs', libelle: 'Collaborateurs', visible: peut(c.roles, 'collaborateurs.gerer') || peut(c.roles, 'collaborateurs.attributs') },
-    { href: '/admin/referentiel', libelle: 'Référentiel', visible: peut(c.roles, 'referentiel.gerer') },
-    { href: '/admin/modeles', libelle: 'Modèles', visible: peut(c.roles, 'modeles.gerer') },
-    { href: '/admin/parametres', libelle: 'Paramètres', visible: peut(c.roles, 'tarifs.modifier') },
-    { href: '/admin/journal', libelle: 'Journal', visible: peut(c.roles, 'audit.consulter') },
-    { href: '/admin/securite', libelle: 'Sécurité', visible: true },
-  ].filter((l) => l.visible);
+  const filtrer = (liens: (LienNav & { visible: boolean })[]) => liens.filter((l) => l.visible).map(({ visible: _, ...l }) => l);
+  const groupes: GroupeNav[] = [
+    {
+      liens: filtrer([
+        { href: '/admin', libelle: 'Accueil', icone: 'accueil', visible: true },
+        { href: '/admin/notifications', libelle: 'Notifications', icone: 'notifications', badge: nonLues, visible: true },
+      ]),
+    },
+    {
+      titre: 'Activité',
+      liens: filtrer([
+        { href: '/admin/dossiers', libelle: 'Dossiers', icone: 'dossiers', visible: peut(c.roles, 'dossier.voir_siens') || peut(c.roles, 'dossier.voir_tous') },
+        { href: '/admin/attribution', libelle: 'Attribution', icone: 'attribution', visible: peut(c.roles, 'dossier.reaffecter') },
+        { href: '/admin/candidats', libelle: 'Candidats', icone: 'candidats', visible: vivier },
+        { href: '/admin/candidatures', libelle: 'Candidatures', icone: 'candidatures', visible: vivier },
+      ]),
+    },
+    {
+      titre: 'Configuration',
+      liens: filtrer([
+        { href: '/admin/collaborateurs', libelle: 'Collaborateurs', icone: 'collaborateurs', visible: peut(c.roles, 'collaborateurs.gerer') || peut(c.roles, 'collaborateurs.attributs') },
+        { href: '/admin/referentiel', libelle: 'Référentiel', icone: 'referentiel', visible: peut(c.roles, 'referentiel.gerer') },
+        { href: '/admin/modeles', libelle: 'Modèles', icone: 'modeles', visible: peut(c.roles, 'modeles.gerer') },
+        { href: '/admin/parametres', libelle: 'Paramètres', icone: 'parametres', visible: peut(c.roles, 'tarifs.modifier') },
+        { href: '/admin/journal', libelle: 'Journal', icone: 'journal', visible: peut(c.roles, 'audit.consulter') },
+      ]),
+    },
+  ].filter((g) => g.liens.length > 0);
+
+  const roles = c.roles.map((r) => ROLES[r]).join(' · ');
+  const compte = (
+    <div className="space-y-1">
+      <Link href="/admin/securite" className="flex items-center gap-3 rounded-lg p-2 hover:bg-ink-100/70">
+        <Initiales nom={c.nom} />
+        <span className="min-w-0 leading-tight">
+          <span className="block truncate text-sm font-semibold text-ink-900">{c.nom}</span>
+          <span className="block truncate text-xs text-ink-500">{roles}</span>
+        </span>
+        <ShieldCheck aria-hidden className={`ml-auto h-4 w-4 shrink-0 ${c.deuxFacteurs ? 'text-primary' : 'text-amber-600'}`} />
+        <span className="sr-only">{c.deuxFacteurs ? 'Sécurité du compte' : 'Sécurité du compte : double authentification non activée'}</span>
+      </Link>
+      <BoutonDeconnexion />
+    </div>
+  );
 
   return (
-    <>
-      <header className="sticky top-0 z-30 bg-white border-b border-ink-100">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
-          <Link href="/admin" className="font-display font-semibold text-lg">
-            NEXCLEAN <span className="hidden sm:inline text-ink-500 font-normal text-sm">Back-Office</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <span className="hidden sm:block text-sm text-ink-600 text-right leading-tight">
-              {c.nom}
-              <br />
-              <span className="text-xs text-ink-500">{c.roles.map((r) => ROLES[r]).join(' · ')}</span>
-            </span>
-            <Link href="/admin/notifications" aria-label={`Notifications${nonLues ? ` : ${nonLues} non lue${nonLues > 1 ? 's' : ''}` : ''}`} className="relative inline-flex h-11 w-11 items-center justify-center rounded-lg border border-ink-100 text-ink-700">
-              <svg aria-hidden viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
-              {nonLues > 0 && <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-red-600 text-white text-[11px] font-bold leading-5 text-center">{nonLues > 99 ? '99+' : nonLues}</span>}
-            </Link>
-            <BoutonDeconnexion />
-          </div>
+    <div className="lg:pl-64">
+      <a href="#contenu" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[60] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:shadow-lg">
+        Aller au contenu
+      </a>
+
+      {/* Barre latérale (ordinateur) */}
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-ink-200/70 bg-white lg:flex">
+        <div className="flex h-16 shrink-0 items-center px-5">
+          <Marque />
         </div>
-        <nav aria-label="Navigation du Back-Office" className="max-w-5xl mx-auto px-2 flex gap-1 overflow-x-auto">
-          {liens.map((l) => (
-            <Link key={l.href} href={l.href} className="shrink-0 px-3 py-3 text-sm font-medium text-ink-700 hover:text-primary">
-              {l.libelle}
-            </Link>
-          ))}
+        <nav aria-label="Navigation du Back-Office" className="flex-1 overflow-y-auto px-3 py-3">
+          <LiensNav groupes={groupes} />
         </nav>
+        <div className="shrink-0 border-t border-ink-100 p-3">{compte}</div>
+      </aside>
+
+      {/* Barre supérieure (mobile et tablette) */}
+      <header className="sticky top-0 z-30 border-b border-ink-200/70 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75 lg:hidden">
+        <div className="flex h-16 items-center justify-between gap-2 px-2 sm:px-4">
+          <div className="flex items-center gap-1">
+            <MenuMobile groupes={groupes} entete={<Marque />} pied={compte} />
+            <Marque />
+          </div>
+          <Link
+            href="/admin/notifications"
+            aria-label={`Notifications${nonLues ? ` : ${nonLues} non lue${nonLues > 1 ? 's' : ''}` : ''}`}
+            className="relative inline-flex h-11 w-11 items-center justify-center rounded-lg text-ink-700 hover:bg-ink-100"
+          >
+            <Bell aria-hidden className="h-5 w-5" />
+            {nonLues > 0 && (
+              <span className="absolute right-1 top-1 min-w-5 rounded-full bg-red-600 px-1 text-center text-[11px] font-bold leading-5 text-white ring-2 ring-white">{nonLues > 99 ? '99+' : nonLues}</span>
+            )}
+          </Link>
+        </div>
       </header>
-      <main className="max-w-5xl mx-auto px-4 py-5">{children}</main>
-    </>
+
+      <main id="contenu" className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+        {children}
+      </main>
+    </div>
   );
 }
