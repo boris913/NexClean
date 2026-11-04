@@ -1,6 +1,6 @@
 // Bibliothèque de modèles de messages WhatsApp (MVP1-05 RG-14..17).
 // Le contrôle des droits (modeles.gerer) est fait par l'appelant.
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { getDb, schema } from '@/lib/db';
 import { journaliser } from '@/lib/audit';
@@ -8,7 +8,9 @@ import { env } from '@/lib/env';
 import { DOSSIER_TYPE_CODES, DOSSIER_TYPES, type DossierType } from '@/lib/domain/referentiels';
 import { ErreurMetier, type Auteur } from '@/lib/collaborateurs/service';
 import { formaterTelephone } from '@/lib/telephone';
-import { estModeleCandidat, estModeleDevis, estModeleProposition, variableInconnue, type ContexteMessage } from './variables';
+import { formaterMontant } from '@/lib/devis/domaine';
+import { encaissementsNets } from '@/lib/encaissements/domaine';
+import { estModeleCandidat, estModeleDevis, estModeleProposition, estModeleSolde, variableInconnue, type ContexteMessage } from './variables';
 
 export const schemaModele = z.object({
   nom: z.string().trim().min(2, 'Nom trop court').max(80),
@@ -23,11 +25,17 @@ function verifierTexte(texte: string) {
   if (v !== null) throw new ErreurMetier(`Variable inconnue : ${v}`);
 }
 
-/** Avec `type` (fiche dossier), les modèles candidat, proposition et devis (variables `candidat.*`, `devis.*`…) sont exclus. */
-export async function listerModeles(options: { type?: DossierType; actifsSeulement?: boolean } = {}) {
+/**
+ * Avec `type` (fiche dossier), les modèles candidat, proposition et devis (variables `candidat.*`, `devis.*`…) sont exclus ;
+ * les modèles de relance de solde (`solde.*`, MVP2-05 RG-09) ne sont proposés que si `soldeImpaye` est vrai
+ * (voir `contexteDossier` : `solde.facture` renseigné).
+ */
+export async function listerModeles(options: { type?: DossierType; actifsSeulement?: boolean; soldeImpaye?: boolean } = {}) {
   const tous = await getDb().select().from(schema.modeleMessage).orderBy(asc(schema.modeleMessage.nom));
   return tous.filter(
-    (m) => (!options.actifsSeulement || m.actif) && (!options.type || ((m.types.length === 0 || m.types.includes(options.type)) && !estModeleCandidat(m.texte) && !estModeleProposition(m.texte) && !estModeleDevis(m.texte))),
+    (m) =>
+      (!options.actifsSeulement || m.actif) &&
+      (!options.type || ((m.types.length === 0 || m.types.includes(options.type)) && !estModeleCandidat(m.texte) && !estModeleProposition(m.texte) && !estModeleDevis(m.texte) && (!estModeleSolde(m.texte) || !!options.soldeImpaye))),
   );
 }
 
@@ -50,6 +58,25 @@ export async function enregistrerModele(id: number | null, entree: z.input<typeo
   });
 }
 
+const formaterDateLongue = (d: Date) => new Intl.DateTimeFormat('fr-FR', { timeZone: 'Africa/Douala', dateStyle: 'long' }).format(d);
+
+/** MVP2-05 RG-09 : dernière facture de solde du Dossier et reste à payer (montant final − encaissements nets) ; null si rien d'impayé. */
+export async function soldeImpaye(dossierId: number): Promise<{ facture: string; emiseLe: Date; reste: number } | null> {
+  const db = getDb();
+  const [d] = await db.select({ montantFinalTtc: schema.dossier.montantFinalTtc }).from(schema.dossier).where(eq(schema.dossier.id, dossierId));
+  if (d?.montantFinalTtc == null) return null;
+  const [f] = await db
+    .select({ numero: schema.facture.numero, emiseLe: schema.facture.emiseLe })
+    .from(schema.facture)
+    .where(and(eq(schema.facture.dossierId, dossierId), eq(schema.facture.type, 'solde')))
+    .orderBy(desc(schema.facture.emiseLe), desc(schema.facture.id))
+    .limit(1);
+  if (!f) return null;
+  const ecritures = await db.select({ montant: schema.encaissement.montant }).from(schema.encaissement).where(eq(schema.encaissement.dossierId, dossierId));
+  const reste = d.montantFinalTtc - encaissementsNets(ecritures.map((e, i) => ({ id: i, type: 'encaissement' as const, nature: 'autre' as const, montant: e.montant })));
+  return reste > 0 ? { facture: f.numero, emiseLe: f.emiseLe, reste } : null;
+}
+
 /** Valeurs des variables pour un dossier (sans budget ni salaire). */
 export async function contexteDossier(dossierId: number, utilisateurCourant: { id: string; nom: string }): Promise<ContexteMessage> {
   const db = getDb();
@@ -68,6 +95,7 @@ export async function contexteDossier(dossierId: number, utilisateurCourant: { i
     .where(eq(schema.user.id, referentId));
   const lignes = d.type === 'REC' ? await db.select({ intitule: schema.lignePoste.intitule, nombre: schema.lignePoste.nombre }).from(schema.lignePoste).where(eq(schema.lignePoste.dossierId, dossierId)).orderBy(asc(schema.lignePoste.ordre)) : [];
   const nomRef = ref?.nom ?? utilisateurCourant.nom;
+  const solde = d.type === 'REC' ? await soldeImpaye(dossierId) : null;
   return {
     'client.contact': d.contact ?? d.clientNom,
     'client.nom': d.clientNom,
@@ -78,5 +106,6 @@ export async function contexteDossier(dossierId: number, utilisateurCourant: { i
     'referent.prenom': nomRef.split(/\s+/)[0] ?? nomRef,
     'referent.telephone': ref?.telephone ? formaterTelephone(ref.telephone) : '',
     'postes.resume': lignes.map((l) => `${l.nombre} × ${l.intitule}`).join(', '),
+    ...(solde ? { 'solde.facture': solde.facture, 'solde.emise_le': formaterDateLongue(solde.emiseLe), 'solde.reste': formaterMontant(solde.reste) } : {}),
   };
 }

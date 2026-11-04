@@ -78,6 +78,8 @@ export function EditerDevis({
   tauxAcompteDefaut,
   bornes,
   contrat,
+  deductionCredit,
+  creditClient,
 }: {
   dossierId: number;
   devisId: number;
@@ -93,10 +95,14 @@ export function EditerDevis({
   bornes: BornesAcompte;
   /** Avenant : nombre au contrat par ligne de poste (borne de l'écart). */
   contrat: Record<number, number>;
+  /** MVP2-05 RG-12 : déduction du crédit client figée au devis, et crédit disponible du Client. */
+  deductionCredit: number;
+  creditClient: number;
 }) {
   const { lancer, envoi, retour } = useAction();
   const [nombres, setNombres] = useState(lignes.map((l) => l.nombre));
   const [taux, setTaux] = useState(tauxAcompte);
+  const [deduire, setDeduire] = useState(deductionCredit > 0);
   const total = totauxFiges(lignes.map((l, i) => ({ ...l, nombre: nombres[i] ?? 0 })), tauxTva, avenant ? 0 : taux);
   const horsBornes = !avenant && (taux < bornes.min || taux > bornes.max);
   return (
@@ -112,7 +118,7 @@ export function EditerDevis({
               nombres,
               ...(avenant
                 ? { prolongationJours: nb('prolongationJours') ?? null }
-                : { tauxAcompte: taux, justificationTaux: String(f.get('justificationTaux') ?? '') || null, delaiRechercheJours: nb('delaiRechercheJours') }),
+                : { tauxAcompte: taux, justificationTaux: String(f.get('justificationTaux') ?? '') || null, delaiRechercheJours: nb('delaiRechercheJours'), ...(creditClient > 0 || deductionCredit > 0 ? { conserverDeduction: deduire } : {}) }),
               conditionsParticulieres: String(f.get('conditionsParticulieres') ?? '') || null,
             }),
           );
@@ -170,6 +176,20 @@ export function EditerDevis({
           <label htmlFor={`cp-${devisId}`} className={classeLibelle}>Conditions particulières (facultatif)</label>
           <textarea id={`cp-${devisId}`} name="conditionsParticulieres" rows={3} maxLength={2000} defaultValue={conditionsParticulieres ?? ''} className={classeChamp} />
         </div>
+        {!avenant && (creditClient > 0 || deductionCredit > 0) && (
+          <div className="rounded-lg border border-ink-100 bg-ink-50 p-3">
+            <label className="flex items-start gap-3 text-sm text-ink-800">
+              <input type="checkbox" checked={deduire} onChange={(e) => setDeduire(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-primary" />
+              <span>
+                Déduire le crédit client
+                <span className="block text-xs text-ink-500">
+                  Crédit disponible : {formaterMontant(creditClient)}
+                  {deduire && <> · déduction : {formaterMontant(Math.min(creditClient, total.totalTtc))} (imputée à l’acceptation)</>}
+                </span>
+              </span>
+            </label>
+          </div>
+        )}
         <p className="text-sm text-ink-700 tabular-nums">
           Total : <strong>{formaterMontant(total.totalTtc)}</strong>
           {!avenant && <> · acompte {formaterMontant(total.acompte)}</>}

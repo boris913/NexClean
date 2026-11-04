@@ -100,7 +100,7 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
     onglet === 'resume' && traiter
       ? await (async () => {
           const ctx = await contexteDossier(d.id, { id: c.id, nom: c.nom });
-          return (await listerModeles({ type: d.type, actifsSeulement: true })).map((m) => ({ id: m.id, nom: m.nom, texte: rendreMessage(m.texte, ctx) }));
+          return (await listerModeles({ type: d.type, actifsSeulement: true, soldeImpaye: !!ctx['solde.facture'] })).map((m) => ({ id: m.id, nom: m.nom, texte: rendreMessage(m.texte, ctx) }));
         })()
       : [];
   // Dossier sans référent : l'attribution est l'action principale (en tête) ; sinon en fin de résumé.

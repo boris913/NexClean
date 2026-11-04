@@ -83,6 +83,14 @@ function DetailDevis({ dossierId, d }: { dossierId: number; d: Devis }) {
             </dd>
           </>
         )}
+        {!avenant && d.deductionCredit > 0 && (
+          <>
+            <dt>Crédit client</dt>
+            <dd className="tabular-nums">
+              − {formaterMontant(d.deductionCredit)} <span className="text-ink-500">· déduction imputée à l’acceptation</span>
+            </dd>
+          </>
+        )}
         <dt>Délai de recherche</dt>
         <dd>
           {d.delaiRechercheJours} jours{avenant && d.prolongationJours ? <strong> + {d.prolongationJours} jours (prolongation)</strong> : null}
@@ -192,6 +200,8 @@ function CarteDevis({ dossierId, d, vue, traiter, direction, statutDossier, dern
               tauxAcompteDefaut={vue.tauxAcompteDefaut}
               bornes={vue.bornes}
               contrat={contrat}
+              deductionCredit={d.deductionCredit}
+              creditClient={vue.creditClient}
             />
           )}
           {d.statut === 'envoye' && message && <D.OuvrirWhatsApp dossierId={dossierId} devisId={d.id} numero={message.numero} texte={message.texte} />}

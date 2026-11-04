@@ -84,6 +84,8 @@ const DEFINITIONS = {
     defaut: { min: 30, max: 100 },
     schema: z.object({ min: z.number().int().min(0).max(100), max: z.number().int().min(0).max(100) }).refine((b) => b.min <= b.max, 'La borne minimale doit être inférieure ou égale à la borne maximale'),
   },
+  /** MVP2-05 RG-09 : relance d'une facture de solde impayée, en jours après émission (puis tous les 7 jours). */
+  delai_relance_solde_jours: { defaut: 15, schema: z.number().int('Nombre entier').min(1).max(180) },
   validite_devis_jours: { defaut: 15, schema: z.number().int('Nombre entier').min(1).max(180) },
   mentions_legales: { defaut: MENTIONS_LEGALES_PAR_DEFAUT, schema: z.string().trim().min(10).max(1000) },
   conditions_devis: { defaut: CONDITIONS_DEVIS_PAR_DEFAUT, schema: z.string().trim().min(10).max(5000) },
