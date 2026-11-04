@@ -80,3 +80,14 @@ describe('Montant final, solde et avoir (ADR 0010, RG-18)', () => {
     expect(formaterNumeroDocument('devis', 2026, 123)).toBe('DEV-2026-00123');
   });
 });
+
+describe('Migration 0012 — modèle WhatsApp « Envoi du devis »', () => {
+  it('insère le modèle avec le texte exact du code, sans écraser l’existant', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { MODELE_ENVOI_DEVIS, NOM_MODELE_ENVOI_DEVIS } = await import('@/lib/devis/service');
+    const migration = readFileSync('lib/db/migrations/0012_modele_envoi_devis.sql', 'utf8').replace(/\r\n/g, '\n');
+    const q = (s: string) => `'${s.replace(/'/g, "''")}'`;
+    expect(migration).toContain(`(${q(NOM_MODELE_ENVOI_DEVIS)}, '{REC}', ${q(MODELE_ENVOI_DEVIS)})`);
+    expect(migration).toContain('ON CONFLICT ("nom") DO NOTHING');
+  });
+});

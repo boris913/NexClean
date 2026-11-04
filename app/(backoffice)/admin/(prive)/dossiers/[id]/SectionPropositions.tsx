@@ -52,7 +52,7 @@ export default async function SectionPropositions({ dossierId, demandeur, traite
         {etat.clotureLe ? (
           <p className="text-sm text-ink-800 mt-3">
             Recherche clôturée le {formatHorodatage(etat.clotureLe)}{etat.clotureMotif ? ` (${etat.clotureMotif})` : ''} : <strong>{etat.placementsRetenus} placement(s) retenu(s)</strong> pour le montant final.
-            {/* Montant final (commission figée × placements retenus) : calculé par MVP2-05. */}
+            {/* Montant final et facture de solde ou avoir : émis à la clôture (MVP2-04 RG-18), voir l’onglet Documents. */}
           </p>
         ) : (
           rechercheOuverte && (

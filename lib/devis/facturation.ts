@@ -12,56 +12,14 @@ import { ErreurAccesDossier } from '@/lib/dossiers/service';
 import { compterPlacementsRetenus } from '@/lib/propositions/domaine';
 import { decomposerTtc, formaterMontant, montantFinal, regularisation, TYPES_FACTURE, type TypeFacture } from './domaine';
 import { archiverPdfFacture, auditDe, emettreFacture, type AuteurEffet, type Tx } from './effets';
+import { devisAccepte, lignesFacturables } from './lignes';
 
 type Lecteur = Pick<ReturnType<typeof getDb>, 'select'>;
 
 // ─── Lignes facturables ──────────────────────────────────────
 
-export interface LigneFacturable {
-  lignePosteId: number | null;
-  intitule: string;
-  /** Commission unitaire HT figée (devis initial, ou avenant pour une ligne nouvelle). */
-  commission: number;
-  nombre: number;
-}
-
-/**
- * Lignes facturables d'un Dossier : devis (`type = 'devis'`) accepté et ses avenants acceptés
- * (`devisInitialId` = ce devis), consolidés par ligne de poste. Pour une même `lignePosteId`, la
- * commission figée du devis initial est conservée ; le nombre est celui du dernier avenant accepté
- * qui la mentionne (nombre total de personnes après avenant). Les lignes d'avenant sans ligne de
- * poste sont ajoutées telles quelles.
- *
- * À LA FUSION : à remplacer par `lignesFacturables(dossierId)` de lib/devis/lignes.ts (lot A),
- * même forme de retour ; seul `devisAccepte` (taux de TVA figé, référence) reste lu ici.
- */
-export async function lireLignesFacturables(db: Lecteur, dossierId: number): Promise<{ devis: typeof schema.devis.$inferSelect; lignes: LigneFacturable[] } | null> {
-  const [initial] = await db
-    .select()
-    .from(schema.devis)
-    .where(and(eq(schema.devis.dossierId, dossierId), eq(schema.devis.type, 'devis'), eq(schema.devis.statut, 'accepte')))
-    .orderBy(desc(schema.devis.accepteLe), desc(schema.devis.id))
-    .limit(1);
-  if (!initial) return null;
-  const avenants = await db
-    .select()
-    .from(schema.devis)
-    .where(and(eq(schema.devis.devisInitialId, initial.id), eq(schema.devis.type, 'avenant'), eq(schema.devis.statut, 'accepte')))
-    .orderBy(asc(schema.devis.accepteLe), asc(schema.devis.id));
-  const parLigne = new Map<number, LigneFacturable>();
-  const sansLigne: LigneFacturable[] = [];
-  for (const d of [initial, ...avenants]) {
-    for (const l of d.lignes) {
-      if (l.lignePosteId === null) {
-        sansLigne.push({ lignePosteId: null, intitule: l.intitule, commission: l.commission, nombre: l.nombre });
-        continue;
-      }
-      const deja = parLigne.get(l.lignePosteId);
-      parLigne.set(l.lignePosteId, deja ? { ...deja, nombre: l.nombre } : { lignePosteId: l.lignePosteId, intitule: l.intitule, commission: l.commission, nombre: l.nombre });
-    }
-  }
-  return { devis: initial, lignes: [...parLigne.values(), ...sansLigne] };
-}
+/** Lignes facturables : lib/devis/lignes.ts (devis accepté + avenants acceptés, consolidés). */
+export type { LigneFacturable } from './lignes';
 
 // ─── Facturation à la clôture (RG-18) ────────────────────────
 
@@ -113,9 +71,9 @@ const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
  * d'acompte. Sans devis accepté, n'émet rien et le signale.
  */
 export async function facturerCloture(tx: Tx, dossierId: number, auteur: AuteurEffet): Promise<ResultatFacturation> {
-  const facturables = await lireLignesFacturables(tx, dossierId);
-  if (!facturables) return { montantFinal: null, acompteFactureTtc: 0, sansDevis: true, avertissements: ['Aucun devis accepté sur ce dossier : aucune facture de solde n’est émise.'] };
-  const { devis, lignes } = facturables;
+  const devis = await devisAccepte(dossierId, tx);
+  if (!devis) return { montantFinal: null, acompteFactureTtc: 0, sansDevis: true, avertissements: ['Aucun devis accepté sur ce dossier : aucune facture de solde n’est émise.'] };
+  const lignes = await lignesFacturables(dossierId, tx);
   const avertissements: string[] = [];
 
   const placements = await tx

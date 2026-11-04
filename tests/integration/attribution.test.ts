@@ -192,8 +192,8 @@ describe.skipIf(!baseDisponible)('Attribution et notifications (intégration)', 
   it('RG-15 : variable inconnue refusée ; RG-16 : modèles initiaux ; RG-17 : message préparé historisé', async () => {
     await expect(modeles.enregistrerModele(null, { nom: 'Test', texte: 'Montant : {{dossier.montant}}' }, { id: dir.id })).rejects.toThrow('Variable inconnue : dossier.montant');
     const tous = await modeles.listerModeles();
-    // Modèles initiaux : 5 pour les dossiers (0004), 3 pour les candidats (0008, MVP2-02), 4 pour les propositions (0010, MVP2-03).
-    expect(tous.map((m) => m.nom).sort()).toEqual(['Attestation de prise de poste', 'Bienvenue candidat', 'Compléter votre profil', 'Convocation entretien', 'Informations complémentaires', 'Lien de réinitialisation', 'Lien de suivi', 'Premier contact', 'Profil candidat', 'Proposition de poste', 'Relance demande de devis', 'Relance sans réponse']);
+    // Modèles initiaux : 5 pour les dossiers (0004), 3 pour les candidats (0008, MVP2-02), 4 pour les propositions (0010, MVP2-03), 1 pour l’envoi du devis (0012, MVP2-04).
+    expect(tous.map((m) => m.nom).sort()).toEqual(['Attestation de prise de poste', 'Bienvenue candidat', 'Compléter votre profil', 'Convocation entretien', 'Envoi du devis', 'Informations complémentaires', 'Lien de réinitialisation', 'Lien de suivi', 'Premier contact', 'Profil candidat', 'Proposition de poste', 'Relance demande de devis', 'Relance sans réponse']);
     expect((await modeles.listerModeles({ type: 'REC' })).map((m) => m.nom)).not.toContain('Relance demande de devis');
 
     const r = await demande('REC', '690100010', douala);
