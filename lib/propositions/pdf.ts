@@ -1,49 +1,10 @@
 // PDF côté client (specs/MVP2-03) : filigrane des CV transmis (RG-09) et attestation de prise de
 // poste (RG-15). Module sans dépendance serveur (pdf-lib), testable unitairement.
 import { degrees, PDFDocument, rgb, StandardFonts, type PDFFont, type PDFPage } from 'pdf-lib';
+import { couperLignes, dessinerEnTete, dessinerPied, lignesPied, normaliserTexte, TAILLE_MIN } from '@/lib/documents/mise-en-page';
 
-/** Caractères typographiques courants remplacés par leur équivalent simple. */
-const REMPLACEMENTS: Record<string, string> = {
-  '‘': "'",
-  '’': "'",
-  '‚': "'",
-  '′': "'",
-  '“': '"',
-  '”': '"',
-  '„': '"',
-  '«': '"',
-  '»': '"',
-  '–': '-',
-  '—': '-',
-  '−': '-',
-  '…': '...',
-  ' ': ' ',
-  ' ': ' ',
-  ' ': ' ',
-  ' ': ' ',
-  '​': '',
-  'œ': 'oe',
-  'Œ': 'OE',
-};
-
-/**
- * Rend un texte affichable avec une police standard (encodage WinAnsi) : guillemets et
- * apostrophes typographiques, espaces insécables, tirets → équivalents simples ; tout autre
- * caractère non encodable → « ? » (au lieu d'une exception de pdf-lib).
- */
-export function normaliserTexte(texte: string, police?: PDFFont): string {
-  const jeu = police ? new Set(police.getCharacterSet()) : null;
-  let sortie = '';
-  for (const car of texte.normalize('NFC').replace(/[\r\n\t]+/g, ' ')) {
-    const r = REMPLACEMENTS[car] ?? car;
-    for (const c of r) {
-      const code = c.codePointAt(0)!;
-      if (jeu ? jeu.has(code) : code >= 0x20 && code <= 0xff) sortie += c;
-      else sortie += '?';
-    }
-  }
-  return sortie;
-}
+// Normalisation WinAnsi et mise en page partagées avec les autres documents (lib/documents).
+export { normaliserTexte };
 
 /**
  * RG-09 : appose le filigrane « Transmis par NEXCLEAN à <client> le <date> » sur chaque page
@@ -106,6 +67,8 @@ export interface DonneesAttestation {
   /** Date d'établissement (défaut : maintenant). */
   etablieLe?: Date;
   fuseau?: string;
+  /** Mentions légales (paramètre `mentions_legales`), en pied de page comme sur les autres documents. */
+  mentionsLegales?: string | null;
 }
 
 const jourLong = (d: Date, fuseau: string) => new Intl.DateTimeFormat('fr-FR', { timeZone: fuseau, dateStyle: 'long' }).format(d);
@@ -114,22 +77,6 @@ export const dateIsoLongue = (iso: string) => {
   const [a, m, j] = iso.split('-').map(Number);
   return new Intl.DateTimeFormat('fr-FR', { timeZone: 'UTC', dateStyle: 'long' }).format(new Date(Date.UTC(a!, m! - 1, j!)));
 };
-
-/** Découpe un texte en lignes tenant dans `largeur` points. */
-function couperLignes(texte: string, police: PDFFont, taille: number, largeur: number): string[] {
-  const lignes: string[] = [];
-  let courante = '';
-  for (const mot of texte.split(' ')) {
-    const essai = courante ? `${courante} ${mot}` : mot;
-    if (police.widthOfTextAtSize(essai, taille) <= largeur || !courante) courante = essai;
-    else {
-      lignes.push(courante);
-      courante = mot;
-    }
-  }
-  if (courante) lignes.push(courante);
-  return lignes;
-}
 
 /** RG-15 : attestation de prise de poste pré-remplie (A4, polices standard). */
 export async function genererAttestation(d: DonneesAttestation): Promise<Uint8Array> {
@@ -144,11 +91,11 @@ export async function genererAttestation(d: DonneesAttestation): Promise<Uint8Ar
   const [marge, largeur] = [56, 595.28 - 112];
   const encre = rgb(0.12, 0.14, 0.17);
   const gris = rgb(0.4, 0.42, 0.45);
-  let y = 841.89 - 64;
+  let y: number;
 
   const ecrire = (texte: string, o: { taille?: number; police?: PDFFont; couleur?: ReturnType<typeof rgb>; apres?: number } = {}) => {
     const police = o.police ?? normal;
-    const taille = o.taille ?? 11;
+    const taille = Math.max(TAILLE_MIN, o.taille ?? 11);
     for (const ligne of couperLignes(normaliserTexte(texte, police), police, taille, largeur)) {
       page.drawText(ligne, { x: marge, y, size: taille, font: police, color: o.couleur ?? encre });
       y -= taille * 1.45;
@@ -164,13 +111,8 @@ export async function genererAttestation(d: DonneesAttestation): Promise<Uint8Ar
     y -= 26;
   };
 
-  // En-tête
-  page.drawText('NEXCLEAN', { x: marge, y, size: 22, font: gras, color: rgb(0.05, 0.45, 0.35) });
-  const ref = normaliserTexte(`Dossier n° ${d.numeroDossier}`, normal);
-  page.drawText(ref, { x: marge + largeur - normal.widthOfTextAtSize(ref, 10), y: y + 6, size: 10, font: normal, color: gris });
-  y -= 18;
-  page.drawLine({ start: { x: marge, y }, end: { x: marge + largeur, y }, thickness: 1, color: rgb(0.05, 0.45, 0.35) });
-  y -= 40;
+  // En-tête commun des documents NEXCLEAN (lib/documents/mise-en-page.ts).
+  y = dessinerEnTete(page, { normal, gras }, { titre: 'ATTESTATION', references: [`Dossier n° ${d.numeroDossier}`, `Établie le ${jourLong(d.etablieLe ?? new Date(), fuseau)}`] }, marge) - 12;
   ecrire('Attestation de prise de poste', { taille: 18, police: gras, apres: 18 });
 
   const datePrevue = dateIsoLongue(d.datePrevue);
@@ -199,7 +141,7 @@ export async function genererAttestation(d: DonneesAttestation): Promise<Uint8Ar
     page.drawRectangle({ x: marge, y: y - 90, width: 260, height: 90, borderColor: gris, borderWidth: 0.6 });
   }
 
-  const pied = normaliserTexte(`NEXCLEAN - attestation établie le ${jourLong(d.etablieLe ?? new Date(), fuseau)} - dossier n° ${d.numeroDossier}`, normal);
-  page.drawText(pied, { x: marge, y: 36, size: 8, font: normal, color: gris });
+  // Pied de page commun : mentions légales, à la taille minimale (RG-20).
+  dessinerPied(page, { normal, gras }, lignesPied({ normal, gras }, d.mentionsLegales?.trim() || 'NEXCLEAN', largeur), null, marge);
   return doc.save();
 }

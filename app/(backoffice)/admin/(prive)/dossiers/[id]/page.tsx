@@ -28,6 +28,7 @@ import { quartiersGeolocalises } from '@/lib/candidats/vivier';
 import { etatRecherche, lienOngletPropositions } from '@/lib/propositions/service';
 import SectionPropositions from './SectionPropositions';
 import SectionDevis from './SectionDevis';
+import SectionFactures from './SectionFactures';
 
 /** MVP1-03 RG-06 : estimation enregistrée dans la Demande (preuve de ce qui a été affiché). */
 function estimationMontree(donnees: unknown): string | null {
@@ -265,6 +266,7 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
       {onglet === 'documents' && (
         <div className="space-y-4">
           {traiter && <A.AjouterDocument dossierId={d.id} categories={Object.entries(CATEGORIES_DOCUMENT).map(([code, libelle]) => ({ code, libelle }))} />}
+          <SectionFactures dossierId={d.id} demandeur={c} traiter={traiter} />
           <Carte titre="Documents">
             {fiche.documents.length === 0 ? (
               <EtatVide icone={FileText} titre="Aucun document." description={traiter ? 'Ajoutez un devis, un contrat ou une pièce du client avec le formulaire ci-dessus.' : undefined} />

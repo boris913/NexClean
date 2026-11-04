@@ -7,6 +7,7 @@ import { exigerCollaborateur } from '@/lib/authz/session';
 import { executer } from '@/lib/actions';
 import { ErreurMetier } from '@/lib/collaborateurs/service';
 import type { StatutProposition } from '@/lib/propositions/domaine';
+import { formaterMontant } from '@/lib/devis/domaine';
 import * as svc from '@/lib/propositions/service';
 import type { ResultatAction } from '@/components/backoffice/ui';
 
@@ -159,6 +160,10 @@ export async function cloturerRecherche(dossierId: number, motif: string) {
     if (motif.length > 500) throw new ErreurMetier('Motif trop long (500 caractères maximum).');
     const r = await svc.cloturerRecherche(dossierId, motif || null, await acteur());
     rafraichir(dossierId);
-    return avecAvertissements(`Recherche clôturée : ${r.placementsRetenus} placement(s) retenu(s) pour le montant final.`, r.avertissements);
+    // MVP2-04 RG-18 : montant final et facture de solde / avoir émis à la clôture.
+    const f = r.facturation;
+    const facture = f.facture ? ` ${f.facture.type === 'avoir' ? 'Avoir' : 'Facture de solde'} ${f.facture.numero} émis(e) : ${formaterMontant(f.facture.totalTtc)}.` : f.montantFinal ? ' Montant final égal à l’acompte facturé : aucune facture de solde.' : '';
+    const montant = f.montantFinal ? ` Montant final : ${formaterMontant(f.montantFinal.totalTtc)}.` : '';
+    return avecAvertissements(`Recherche clôturée : ${r.placementsRetenus} placement(s) retenu(s) pour le montant final.${montant}${facture}`, r.avertissements);
   });
 }
