@@ -9,7 +9,7 @@ import { quartier, ville } from './geo';
 export const clientTypeEnum = pgEnum('type_client', ['entreprise', 'particulier']);
 export const canalEnum = pgEnum('canal_demande', ['site', 'whatsapp', 'telephone', 'email', 'visite', 'autre']);
 export const statutEnum = pgEnum('statut_dossier', STATUT_CODES);
-export const categorieDocumentEnum = pgEnum('categorie_document', ['piece_client', 'devis_externe', 'justificatif', 'autre']);
+export const categorieDocumentEnum = pgEnum('categorie_document', ['piece_client', 'devis_externe', 'justificatif', 'autre', 'devis', 'facture', 'accuse_reception', 'attestation']);
 export const evenementTypeEnum = pgEnum('type_evenement', [
   'creation',
   'transition',

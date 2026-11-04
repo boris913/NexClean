@@ -298,6 +298,8 @@ describe.skipIf(!baseDisponible)('Propositions — référent (intégration)', a
       await expect(svc.cloturerRecherche(d.id, 'Client injoignable', autre)).rejects.toThrow('Accès refusé');
       const r = await svc.cloturerRecherche(d.id, 'Client injoignable', rita);
       expect(r.placementsRetenus).toBe(0);
+      // MVP2-04 RG-18 : sans devis accepté (dossier de test), aucune facture n’est émise ; c’est signalé.
+      expect(r.facturation).toMatchObject({ montantFinal: null, sansDevis: true });
       expect(await dossier(d.id)).toMatchObject({ statut: 'placements_confirmes', placementsRetenus: 0, rechercheClotureMotif: 'Client injoignable' });
       await expect(svc.cloturerRecherche(d.id, 'Encore', rita)).rejects.toThrow('déjà clôturée');
     });
@@ -338,7 +340,7 @@ describe.skipIf(!baseDisponible)('Propositions — référent (intégration)', a
       expect(etat.retenus).toBe(7);
 
       const r = await svc.cloturerRecherche(d.id, null, rita);
-      expect(r).toMatchObject({ placementsRetenus: 7, propositionsRetirees: 2 });
+      expect(r).toMatchObject({ placementsRetenus: 7, propositionsRetirees: 2, facturation: { sansDevis: true } });
       const dd = await dossier(d.id);
       expect(dd).toMatchObject({ statut: 'placements_confirmes', placementsRetenus: 7 });
       expect(dd.rechercheClotureLe).not.toBeNull();

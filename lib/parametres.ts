@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { getDb, schema } from '@/lib/db';
 import { journaliser } from '@/lib/audit';
 import type { Auteur } from '@/lib/collaborateurs/service';
+import { CONTACT } from '@/lib/constants';
 
 /** ADR 0008 : 5 000 FCFA par personne placée. */
 export const COMMISSION_PAR_DEFAUT = 5000;
@@ -34,6 +35,18 @@ export const METIERS_PAR_DEFAUT = [
   'Technicien de maintenance',
 ];
 
+/** Mentions légales des documents (texte libre, à compléter par la Direction : RCCM, NIU…). */
+export const MENTIONS_LEGALES_PAR_DEFAUT = `NEXCLEAN — ${CONTACT.address} — Tél. ${CONTACT.phoneDisplay} — ${CONTACT.email} — RCCM : à compléter — NIU : à compléter`;
+
+/** Conditions générales du devis (texte administrable, ADR 0009, 0010, 0011). */
+export const CONDITIONS_DEVIS_PAR_DEFAUT = [
+  'L’acompte est payable à l’acceptation du devis ; la recherche démarre à son encaissement.',
+  'Le délai de recherche court à compter de l’encaissement de l’acompte ; il peut être prolongé par avenant.',
+  'Le montant final correspond à la commission indiquée multipliée par le nombre de placements confirmés (prise de poste attestée). Le solde est égal au montant final diminué de l’acompte ; un trop-perçu donne lieu à un avoir ou à un remboursement.',
+  'Garantie de remplacement : si une personne placée quitte le poste pendant la période de garantie, NEXCLEAN propose un remplaçant sans commission supplémentaire.',
+  'Tout candidat présenté par NEXCLEAN et embauché par le client dans les 6 mois suivant sa présentation donne lieu à la commission prévue.',
+].join('\n');
+
 const plage = z
   .object({ debut: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Heure invalide (HH:MM)'), fin: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Heure invalide (HH:MM)') })
   .refine((p) => p.debut < p.fin, 'L’heure de fin doit suivre l’heure de début');
@@ -61,6 +74,21 @@ const DEFINITIONS = {
   /** MVP2-03 RG-20 (ADR 0010) : délai de recherche par défaut, en jours après l’acompte. */
   delai_recherche_jours: { defaut: 30, schema: z.number().int('Nombre entier').min(1).max(365) },
   commission_par_personne: { defaut: COMMISSION_PAR_DEFAUT, schema: z.number().int('Montant entier').min(0).max(1_000_000) },
+  // ─── Grille tarifaire et documents (MVP2-04 RG-01) ───
+  /** Commission par catégorie de poste (intitulé → montant HT), facultative. */
+  commissions_par_categorie: { defaut: {} as Record<string, number>, schema: z.record(z.string().trim().min(2).max(80), z.number().int('Montant entier').min(0).max(1_000_000)) },
+  /** Taux de TVA en % ; 0 = « TVA non applicable » (en attendant QO-2). */
+  tva_taux: { defaut: 0, schema: z.number().int('Pourcentage entier').min(0).max(100) },
+  acompte_taux_defaut: { defaut: 50, schema: z.number().int('Pourcentage entier').min(0).max(100) },
+  acompte_bornes: {
+    defaut: { min: 30, max: 100 },
+    schema: z.object({ min: z.number().int().min(0).max(100), max: z.number().int().min(0).max(100) }).refine((b) => b.min <= b.max, 'La borne minimale doit être inférieure ou égale à la borne maximale'),
+  },
+  validite_devis_jours: { defaut: 15, schema: z.number().int('Nombre entier').min(1).max(180) },
+  mentions_legales: { defaut: MENTIONS_LEGALES_PAR_DEFAUT, schema: z.string().trim().min(10).max(1000) },
+  conditions_devis: { defaut: CONDITIONS_DEVIS_PAR_DEFAUT, schema: z.string().trim().min(10).max(5000) },
+  /** QO-3 : minimum de facturation — prévu, non appliqué (null = désactivé). */
+  minimum_facturation: { defaut: null as number | null, schema: z.number().int().min(0).max(10_000_000).nullable() },
   metiers: {
     defaut: METIERS_PAR_DEFAUT,
     schema: z.array(z.string().trim().min(2).max(80)).max(200).transform((l) => [...new Set(l)]),
@@ -86,6 +114,8 @@ export async function definirParametre<K extends CleParametre>(cle: K, valeur: u
       .insert(schema.parametre)
       .values({ cle, valeur: nouvelle, modifieLe: new Date(), modifiePar: auteur.id })
       .onConflictDoUpdate({ target: schema.parametre.cle, set: { valeur: nouvelle, modifieLe: new Date(), modifiePar: auteur.id } });
+    // MVP2-04 RG-01 : historique (valeur, date d'effet, auteur). Effet immédiat, pour les nouveaux devis (RG-02).
+    await tx.insert(schema.parametreHistorique).values({ cle, valeur: nouvelle, auteurId: auteur.id ?? null });
     await journaliser(
       { acteurType: auteur.id ? 'collaborateur' : 'systeme', acteurId: auteur.id, ip: auteur.ip ?? null, action: 'parametre.modifie', objetType: 'parametre', objetId: cle, avant: avant?.valeur ?? DEFINITIONS[cle].defaut, apres: nouvelle },
       tx,
