@@ -50,7 +50,7 @@ export default function RealisationCard({ item }: { item: Realisation }) {
           <blockquote className="mt-4 pt-4 border-t border-slate-100 text-sm text-slate-600 italic flex gap-2">
             <Quote className="w-4 h-4 text-primary flex-shrink-0" />
             <span>
-              {item.review.text} <span className="not-italic text-slate-400">— {item.review.author}</span>
+              {item.review.text} <span className="not-italic text-muted">— {item.review.author}</span>
             </span>
           </blockquote>
         )}
