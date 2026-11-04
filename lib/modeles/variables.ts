@@ -30,6 +30,10 @@ export const VARIABLES = {
   'devis.montant': 'Montant total TTC du devis',
   'devis.acompte': 'Montant de l’acompte',
   'devis.validite': 'Date limite de validité du devis',
+  // Modèle « Relance solde » (MVP2-05 RG-09) : proposé dans le dossier seulement quand un solde est impayé.
+  'solde.facture': 'Numéro de la facture de solde impayée',
+  'solde.emise_le': 'Date d’émission de la facture de solde',
+  'solde.reste': 'Reste à payer sur le solde',
 } as const;
 
 export type Variable = keyof typeof VARIABLES;
@@ -58,6 +62,9 @@ export const estModeleProposition = (texte: string) => variablesDe(texte).some((
 
 /** Modèle d'envoi d'un devis (MVP2-04) : il utilise au moins une variable `devis.*`. */
 export const estModeleDevis = (texte: string) => variablesDe(texte).some((v) => v.startsWith('devis.'));
+
+/** Modèle de relance d'un solde impayé (MVP2-05) : il utilise au moins une variable `solde.*`. */
+export const estModeleSolde = (texte: string) => variablesDe(texte).some((v) => v.startsWith('solde.'));
 
 /** Remplace les variables ; une valeur absente donne une chaîne vide. */
 export const rendreMessage = (texte: string, ctx: ContexteMessage) => texte.replace(RE, (_, v: string) => ctx[v as Variable] ?? '');

@@ -11,6 +11,8 @@ import { getStockage, nouvelleCle } from '@/lib/fichiers/stockage';
 import { notifier } from '@/lib/notifications';
 import { genererPdfFacture } from '@/lib/documents/rendu';
 import { MENTIONS_LEGALES_PAR_DEFAUT } from '@/lib/parametres';
+import { appliquerGardeAcompte, creditDisponible } from '@/lib/encaissements/effets';
+import { dateDuJour, repartirAcompte } from '@/lib/encaissements/domaine';
 import { formaterMontant, formaterNumeroDocument, TYPES_FACTURE, type ModeAcceptation, type Sequence, type TypeFacture } from './domaine';
 
 type Db = ReturnType<typeof getDb>;
@@ -50,8 +52,11 @@ export async function evenementDossier(tx: Tx, dossierId: number, commentaire: s
   await tx.update(schema.dossier).set({ derniereActionLe: new Date() }).where(eq(schema.dossier.id, dossierId));
 }
 
-/** Transition automatique du Dossier (RG-08), journalisée ; sans effet si le statut de départ ne correspond pas. */
-export async function transitionAutomatique(tx: Tx, dossierId: number, de: readonly string[], vers: 'devis_pret' | 'devis_envoye' | 'accepte' | 'refuse', motif: string): Promise<boolean> {
+/**
+ * Transition automatique du Dossier (MVP2-04 RG-08 ; MVP2-05 RG-05, RG-08, RG-11), journalisée ;
+ * sans effet si le statut de départ ne correspond pas.
+ */
+export async function transitionAutomatique(tx: Tx, dossierId: number, de: readonly string[], vers: 'devis_pret' | 'devis_envoye' | 'accepte' | 'refuse' | 'acompte_recu' | 'solde_recu', motif: string): Promise<boolean> {
   const [d] = await tx.select({ statut: schema.dossier.statut }).from(schema.dossier).where(eq(schema.dossier.id, dossierId)).for('update');
   if (!d || !de.includes(d.statut)) return false;
   await tx.update(schema.dossier).set({ statut: vers, fermeLe: vers === 'refuse' ? new Date() : null }).where(eq(schema.dossier.id, dossierId));
@@ -115,7 +120,7 @@ export async function emettreFacture(tx: Tx, f: NouvelleFacture, auteur: AuteurE
 }
 
 /** Archive un PDF généré dans les Documents du Dossier (RG-19). Retourne l'id du document et l'empreinte SHA-256. */
-export async function archiverPdf(dossierId: number, nom: string, octets: Uint8Array, categorie: 'devis' | 'facture' | 'accuse_reception' | 'attestation', auteur: AuteurEffet, tx?: Tx): Promise<{ documentId: number; empreinte: string }> {
+export async function archiverPdf(dossierId: number, nom: string, octets: Uint8Array, categorie: 'devis' | 'facture' | 'accuse_reception' | 'attestation' | 'recu', auteur: AuteurEffet, tx?: Tx): Promise<{ documentId: number; empreinte: string }> {
   const cle = nouvelleCle('dossiers', 'pdf');
   await getStockage().deposer(cle, octets);
   const empreinte = createHash('sha256').update(octets).digest('hex');
@@ -232,6 +237,10 @@ export async function accepterDevis(tx: Tx, devisId: number, a: Acceptation, aut
     await tx.update(schema.dossier).set({ delaiRechercheJours: d.delaiRechercheJours }).where(eq(schema.dossier.id, d.dossierId));
     await transitionAutomatique(tx, d.dossierId, ['devis_envoye', 'devis_pret'], 'accepte', `${libelle} accepté`);
     factureEmise = await emettreFactureAcompte(tx, devisId, auteur);
+    // MVP2-05 RG-12 : déduction du crédit client figée au devis, imputée à l'acceptation.
+    if (d.deductionCredit > 0) await imputerCredit(tx, d, factureEmise?.id ?? null, auteur, maintenant);
+    // MVP2-05 RG-06 : un acompte encaissé avant l'acceptation fait avancer le Dossier dès maintenant.
+    await appliquerGardeAcompte(tx, d.dossierId);
   } else if (d.prolongationJours) {
     await tx
       .update(schema.dossier)
@@ -244,6 +253,29 @@ export async function accepterDevis(tx: Tx, devisId: number, a: Acceptation, aut
     await notifier({ destinataires: [dos.referentId], type: 'devis_accepte', dossierId: d.dossierId, titre: 'Devis accepté', texte: `${dos.numero} : ${libelle} accepté par ${a.signataireNom.trim()}.`, lien: lienDevisDossier(d.dossierId), cle: `devis_accepte:${devisId}` }, tx);
   }
   return { facture: factureEmise };
+}
+
+/**
+ * MVP2-05 RG-12 : imputation du crédit client à l'acceptation d'un devis, plafonnée au crédit encore
+ * disponible : écriture `credit` positive sur le Dossier (nature `acompte` jusqu'à l'acompte restant
+ * dû, l'excédent en `autre`, imputé au solde) et mouvement de crédit négatif lié au devis.
+ */
+async function imputerCredit(tx: Tx, d: typeof schema.devis.$inferSelect, factureId: number | null, auteur: AuteurEffet, maintenant: Date): Promise<number> {
+  // Verrou du Client : deux acceptations simultanées ne consomment pas deux fois le même crédit.
+  await tx.select({ id: schema.client.id }).from(schema.client).where(eq(schema.client.id, d.clientId)).for('update');
+  const montant = Math.min(d.deductionCredit, await creditDisponible(tx, d.clientId));
+  if (montant <= 0) return 0;
+  const deja = await tx.select({ montant: schema.encaissement.montant, nature: schema.encaissement.nature, type: schema.encaissement.type }).from(schema.encaissement).where(eq(schema.encaissement.dossierId, d.dossierId));
+  const acompteDeja = deja.filter((e) => e.nature === 'acompte' && e.type !== 'remboursement').reduce((s, e) => s + e.montant, 0);
+  const { acompte, excedent } = repartirAcompte(montant, d.acompte, acompteDeja);
+  const libelle = `Crédit client imputé sur le devis ${d.numero} v${d.version}`;
+  for (const [nature, m] of [['acompte', acompte], ['autre', excedent]] as const) {
+    if (m > 0) await tx.insert(schema.encaissement).values({ dossierId: d.dossierId, devisId: d.id, type: 'credit', nature, montant: m, moyen: 'credit_client', recuLe: dateDuJour(maintenant), commentaire: libelle, auteurId: auteurIdDe(auteur) });
+  }
+  await tx.insert(schema.mouvementCredit).values({ clientId: d.clientId, montant: -montant, libelle, dossierId: d.dossierId, devisId: d.id, factureId, auteurId: auteurIdDe(auteur) });
+  await evenementDossier(tx, d.dossierId, `${libelle} : ${formaterMontant(montant)}`, auteur, 'document', { devisId: d.id, credit: montant });
+  await journaliser({ ...auditDe(auteur), action: 'credit_client.impute', objetType: 'client', objetId: d.clientId, apres: { montant, devisId: d.id, dossierId: d.dossierId } }, tx);
+  return montant;
 }
 
 /**

@@ -8,3 +8,4 @@ export * from './notifications';
 export * from './candidats';
 export * from './propositions';
 export * from './devis';
+export * from './encaissements';

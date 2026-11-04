@@ -60,6 +60,8 @@ export const devis = pgTable(
     mentionsLegales: text('mentions_legales').notNull(),
     /** Avenant : prolongation du délai de recherche, en jours. */
     prolongationJours: integer('prolongation_jours'),
+    /** MVP2-05 RG-12 : déduction du crédit client conservée sur ce devis (FCFA TTC, figée), reportée sur la facture d'acompte. */
+    deductionCredit: integer('deduction_credit').notNull().default(0),
     // Cycle
     auteurId: text('auteur_id').references(() => user.id),
     creeLe: timestamp('cree_le', { withTimezone: true }).notNull().defaultNow(),

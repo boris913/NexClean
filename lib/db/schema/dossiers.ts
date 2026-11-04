@@ -9,7 +9,7 @@ import { quartier, ville } from './geo';
 export const clientTypeEnum = pgEnum('type_client', ['entreprise', 'particulier']);
 export const canalEnum = pgEnum('canal_demande', ['site', 'whatsapp', 'telephone', 'email', 'visite', 'autre']);
 export const statutEnum = pgEnum('statut_dossier', STATUT_CODES);
-export const categorieDocumentEnum = pgEnum('categorie_document', ['piece_client', 'devis_externe', 'justificatif', 'autre', 'devis', 'facture', 'accuse_reception', 'attestation']);
+export const categorieDocumentEnum = pgEnum('categorie_document', ['piece_client', 'devis_externe', 'justificatif', 'autre', 'devis', 'facture', 'accuse_reception', 'attestation', 'recu']);
 export const evenementTypeEnum = pgEnum('type_evenement', [
   'creation',
   'transition',
@@ -90,6 +90,13 @@ export const dossier = pgTable(
     rechercheClotureLe: timestamp('recherche_cloture_le', { withTimezone: true }),
     rechercheClotureMotif: text('recherche_cloture_motif'),
     placementsRetenus: integer('placements_retenus'),
+    // Encaissements (MVP2-05)
+    /** RG-05 : réception de l'Encaissement qui complète l'acompte (départ du délai de recherche, MVP2-03 RG-20). */
+    acompteCompletLe: timestamp('acompte_complet_le', { withTimezone: true }),
+    /** RG-09 : dernière alerte d'impayé (facture de solde non réglée). */
+    derniereRelanceSoldeLe: timestamp('derniere_relance_solde_le', { withTimezone: true }),
+    /** RG-07 : montant final TTC figé à la clôture de la recherche (null tant qu'il n'est pas connu, ou sans devis accepté). */
+    montantFinalTtc: integer('montant_final_ttc'),
   },
   (t) => [
     index('dossier_referent_idx').on(t.referentId),

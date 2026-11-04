@@ -164,6 +164,9 @@ export async function cloturerRecherche(dossierId: number, motif: string) {
     const f = r.facturation;
     const facture = f.facture ? ` ${f.facture.type === 'avoir' ? 'Avoir' : 'Facture de solde'} ${f.facture.numero} émis(e) : ${formaterMontant(f.facture.totalTtc)}.` : f.montantFinal ? ' Montant final égal à l’acompte facturé : aucune facture de solde.' : '';
     const montant = f.montantFinal ? ` Montant final : ${formaterMontant(f.montantFinal.totalTtc)}.` : '';
-    return avecAvertissements(`Recherche clôturée : ${r.placementsRetenus} placement(s) retenu(s) pour le montant final.${montant}${facture}`, r.avertissements);
+    // MVP2-05 RG-08 : issue financière (solde à encaisser, solde nul, trop-perçu à régulariser).
+    const i = r.issue;
+    const issue = !i ? '' : i.issue === 'solde_a_payer' ? ` Reste à encaisser : ${formaterMontant(i.montant)}.` : i.issue === 'solde_nul' ? ' Solde entièrement réglé.' : ` Trop-perçu de ${formaterMontant(i.montant)} : préparez l’ajustement (onglet Finances).`;
+    return avecAvertissements(`Recherche clôturée : ${r.placementsRetenus} placement(s) retenu(s) pour le montant final.${montant}${facture}${issue}`, r.avertissements);
   });
 }

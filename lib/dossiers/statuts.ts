@@ -114,6 +114,14 @@ export interface ContexteTransition {
   circuitDevis?: boolean;
   /** MVP2-04 RG-08 : le dernier devis du Dossier est refusé (réouverture par le référent). */
   dernierDevisRefuse?: boolean;
+  /**
+   * MVP2-05 RG-05, RG-08 : « Acompte reçu » et « Solde reçu » sont fixés par les Encaissements
+   * (onglet Finances) quand le Dossier a un devis intégré accepté. Sans devis accepté (mode
+   * transitoire MVP-1), la saisie manuelle avec justificatif reste possible.
+   */
+  encaissementsIntegres?: boolean;
+  /** MVP2-05 RG-13 : verdict des conditions financières de la clôture (calculé par l'appelant). */
+  clotureFinanciere?: { ok: true } | { ok: false; erreur: string };
 }
 
 /** MVP2-04 RG-08 : statuts fixés par le devis intégré (dossiers REC). */
@@ -131,6 +139,10 @@ export function estCircuitDevis(c: { type: DossierType; statut: Statut; aDesDevi
 }
 
 export type Verdict = { ok: true; retourArriere: boolean } | { ok: false; erreur: string };
+
+/** MVP2-05 RG-05, RG-08 : statuts fixés par les Encaissements. */
+export const STATUTS_DES_ENCAISSEMENTS: readonly Statut[] = ['acompte_recu', 'solde_recu'];
+export const MESSAGE_ENCAISSEMENTS = '« Acompte reçu » et « Solde reçu » suivent les paiements : enregistrez l’encaissement dans l’onglet Finances.';
 
 /** MVP2-03 RG-22 : l'avancée vers « Placements confirmés » passe par la clôture de la recherche. */
 export const MESSAGE_CLOTURE_RECHERCHE = 'Pour passer à « Placements confirmés », utilisez « Clôturer la recherche » (onglet Propositions).';
@@ -153,6 +165,10 @@ export function verifierTransition(c: ContexteTransition): Verdict {
   const circuit = c.circuitDevis ?? type === 'REC';
   // MVP2-04 RG-08 : statuts fixés par le devis intégré, jamais posés à la main.
   if (circuit && STATUTS_DU_DEVIS.includes(vers)) return { ok: false, erreur: MESSAGE_CIRCUIT_DEVIS };
+
+  // MVP2-05 RG-05, RG-08 : statuts fixés par les Encaissements (avancée uniquement ; un retour en
+  // arrière avec motif reste possible).
+  if (c.encaissementsIntegres && STATUTS_DES_ENCAISSEMENTS.includes(vers) && rang(type, vers) > rang(type, de)) return { ok: false, erreur: MESSAGE_ENCAISSEMENTS };
 
   // MVP2-04 RG-08 : le référent rouvre un dossier REC refusé, pour une nouvelle version du devis refusé.
   if (circuit && de === 'refuse' && vers === 'en_qualification' && c.dernierDevisRefuse) return { ok: true, retourArriere: true };
@@ -208,13 +224,15 @@ export function verifierTransition(c: ContexteTransition): Verdict {
   if (vers === 'placements_confirmes') {
     return { ok: false, erreur: MESSAGE_CLOTURE_RECHERCHE };
   }
+  // MVP2-05 RG-13 : clôture du Dossier soumise aux conditions financières.
+  if (vers === 'cloture' && c.clotureFinanciere && !c.clotureFinanciere.ok) return { ok: false, erreur: c.clotureFinanciere.erreur };
   return { ok: true, retourArriere: false };
 }
 
 /** Statuts proposés dans l'interface depuis un statut donné (avancée, À compléter, issues). */
-export function transitionsProposees(type: DossierType, de: Statut, direction: boolean, o: { circuitDevis?: boolean; dernierDevisRefuse?: boolean } = {}): Statut[] {
+export function transitionsProposees(type: DossierType, de: Statut, direction: boolean, o: { circuitDevis?: boolean; dernierDevisRefuse?: boolean; encaissementsIntegres?: boolean } = {}): Statut[] {
   const circuit = o.circuitDevis ?? type === 'REC';
-  const manuel = (s: Statut) => !(circuit && STATUTS_DU_DEVIS.includes(s));
+  const manuel = (s: Statut) => !(circuit && STATUTS_DU_DEVIS.includes(s)) && !(o.encaissementsIntegres && STATUTS_DES_ENCAISSEMENTS.includes(s));
   if (estFinal(de)) {
     if (direction) return cycleDe(type).filter((s) => !estFinal(s) && s !== 'nouvelle_demande' && s !== 'attribuee' && manuel(s));
     return circuit && de === 'refuse' && o.dernierDevisRefuse ? ['en_qualification'] : [];
