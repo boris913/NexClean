@@ -22,6 +22,8 @@ export const evenementTypeEnum = pgEnum('type_evenement', [
   'whatsapp',
   'lien_suivi',
   'client',
+  'proposition',
+  'placement',
 ]);
 
 export const client = pgTable('client', {
@@ -79,6 +81,15 @@ export const dossier = pgTable(
     enFileDepuis: timestamp('en_file_depuis', { withTimezone: true }),
     /** Dernière relance d'escalade envoyée à la Direction (RG-06). */
     derniereRelanceLe: timestamp('derniere_relance_le', { withTimezone: true }),
+    // Recherche (MVP2-03 RG-20..23)
+    /** Délai de recherche figé au devis (jours) ; null = paramètre `delai_recherche_jours`. */
+    delaiRechercheJours: integer('delai_recherche_jours'),
+    /** RG-20 : alerte « échéance dans 5 jours » déjà envoyée. */
+    alerteEcheanceLe: timestamp('alerte_echeance_le', { withTimezone: true }),
+    /** RG-22 : clôture de la recherche et nombre de placements retenus (hors remplacements), figé. */
+    rechercheClotureLe: timestamp('recherche_cloture_le', { withTimezone: true }),
+    rechercheClotureMotif: text('recherche_cloture_motif'),
+    placementsRetenus: integer('placements_retenus'),
   },
   (t) => [
     index('dossier_referent_idx').on(t.referentId),

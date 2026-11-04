@@ -56,6 +56,10 @@ const DEFINITIONS = {
   delai_escalade_heures: { defaut: 4, schema: z.number().int('Nombre entier').min(1).max(72) },
   /** RG-11 : dossier « sans action » au-delà de ce nombre de jours. */
   jours_sans_action: { defaut: 3, schema: z.number().int('Nombre entier').min(1).max(60) },
+  /** MVP2-03 RG-18 : garantie de remplacement, en jours après la prise de poste. */
+  garantie_jours: { defaut: 15, schema: z.number().int('Nombre entier').min(0).max(180) },
+  /** MVP2-03 RG-20 (ADR 0010) : délai de recherche par défaut, en jours après l’acompte. */
+  delai_recherche_jours: { defaut: 30, schema: z.number().int('Nombre entier').min(1).max(365) },
   commission_par_personne: { defaut: COMMISSION_PAR_DEFAUT, schema: z.number().int('Montant entier').min(0).max(1_000_000) },
   metiers: {
     defaut: METIERS_PAR_DEFAUT,

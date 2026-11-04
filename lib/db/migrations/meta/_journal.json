@@ -64,6 +64,13 @@
       "when": 1793751659962,
       "tag": "0008_modeles_candidat_centroides",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793762308525,
+      "tag": "0009_propositions_placements",
+      "breakpoints": true
     }
   ]
 }
