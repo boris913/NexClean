@@ -13,7 +13,11 @@ import { normaliserTelephone } from '@/lib/telephone';
 import { peutTraiter, peutVoir, type Demandeur } from './acces';
 import { anneeDouala, formaterNumero } from './numero';
 import { estCircuitDevis, estFinal, STATUTS, verifierTransition, type Statut } from './statuts';
-import { etatDevisDossier } from '@/lib/devis/lignes';
+import { devisAccepte, etatDevisDossier } from '@/lib/devis/lignes';
+import { situationFinanciere, tropPercuARegulariser } from '@/lib/encaissements/lecture';
+import { verifierClotureDossier } from '@/lib/encaissements/domaine';
+import { documentsManquants } from '@/lib/encaissements/service';
+import { regulariserSansSuite } from '@/lib/encaissements/regularisation';
 import { attribuerAutomatiquement, signalerSiReferentIneligible } from './attribution';
 import { declencherEnvoi, notifier } from '@/lib/notifications';
 import { revoquerAccesNonPlaces } from '@/lib/propositions/revocation';
@@ -246,6 +250,21 @@ export async function changerStatut(dossierId: number, vers: Statut, commentaire
     const aUnDevisExterne = docs.some((x) => x.categorie === 'devis_externe');
     // MVP2-04 RG-08 : dossiers REC sur le circuit du devis intégré (sauf mode transitoire en cours).
     const devis = d.type === 'REC' ? await etatDevisDossier(dossierId, tx) : { aDesDevis: false, dernierDevisRefuse: false };
+    // MVP2-05 RG-05, RG-08 : dossier REC avec un devis intégré accepté → « Acompte reçu » / « Solde reçu »
+    // suivent les Encaissements (sinon mode transitoire : saisie manuelle avec justificatif).
+    const encaissementsIntegres = d.type === 'REC' && !!(await devisAccepte(dossierId, tx));
+    // MVP2-05 RG-13 : conditions financières de la clôture, dès que le montant final est connu.
+    let clotureFinanciere: { ok: true } | { ok: false; erreur: string } | undefined;
+    if (vers === 'cloture' && d.montantFinalTtc !== null) {
+      const s = (await situationFinanciere(dossierId, tx))!;
+      clotureFinanciere = verifierClotureDossier({
+        montantFinalTtc: s.montantFinalTtc,
+        nets: s.nets,
+        remboursementEnAttente: s.remboursementEnAttente,
+        ajustementAPreparer: tropPercuARegulariser(s) > 0,
+        documentsManquants: await documentsManquants(dossierId, tx),
+      });
+    }
     const verdict = verifierTransition({
       type: d.type,
       de: d.statut,
@@ -256,8 +275,12 @@ export async function changerStatut(dossierId: number, vers: Statut, commentaire
       aUnJustificatif: docs.some((x) => x.categorie === 'justificatif'),
       circuitDevis: estCircuitDevis({ type: d.type, statut: d.statut, aDesDevis: devis.aDesDevis, aUnDevisExterne }),
       dernierDevisRefuse: devis.dernierDevisRefuse,
+      encaissementsIntegres,
+      clotureFinanciere,
     });
     if (!verdict.ok) throw new ErreurMetier(verdict.erreur);
+    // MVP2-05 cas limite : « Sans suite » après acompte = clôture de recherche anticipée (lot B).
+    if (vers === 'sans_suite' && d.type === 'REC') await regulariserSansSuite(tx, dossierId, commentaire?.trim() ?? '', { type: 'collaborateur', id: a.id, ip: a.ip ?? null });
     await tx
       .update(schema.dossier)
       .set({ statut: vers, fermeLe: estFinal(vers) ? new Date() : null })

@@ -24,7 +24,11 @@ function useAction() {
   return { lancer, envoi, retour };
 }
 
-export function ChangerStatut({ dossierId, options }: { dossierId: number; options: { code: Statut; libelle: string }[] }) {
+/**
+ * `encaissementsIntegres` (MVP2-05) : « Acompte reçu » / « Solde reçu » suivent les Encaissements de
+ * l'onglet Finances ; le commentaire « (montant, moyen, référence) » ne concerne plus que le mode transitoire.
+ */
+export function ChangerStatut({ dossierId, options, encaissementsIntegres = false }: { dossierId: number; options: { code: Statut; libelle: string }[]; encaissementsIntegres?: boolean }) {
   const { lancer, envoi, retour } = useAction();
   const [vers, setVers] = useState<Statut | ''>('');
   if (options.length === 0) return null;
@@ -47,7 +51,7 @@ export function ChangerStatut({ dossierId, options }: { dossierId: number; optio
         </div>
         <div>
           <label htmlFor="commentaire" className={classeLibelle}>
-            Commentaire {vers === 'a_completer' ? '(informations manquantes)' : vers === 'acompte_recu' || vers === 'solde_recu' ? '(montant, moyen, référence)' : vers === 'placements_confirmes' ? '(nombre de placements)' : ''}
+            Commentaire {vers === 'a_completer' ? '(informations manquantes)' : (vers === 'acompte_recu' || vers === 'solde_recu') && !encaissementsIntegres ? '(montant, moyen, référence)' : vers === 'placements_confirmes' ? '(nombre de placements)' : ''}
           </label>
           <textarea id="commentaire" name="commentaire" rows={2} className={classeChamp} />
         </div>

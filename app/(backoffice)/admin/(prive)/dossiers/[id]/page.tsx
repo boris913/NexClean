@@ -1,4 +1,4 @@
-// RG-22 : fiche dossier — onglets Résumé, Demandes, Postes, Devis (REC, MVP2-04), Propositions, Documents, Historique, Notes.
+// RG-22 : fiche dossier — onglets Résumé, Demandes, Postes, Devis (REC, MVP2-04), Finances (REC, MVP2-05), Propositions, Documents, Historique, Notes.
 import Link from 'next/link';
 import { forbidden, notFound } from 'next/navigation';
 import { exigerCollaborateur } from '@/lib/authz/session';
@@ -6,8 +6,10 @@ import { lireDossier, dossiersDuClient } from '@/lib/dossiers/lecture';
 import { peutTraiter } from '@/lib/dossiers/acces';
 import { CATEGORIES_DOCUMENT, CATEGORIES_DOCUMENT_GENERE, LIBELLES_CATEGORIE_DOCUMENT } from '@/lib/dossiers/service';
 import { STATUTS, PHASES, estCircuitDevis, phaseDe, transitionsProposees } from '@/lib/dossiers/statuts';
-import { etatDevisDossier } from '@/lib/devis/lignes';
+import { devisAccepte, etatDevisDossier } from '@/lib/devis/lignes';
+import { situationFinanciere } from '@/lib/encaissements/lecture';
 import { lienDevisDossier } from '@/lib/devis/effets';
+import { formaterMontant } from '@/lib/devis/domaine';
 import { DOSSIER_TYPES } from '@/lib/domain/referentiels';
 import { formatHorodatage } from '@/lib/audit-lecture';
 import { formaterTelephone } from '@/lib/telephone';
@@ -29,6 +31,7 @@ import { etatRecherche, lienOngletPropositions } from '@/lib/propositions/servic
 import SectionPropositions from './SectionPropositions';
 import SectionDevis from './SectionDevis';
 import SectionFactures from './SectionFactures';
+import SectionFinances from './SectionFinances';
 
 /** MVP1-03 RG-06 : estimation enregistrée dans la Demande (preuve de ce qui a été affiché). */
 function estimationMontree(donnees: unknown): string | null {
@@ -44,6 +47,7 @@ const ONGLETS = [
   ['demandes', 'Demandes'],
   ['postes', 'Postes'],
   ['devis', 'Devis'],
+  ['finances', 'Finances'],
   ['propositions', 'Propositions'],
   ['documents', 'Documents'],
   ['historique', 'Historique'],
@@ -81,7 +85,7 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
   const traiter = peutTraiter(c, d.referentId);
   const direction = c.roles.includes('direction');
   const lienSuivi = `${env().BETTER_AUTH_URL}/suivi/${d.jetonSuivi}`;
-  const onglets = ONGLETS.filter(([k]) => (k !== 'postes' && k !== 'propositions' && k !== 'devis') || d.type === 'REC');
+  const onglets = ONGLETS.filter(([k]) => (k !== 'postes' && k !== 'propositions' && k !== 'devis' && k !== 'finances') || d.type === 'REC');
   const derniereDemande = fiche.demandes.at(-1);
   const recu = (derniereDemande?.donnees as { client?: Record<string, string | null> } | undefined)?.client;
   const listes = onglet === 'resume' && traiter ? await listesLieux() : [];
@@ -110,9 +114,17 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
   const recherche = onglet === 'resume' && d.type === 'REC' && ['execution', 'termine', 'cloture'].includes(phaseDe(d.statut)) ? await etatRecherche(d.id, c) : null;
   // MVP2-04 RG-08 : sur un dossier REC, les statuts du devis suivent l'onglet Devis (sauf mode transitoire).
   const etatDevis = onglet === 'resume' && traiter && d.type === 'REC' ? await etatDevisDossier(d.id) : null;
+  // MVP2-05 RG-05, RG-08 : avec un devis intégré accepté, « Acompte reçu » / « Solde reçu » suivent les Encaissements.
+  const encaissementsIntegres = !!etatDevis && !!(await devisAccepte(d.id));
   const optionsTransition = etatDevis
-    ? { circuitDevis: estCircuitDevis({ type: d.type, statut: d.statut, aDesDevis: etatDevis.aDesDevis, aUnDevisExterne: fiche.documents.some((x) => x.categorie === 'devis_externe') }), dernierDevisRefuse: etatDevis.dernierDevisRefuse }
+    ? {
+        circuitDevis: estCircuitDevis({ type: d.type, statut: d.statut, aDesDevis: etatDevis.aDesDevis, aUnDevisExterne: fiche.documents.some((x) => x.categorie === 'devis_externe') }),
+        dernierDevisRefuse: etatDevis.dernierDevisRefuse,
+        encaissementsIntegres,
+      }
     : {};
+  // MVP2-05 RG-05 : sur un Dossier « Accepté », indication « acompte partiel : X / Y ».
+  const acompte = onglet === 'resume' && d.type === 'REC' && d.statut === 'accepte' ? (await situationFinanciere(d.id))?.etatAcompte ?? null : null;
   const coordonneesDifferentes = !!recu && (recu.nom !== client.nom || (recu.contact ?? null) !== (client.contact ?? null) || (!!recu.email && recu.email !== client.email));
 
   return (
@@ -145,10 +157,16 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
         <div className="grid gap-4 lg:grid-cols-3 lg:items-start">
           <div className="space-y-4 lg:col-span-2">
             {peutReaffecter && !d.referentId && reaffectation}
-            {traiter && <A.ChangerStatut dossierId={d.id} options={transitionsProposees(d.type, d.statut, direction, optionsTransition).map((s) => ({ code: s, libelle: STATUTS[s] }))} />}
+            {traiter && <A.ChangerStatut dossierId={d.id} encaissementsIntegres={encaissementsIntegres} options={transitionsProposees(d.type, d.statut, direction, optionsTransition).map((s) => ({ code: s, libelle: STATUTS[s] }))} />}
             {traiter && optionsTransition.circuitDevis && ['en_qualification', 'devis_pret', 'devis_envoye'].includes(d.statut) && (
               <Alerte type="info">
                 Le devis se prépare, s’envoie et s’accepte dans l’onglet <Link href={lienDevisDossier(d.id)} className="font-medium text-primary underline">Devis</Link> : le statut du dossier suit le devis.
+              </Alerte>
+            )}
+            {acompte && (acompte.etat === 'partiel' || acompte.etat === 'non_paye') && (
+              <Alerte type="info">
+                {acompte.etat === 'partiel' ? <strong className="tabular-nums">{acompte.libelle.replace(/^a/, 'A')}</strong> : <>Acompte attendu : <strong className="tabular-nums">{formaterMontant(acompte.du)}</strong></>}
+                {' '}— « Acompte reçu » suit les paiements : enregistrez-les dans l’onglet <Link href={`?onglet=finances`} className="font-medium text-primary underline">Finances</Link>.
               </Alerte>
             )}
             <Carte titre="Client">
@@ -260,6 +278,8 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
       )}
 
       {onglet === 'devis' && d.type === 'REC' && <SectionDevis dossierId={d.id} demandeur={c} traiter={traiter} statutDossier={d.statut} />}
+
+      {onglet === 'finances' && d.type === 'REC' && <SectionFinances dossierId={d.id} demandeur={c} traiter={traiter} referentId={d.referentId} statutDossier={d.statut} />}
 
       {onglet === 'propositions' && d.type === 'REC' && <SectionPropositions dossierId={d.id} demandeur={c} traiter={traiter} />}
 
