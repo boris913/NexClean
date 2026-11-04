@@ -105,8 +105,8 @@ export async function chargerContexteSuivi(jeton: string, maintenant = new Date(
   const [r] = await getDb().select(colonnesDossier).from(schema.dossier).innerJoin(schema.client, eq(schema.client.id, schema.dossier.clientId)).where(eq(schema.dossier.jetonSuivi, jeton));
   if (!r) return null;
   if (r.fermeLe && maintenant.getTime() - r.fermeLe.getTime() > EXPIRATION_SUIVI_MS) return null;
-  const { fermeLe: _f, rechercheClotureLe, ...d } = r;
-  return { ...d, type: 'dossier', cle: `dossier:${r.dossierId}`, jeton, chemin: `/suivi/${jeton}`, ferme: estFinal(r.statut) || !!rechercheClotureLe };
+  const { fermeLe: _f, rechercheClotureLe: _c, ...d } = r;
+  return { ...d, type: 'dossier', cle: `dossier:${r.dossierId}`, jeton, chemin: `/suivi/${jeton}`, ferme: estFinal(r.statut) };
 }
 
 /**
@@ -136,7 +136,9 @@ export async function chargerContexteAcces(jeton: string, maintenant = new Date(
     .where(eq(schema.accesProfil.empreinte, empreinteJeton(jeton)));
   if (!r || r.revoqueLe || r.expireLe.getTime() <= maintenant.getTime()) return null;
   if (!STATUTS_TRANSMIS.includes(r.statutProposition) || r.accesRevoqueLe || r.candidatSupprimeLe || r.suppressionDemandeeLe) return null;
-  const ferme = estFinal(r.statut) || !!r.rechercheClotureLe;
+  // Clôture de la recherche : la révocation est explicite (accesRevoqueLe, posé par
+  // cloturerRecherche sauf pour les remplacements sous garantie) ; dossier fermé : placés seulement.
+  const ferme = estFinal(r.statut);
   if (ferme && r.statutProposition !== 'placee') return null;
   if (r.objet !== 'profil' && r.objet !== 'attestation') return null;
   return {
@@ -247,7 +249,7 @@ function conditionsVisibles(ctx: Contexte): SQL {
   const p = schema.proposition;
   const conditions: (SQL | undefined)[] = [
     eq(p.dossierId, ctx.dossierId),
-    // RG-23 : à la clôture / fermeture, seuls les profils placés restent visibles.
+    // RG-23 : dossier fermé → seuls les profils placés ; clôture → accesRevoqueLe (posé par cloturerRecherche).
     ctx.ferme ? eq(p.statut, 'placee') : inArray(p.statut, [...STATUTS_TRANSMIS]),
     isNull(p.accesRevoqueLe),
     isNull(schema.candidat.supprimeLe),

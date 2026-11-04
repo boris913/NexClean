@@ -291,8 +291,11 @@ describe.skipIf(!baseDisponible)('Page de suivi — profils transmis (intégrati
     expect(await client.chargerContexteAcces(lien.jeton)).toBeNull();
     await expect(client.enregistrerRetourClient(ctx, p, 'rencontrer', null, null)).rejects.toThrow('plus disponible');
 
-    // Clôture de la recherche : seuls les placés restent visibles.
+    // Clôture de la recherche : la révocation est explicite (cloturerRecherche pose accesRevoqueLe).
     await getDb().update(schema.dossier).set({ rechercheClotureLe: new Date(), statut: 'placements_confirmes' }).where(eq(schema.dossier.id, dossierId));
+    expect((await ctxSuivi()).ferme).toBe(false);
+    // Dossier fermé (statut final) : seuls les placés restent visibles.
+    await getDb().update(schema.dossier).set({ statut: 'cloture', fermeLe: new Date() }).where(eq(schema.dossier.id, dossierId));
     ctx = await ctxSuivi();
     expect(ctx.ferme).toBe(true);
     const restants = await client.profilsTransmis(ctx);

@@ -7,7 +7,7 @@ import { distanceKm } from '@/lib/candidats/recherche';
 
 vi.mock('@/lib/db', () => ({ getDb: () => ({}), schema: {} }));
 
-const migration = readFileSync('lib/db/migrations/0008_modeles_candidat_centroides.sql', 'utf8');
+const migration = readFileSync('lib/db/migrations/0008_modeles_candidat_centroides.sql', 'utf8').replace(/\r\n/g, '\n');
 const point = ([latitude, longitude]: [number, number]) => ({ latitude, longitude });
 const sqlTexte = (s: string) => `'${s.replace(/'/g, "''")}'`;
 

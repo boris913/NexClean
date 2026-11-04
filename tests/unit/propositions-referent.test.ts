@@ -30,3 +30,14 @@ describe('Modèles WhatsApp de proposition', () => {
     expect(masquerLienAcces(t)).toBe('Voici le profil : https://nexclean.xyz/profil/[lien masqué] merci');
   });
 });
+
+describe('Migration 0010 — modèles WhatsApp des propositions', () => {
+  it('insère chaque modèle par défaut avec le texte exact du code, sans écraser l’existant', async () => {
+    const { readFileSync } = await import('node:fs');
+    const migration = readFileSync('lib/db/migrations/0010_modeles_proposition.sql', 'utf8').replace(/\r\n/g, '\n');
+    const sqlTexte = (s: string) => `'${s.replace(/'/g, "''")}'`;
+    expect(MODELES_PROPOSITION_PAR_DEFAUT).toHaveLength(4);
+    for (const m of MODELES_PROPOSITION_PAR_DEFAUT) expect(migration).toContain(`(${sqlTexte(m.nom)}, '{}', ${sqlTexte(m.texte)})`);
+    expect(migration).toContain('ON CONFLICT ("nom") DO NOTHING');
+  });
+});

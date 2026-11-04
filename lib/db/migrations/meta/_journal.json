@@ -71,6 +71,13 @@
       "when": 1793762308525,
       "tag": "0009_propositions_placements",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793765527437,
+      "tag": "0010_modeles_proposition",
+      "breakpoints": true
     }
   ]
 }
