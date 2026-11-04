@@ -615,7 +615,7 @@ export interface LienAcces {
 /** Le texte noté au journal ne contient jamais un lien d'accès utilisable. */
 export const masquerLienAcces = (texte: string) => texte.replace(/(\/profil\/)[A-Za-z0-9_-]+/g, '$1[lien masqué]');
 
-async function insererLien(tx: Tx, p: Awaited<ReturnType<typeof chargerProposition>> & { accesRevoqueLe?: Date | null }, objet: ObjetLien, a: ActeurProposition, maintenant: Date): Promise<LienAcces> {
+async function insererLien(tx: Tx, p: Awaited<ReturnType<typeof chargerProposition>>, objet: ObjetLien, a: ActeurProposition, maintenant: Date): Promise<LienAcces> {
   if (!estTransmise(p.statut)) throw new ErreurMetier('Le profil n’est transmis au client qu’après l’accord du candidat.');
   const [etat] = await tx.select({ accesRevoqueLe: schema.proposition.accesRevoqueLe }).from(schema.proposition).where(eq(schema.proposition.id, p.id));
   if (etat?.accesRevoqueLe) throw new ErreurMetier('L’accès du client à ce profil est révoqué.');
@@ -699,11 +699,11 @@ export const lienRequis = (texte: string): ObjetLien | null =>
   utiliseVariable(texte, 'placement.lien_attestation') ? 'attestation' : utiliseVariable(texte, 'proposition.lien_profil') ? 'profil' : null;
 
 /** Modèles de proposition actifs (+ modèles par défaut jamais créés en base). */
-export async function listerModelesProposition(): Promise<{ nom: string; texte: string; destinataire: DestinataireModele }[]> {
+export async function listerModelesProposition(): Promise<{ nom: string; texte: string; destinataire: DestinataireModele; lien: ObjetLien | null }[]> {
   const tous = await getDb().select().from(schema.modeleMessage).orderBy(asc(schema.modeleMessage.nom));
   const enBase = tous.filter((m) => m.actif && estModeleProposition(m.texte)).map((m) => ({ nom: m.nom, texte: m.texte }));
   const manquants = MODELES_PROPOSITION_PAR_DEFAUT.filter((d) => !tous.some((m) => m.nom === d.nom));
-  return [...enBase, ...manquants].sort((x, y) => x.nom.localeCompare(y.nom, 'fr')).map((m) => ({ ...m, destinataire: destinataireModele(m.texte) }));
+  return [...enBase, ...manquants].sort((x, y) => x.nom.localeCompare(y.nom, 'fr')).map((m) => ({ ...m, destinataire: destinataireModele(m.texte), lien: lienRequis(m.texte) }));
 }
 
 /** Valeurs des variables pour une Proposition (dossier, candidat, poste, entretien, placement, liens). */

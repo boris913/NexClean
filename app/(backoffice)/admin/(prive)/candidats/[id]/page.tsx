@@ -22,6 +22,8 @@ import { rendreMessage } from '@/lib/modeles/variables';
 import { formaterTelephone, pourWhatsApp } from '@/lib/telephone';
 import { Alerte, Carte, Pastille, TitrePage } from '@/components/backoffice/ui';
 import * as A from './Fiche';
+import { ProposerPourDossier } from './Propositions';
+import { dossiersPourProposition, propositionsDuCandidat } from '@/lib/propositions/service';
 
 export const metadata = { title: 'Candidat' };
 export const dynamic = 'force-dynamic';
@@ -114,6 +116,10 @@ export default async function PageCandidat({ params }: { params: Promise<{ id: s
     minimum: MIN_ELEMENTS_VERIFICATION,
     disponibles: fiche.verification.map((code) => ({ code, libelle: ELEMENTS_VERIFICATION[code], valeur: valeurs[code] })),
   };
+  // MVP2-03 : propositions du candidat ; « Proposer pour un dossier » (dossiers REC traitables).
+  const propositions = await propositionsDuCandidat(k.id, acteur);
+  const peutProposer = traiter && !suppressionEnCours && k.statut !== 'indisponible' && peut(c.roles, 'dossier.traiter');
+  const dossiersProposables = peutProposer ? await dossiersPourProposition(acteur) : [];
   const blocReaffecter = reaffectation ? <A.Reaffecter candidatId={k.id} referentActuel={k.referentId} referents={referents} /> : null;
   const cv = fiche.documents.filter((d) => d.categorie === 'cv');
   const justificatifs = fiche.documents.filter((d) => d.categorie === 'justificatif');
@@ -247,6 +253,30 @@ export default async function PageCandidat({ params }: { params: Promise<{ id: s
               ))}
             </ul>
           )}
+        </Carte>
+
+        <Carte titre={`Propositions (${propositions.length})`}>
+          {propositions.length === 0 ? (
+            <p className="text-sm text-ink-600">Aucune proposition.</p>
+          ) : (
+            <ul className="divide-y divide-ink-50">
+              {propositions.map((p) => (
+                <li key={p.id} className="py-2 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="min-w-0">
+                      {p.voirDossier ? <Link href={`/admin/dossiers/${p.dossierId}?onglet=propositions#propositions`} className="text-primary">{p.numero}</Link> : p.numero} · {p.intitule} · {p.client}
+                    </span>
+                    <Pastille ton={p.statut === 'placee' || p.statut === 'retenue' ? 'vert' : p.statut === 'refusee' || p.statut === 'refusee_candidat' || p.statut === 'retiree' ? 'rouge' : p.statut === 'en_attente_accord' ? 'orange' : 'neutre'}>{p.libelleStatut}</Pastille>
+                  </div>
+                  <p className="text-xs text-ink-500">
+                    {formatHorodatage(p.creeLe)}
+                    {p.placements.map((pl, i) => <span key={i}> · Placement {pl.libelleStatut.toLowerCase()}{pl.remplacement ? ' (remplacement)' : ''}{pl.datePriseDePoste ? ` le ${pl.datePriseDePoste}` : ` prévu le ${pl.datePrevue}`}</span>)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+          {peutProposer && <ProposerPourDossier candidatId={k.id} dossiers={dossiersProposables} />}
         </Carte>
 
         <Carte titre="Consentements">
