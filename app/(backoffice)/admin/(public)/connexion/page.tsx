@@ -91,7 +91,7 @@ export default function PageConnexion() {
                 />
               </div>
               <button type="submit" disabled={envoi} className={classeBouton('principal', true)}>
-                {envoi ? 'Vérification…' : 'Valider'}
+                {envoi ? 'Vérification…' : 'Vérifier le code'}
               </button>
               <button type="button" onClick={() => setCodeSecours((v) => !v)} className="block w-full text-center text-sm font-medium text-primary hover:text-primary-dark py-1">
                 {codeSecours ? 'Utiliser l’application d’authentification' : 'Téléphone perdu ? Utiliser un code de secours'}

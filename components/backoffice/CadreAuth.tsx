@@ -7,9 +7,8 @@ export default function CadreAuth({ titre, sousTitre, children, pied }: { titre:
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-brand-100/70 to-transparent" />
       <div className="relative w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center text-center">
-          <span aria-hidden className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary font-display text-xl font-bold text-white shadow-md shadow-brand-900/20">
-            N
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/brand/logo-symbole.svg" alt="" width={48} height={48} className="h-12 w-12 drop-shadow-md" />
           <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-ink-500">NEXCLEAN · Back-Office</p>
           <h1 className="mt-2 text-2xl font-display font-semibold tracking-tight text-ink-900">{titre}</h1>
           {sousTitre && <p className="mt-1.5 text-sm text-ink-600">{sousTitre}</p>}

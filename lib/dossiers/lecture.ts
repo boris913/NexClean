@@ -7,6 +7,13 @@ import { peutVoir, peutVoirSalaire, type Demandeur } from './acces';
 import { STATUT_CODES, phaseDe, type Phase, type Statut } from './statuts';
 
 export const TAILLE_PAGE_DOSSIERS = 20;
+
+// Recherche insensible aux accents (« hotel » trouve « Hôtel ») sans extension PostgreSQL :
+// translate() ramène les lettres accentuées usuelles du français à leur lettre de base.
+const AVEC_ACCENTS = 'ÀÂÄÁÃÇÉÈÊËÍÎÏÌÑÓÔÖÒÕÚÛÜÙŸàâäáãçéèêëíîïìñóôöòõúûüùÿ';
+const SANS_ACCENTS = 'AAAAACEEEEIIIINOOOOOUUUUYaaaaaceeeeiiiinooooouuuuy';
+const sansAccents = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+const contientSansAccents = (col: SQL | typeof schema.client.nom, motif: string) => sql`translate(${col}, ${AVEC_ACCENTS}, ${SANS_ACCENTS}) ilike ${motif}`;
 /** Seuil de l'indicateur « sans action depuis N jours » (RG-23, paramètre). */
 export const JOURS_SANS_ACTION = 3;
 
@@ -31,8 +38,8 @@ export async function listerDossiers(c: Demandeur, f: FiltresDossiers) {
   if (f.q?.trim()) {
     const q = f.q.trim();
     const chiffres = q.replace(/\D/g, '');
-    const motif = `%${q.replace(/[%_\\]/g, '\\$&')}%`;
-    conditions.push(or(ilike(d.numero, motif), ilike(schema.client.nom, motif), ilike(schema.client.contact, motif), chiffres.length >= 4 ? ilike(schema.client.whatsapp, `%${chiffres}%`) : undefined));
+    const motif = `%${sansAccents(q).replace(/[%_\\]/g, '\\$&')}%`;
+    conditions.push(or(ilike(d.numero, motif), contientSansAccents(schema.client.nom, motif), contientSansAccents(sql`coalesce(${schema.client.contact}, '')`, motif), chiffres.length >= 4 ? ilike(schema.client.whatsapp, `%${chiffres}%`) : undefined));
   }
   if (f.type) conditions.push(eq(d.type, f.type));
   if (f.statut) conditions.push(eq(d.statut, f.statut));

@@ -108,13 +108,27 @@ export interface EnTete {
   references: string[];
 }
 
+// Symbole du logo (tuile 96 × 96, public/images/brand/logo-symbole.svg), tracé en vectoriel.
+const LOGO_TUILE = 'M26 0H70C84.36 0 96 11.64 96 26V70C96 84.36 84.36 96 70 96H26C11.64 96 0 84.36 0 70V26C0 11.64 11.64 0 26 0Z';
+const LOGO_N = 'M25 74V28H39L60 58V28H74V74H60L39 44V74Z';
+const LOGO_ECLAT = 'M76 8Q76 18 86 18Q76 18 76 28Q76 18 66 18Q76 18 76 8Z';
+
+/** Symbole NEXCLEAN (tuile verte, N et éclat blancs), coin supérieur gauche en (x, yHaut), côté `cote`. */
+export function dessinerSymbole(page: PDFPage, x: number, yHaut: number, cote: number): void {
+  const o = { x, y: yHaut, scale: cote / 96 };
+  page.drawSvgPath(LOGO_TUILE, { ...o, color: rgb(0.4, 0.702, 0.169) });
+  page.drawSvgPath(LOGO_N, { ...o, color: rgb(1, 1, 1) });
+  page.drawSvgPath(LOGO_ECLAT, { ...o, color: rgb(1, 1, 1) });
+}
+
 /** En-tête NEXCLEAN commun : marque à gauche, titre et références à droite, filet. Retourne le y sous l'en-tête. */
 export function dessinerEnTete(page: PDFPage, p: Polices, e: EnTete, marge = MARGE): number {
   const { width, height } = page.getSize();
   const droite = width - marge;
   let y = height - marge - 16;
-  page.drawText('NEXCLEAN', { x: marge, y, size: 22, font: p.gras, color: COULEURS.marque });
-  page.drawText(normaliserTexte('Nettoyage, recrutement et services', p.normal), { x: marge, y: y - 15, size: TAILLE_MIN, font: p.normal, color: COULEURS.gris });
+  dessinerSymbole(page, marge, y + 18, 32);
+  page.drawText('NEXCLEAN', { x: marge + 40, y, size: 22, font: p.gras, color: COULEURS.marque });
+  page.drawText(normaliserTexte('Nettoyage, recrutement et services', p.normal), { x: marge + 40, y: y - 15, size: TAILLE_MIN, font: p.normal, color: COULEURS.gris });
   const titre = normaliserTexte(e.titre, p.gras);
   const tailleTitre = Math.max(TAILLE_MIN, Math.min(15, (width / 2 - marge) / Math.max(1, p.gras.widthOfTextAtSize(titre, 1))));
   page.drawText(titre, { x: droite - p.gras.widthOfTextAtSize(titre, tailleTitre), y: y + 4, size: tailleTitre, font: p.gras, color: COULEURS.encre });
