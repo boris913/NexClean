@@ -192,7 +192,8 @@ describe.skipIf(!baseDisponible)('Attribution et notifications (intégration)', 
   it('RG-15 : variable inconnue refusée ; RG-16 : modèles initiaux ; RG-17 : message préparé historisé', async () => {
     await expect(modeles.enregistrerModele(null, { nom: 'Test', texte: 'Montant : {{dossier.montant}}' }, { id: dir.id })).rejects.toThrow('Variable inconnue : dossier.montant');
     const tous = await modeles.listerModeles();
-    expect(tous.map((m) => m.nom).sort()).toEqual(['Informations complémentaires', 'Lien de suivi', 'Premier contact', 'Relance demande de devis', 'Relance sans réponse']);
+    // Modèles initiaux : 5 pour les dossiers (0004) et 3 pour les candidats (0008, MVP2-02).
+    expect(tous.map((m) => m.nom).sort()).toEqual(['Bienvenue candidat', 'Compléter votre profil', 'Informations complémentaires', 'Lien de réinitialisation', 'Lien de suivi', 'Premier contact', 'Relance demande de devis', 'Relance sans réponse']);
     expect((await modeles.listerModeles({ type: 'REC' })).map((m) => m.nom)).not.toContain('Relance demande de devis');
 
     const r = await demande('REC', '690100010', douala);

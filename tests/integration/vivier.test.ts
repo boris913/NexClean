@@ -80,7 +80,9 @@ describe.skipIf(!baseDisponible)('Vivier et file Nouveaux candidats (intégratio
     douala = villes.find((v) => v.nom === 'Douala')!.id;
     yaounde = villes.find((v) => v.nom === 'Yaoundé')!.id;
     for (const v of villes) for (const x of v.quartiers) q[x.nom] ??= x.id;
-    // Centroïdes approximatifs (ADR 0021 §4) ; Deido reste sans centroïde.
+    // Centroïdes du scénario de la spec (RG-14), à la place de ceux du référentiel initial ;
+    // Deido reste sans centroïde.
+    await getDb().update(schema.quartier).set({ latitude: null, longitude: null });
     const centroides: Record<string, [number, number]> = { Akwa: [4.0511, 9.7], Bonapriso: [4.035, 9.69], 'Bonabéri': [4.07, 9.63], Bonamoussadi: [4.089, 9.742], Makepe: [4.075, 9.755] };
     for (const [nom, [latitude, longitude]] of Object.entries(centroides)) await getDb().update(schema.quartier).set({ latitude, longitude }).where(eq(schema.quartier.id, q[nom]!));
 

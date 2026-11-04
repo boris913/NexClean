@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { getDb, schema } from '@/lib/db';
 import { journaliser } from '@/lib/audit';
 import { ErreurMetier, type Auteur } from '@/lib/collaborateurs/service';
-import { QUARTIERS_AFFICHES_INITIAUX, VILLES_INITIALES } from './donnees-initiales';
+import { CENTROIDES_INITIAUX, QUARTIERS_AFFICHES_INITIAUX, VILLES_INITIALES } from './donnees-initiales';
 
 const auteurAudit = (a: Auteur) => ({ acteurType: a.id ? ('collaborateur' as const) : ('systeme' as const), acteurId: a.id, ip: a.ip ?? null });
 
@@ -22,7 +22,8 @@ export async function initialiserReferentiel(): Promise<{ villes: number; arrond
         compte.arrondissements += insereeA.length;
         const [arr] = await tx.select({ id: schema.arrondissement.id }).from(schema.arrondissement).where(and(eq(schema.arrondissement.villeId, ville!.id), eq(schema.arrondissement.nom, nomArr)));
         for (const nomQ of quartiers) {
-          const insereeQ = await tx.insert(schema.quartier).values({ villeId: ville!.id, arrondissementId: arr!.id, nom: nomQ, afficheSite: (QUARTIERS_AFFICHES_INITIAUX[v.nom] ?? []).includes(nomQ) }).onConflictDoNothing().returning({ id: schema.quartier.id });
+          const [latitude, longitude] = CENTROIDES_INITIAUX[v.nom]?.[nomQ] ?? [null, null];
+          const insereeQ = await tx.insert(schema.quartier).values({ villeId: ville!.id, arrondissementId: arr!.id, nom: nomQ, latitude, longitude, afficheSite: (QUARTIERS_AFFICHES_INITIAUX[v.nom] ?? []).includes(nomQ) }).onConflictDoNothing().returning({ id: schema.quartier.id });
           compte.quartiers += insereeQ.length;
         }
       }
