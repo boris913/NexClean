@@ -3,11 +3,12 @@
 // ./mise-en-page.ts et les modèles dans ./modeles.ts.
 // Chaque fonction lit **uniquement les données figées** en base (RG-02 : jamais les paramètres
 // tarifaires courants) et renvoie les octets du PDF (A4 portrait, police ≥ 10 pt, < 300 Ko).
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq, lte } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { ErreurMetier } from '@/lib/collaborateurs/service';
 import { lireParametre } from '@/lib/parametres';
-import { pdfAccuseReception, pdfDevis, pdfFacture, type ClientDocument } from './modeles';
+import { MOYENS_PAIEMENT, NATURES_ENCAISSEMENT } from '@/lib/encaissements/domaine';
+import { pdfAccuseReception, pdfDevis, pdfFacture, pdfRecu, type ClientDocument } from './modeles';
 
 /** Client d'un Dossier (coordonnées courantes ; la facture, elle, porte un client figé). */
 async function clientDuDossier(dossierId: number): Promise<{ numeroDossier: string; creeLe: Date; type: string; client: ClientDocument } | null> {
@@ -61,6 +62,7 @@ export async function genererPdfDevis(devisId: number): Promise<Uint8Array> {
     conditions: d.conditions,
     conditionsParticulieres: d.conditionsParticulieres,
     mentionsLegales: d.mentionsLegales,
+    deductionCredit: d.type === 'devis' ? d.deductionCredit : 0,
   });
 }
 
@@ -74,14 +76,14 @@ export async function genererPdfFacture(factureId: number): Promise<Uint8Array> 
   if (!f) throw new ErreurMetier('Facture introuvable.');
   const x = f.facture;
   const [origine] = x.factureOrigineId ? await getDb().select({ numero: schema.facture.numero, emiseLe: schema.facture.emiseLe }).from(schema.facture).where(eq(schema.facture.id, x.factureOrigineId)) : [];
-  const [devis] = x.devisId ? await getDb().select({ numero: schema.devis.numero, version: schema.devis.version }).from(schema.devis).where(eq(schema.devis.id, x.devisId)) : [];
+  const [devis] = x.devisId ? await getDb().select({ numero: schema.devis.numero, version: schema.devis.version, deductionCredit: schema.devis.deductionCredit }).from(schema.devis).where(eq(schema.devis.id, x.devisId)) : [];
   return pdfFacture({
     type: x.type,
     numero: x.numero,
     emiseLe: x.emiseLe,
     numeroDossier: f.numeroDossier,
     libelle: x.libelle,
-    devis: devis ?? null,
+    devis: devis ? { numero: devis.numero, version: devis.version } : null,
     factureOrigine: origine ?? null,
     client: x.client,
     lignes: x.lignes,
@@ -90,16 +92,46 @@ export async function genererPdfFacture(factureId: number): Promise<Uint8Array> 
     montantTva: x.montantTva,
     totalTtc: x.totalTtc,
     mentionsLegales: x.mentionsLegales,
+    // MVP2-05 RG-12 : la déduction figée sur le devis figure sur la facture d'acompte (règlement).
+    deductionCredit: x.type === 'acompte' ? (devis?.deductionCredit ?? 0) : 0,
   });
 }
 
 /**
  * MVP2-05 RG-04 : reçu d'un Encaissement (REÇ-AAAA-NNNNN) — valeurs figées de la ligne
- * `encaissement` (montant, moyen, référence, date de réception, Dossier, client).
- * À IMPLÉMENTER (lot C) : modèle `pdfRecu` dans ./modeles.ts.
+ * `encaissement` (montant, moyen, référence, date de réception, nature, devis), client du Dossier.
+ * Jamais le justificatif ni le commentaire (données internes). Un reçu dont l'Encaissement a été
+ * annulé n'est pas modifié : l'état « annulé » est affiché à côté du lien, pas dans le PDF.
+ * « Reste à payer à cette date » : base (montant final si connu, sinon montant TTC du devis) moins
+ * les écritures du Dossier enregistrées jusqu'à ce reçu inclus (ordre de saisie).
  */
 export async function genererPdfRecu(encaissementId: number): Promise<Uint8Array> {
-  throw new ErreurMetier(`Rendu du reçu non disponible (encaissement ${encaissementId}).`);
+  const [e] = await getDb().select().from(schema.encaissement).where(eq(schema.encaissement.id, encaissementId));
+  if (!e || e.type !== 'encaissement' || !e.recuNumero) throw new ErreurMetier('Reçu introuvable.');
+  const dossier = await clientDuDossier(e.dossierId);
+  if (!dossier) throw new ErreurMetier('Dossier introuvable.');
+  const [devis] = e.devisId ? await getDb().select({ numero: schema.devis.numero, version: schema.devis.version, totalTtc: schema.devis.totalTtc }).from(schema.devis).where(eq(schema.devis.id, e.devisId)) : [];
+  const [d] = await getDb().select({ montantFinalTtc: schema.dossier.montantFinalTtc }).from(schema.dossier).where(eq(schema.dossier.id, e.dossierId));
+  const anterieures = await getDb()
+    .select({ montant: schema.encaissement.montant })
+    .from(schema.encaissement)
+    .where(and(eq(schema.encaissement.dossierId, e.dossierId), lte(schema.encaissement.id, e.id)));
+  const totalRegle = anterieures.reduce((t, l) => t + l.montant, 0);
+  const base = d?.montantFinalTtc != null ? { libelleBase: 'Montant final', base: d.montantFinalTtc } : devis ? { libelleBase: 'Montant du devis', base: devis.totalTtc } : null;
+  return pdfRecu({
+    numero: e.recuNumero,
+    recuLe: e.recuLe,
+    emisLe: e.creeLe,
+    numeroDossier: dossier.numeroDossier,
+    client: dossier.client,
+    nature: NATURES_ENCAISSEMENT[e.nature],
+    moyen: MOYENS_PAIEMENT[e.moyen],
+    reference: e.moyen === 'especes' ? null : e.reference,
+    montant: e.montant,
+    devis: devis ? { numero: devis.numero, version: devis.version } : null,
+    situation: base ? { ...base, totalRegle } : null,
+    mentionsLegales: await lireParametre('mentions_legales'),
+  });
 }
 
 /**

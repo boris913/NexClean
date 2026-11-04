@@ -1,11 +1,12 @@
 // Réponses des routes CV / attestation / documents de la page de suivi et des liens temporaires
-// (specs/MVP2-03 RG-09, RG-15 ; MVP2-04 RG-19) : contrôle du jeton + cookie de vérification,
+// (specs/MVP2-03 RG-09, RG-15 ; MVP2-04 RG-19 ; MVP2-05 RG-04) : contrôle du jeton + cookie de vérification,
 // affichage inline, pas de cache, pas de détection de type.
 import { headers } from 'next/headers';
 import { ipDepuisEnTetes } from '@/lib/audit';
 import { ErreurMetier } from '@/lib/collaborateurs/service';
 import * as client from '@/lib/propositions/client';
 import * as devisClient from '@/lib/devis/client';
+import { pdfRecuClient } from '@/lib/encaissements/suivi';
 
 type Source = 'suivi' | 'profil';
 
@@ -57,9 +58,9 @@ export async function servirAttestation(source: Source, jeton: string, placement
   }
 }
 
-export type DocumentSuivi = { type: 'accuse_reception' } | { type: 'devis'; id: string } | { type: 'facture'; id: string };
+export type DocumentSuivi = { type: 'accuse_reception' } | { type: 'devis'; id: string } | { type: 'facture'; id: string } | { type: 'recu'; id: string };
 
-/** MVP2-04 RG-19 : accusé de réception, PDF d'un devis ou d'une facture du Dossier (page de suivi uniquement). */
+/** MVP2-04 RG-19, MVP2-05 RG-04 : accusé de réception, PDF d'un devis, d'une facture ou d'un reçu du Dossier (page de suivi uniquement). */
 export async function servirDocumentSuivi(jeton: string, doc: DocumentSuivi): Promise<Response> {
   const r = await contexteVerifie('suivi', jeton);
   if (!r.ctx) return r.erreur!;
@@ -70,7 +71,9 @@ export async function servirDocumentSuivi(jeton: string, doc: DocumentSuivi): Pr
         ? await devisClient.accuseReceptionClient(r.ctx, ip)
         : doc.type === 'devis'
           ? await devisClient.pdfDevisClient(r.ctx, Number(doc.id), ip)
-          : await devisClient.pdfFactureClient(r.ctx, Number(doc.id), ip);
+          : doc.type === 'facture'
+            ? await devisClient.pdfFactureClient(r.ctx, Number(doc.id), ip)
+            : await pdfRecuClient(r.ctx, Number(doc.id), ip);
     return fichier(f.octets, 'application/pdf', f.nom);
   } catch (e) {
     if (e instanceof ErreurMetier) return texte(e.message, 404);

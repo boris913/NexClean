@@ -10,6 +10,7 @@ import { blocageEnCours, chargerContexteSuivi, compterVisibles, estVerifie } fro
 import { devisEnvoyeExiste } from '@/lib/devis/client';
 import SectionProfils from './SectionProfils';
 import { SectionDevis, SectionDocuments } from './SectionDevis';
+import { SectionPaiements } from './SectionPaiements';
 import { FormulaireVerification } from './Interactions';
 
 export const dynamic = 'force-dynamic';
@@ -84,6 +85,7 @@ export default async function PageSuivi({ params }: { params: Promise<{ jeton: s
       {ctx && verifie && (
         <>
           <SectionDevis ctx={ctx} />
+          <SectionPaiements ctx={ctx} />
           {avecProfils && <SectionProfils ctx={ctx} />}
           <SectionDocuments ctx={ctx} />
         </>
