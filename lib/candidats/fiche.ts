@@ -14,7 +14,7 @@ import { evaluerCandidats } from '@/lib/dossiers/attribution';
 import { getStockage } from '@/lib/fichiers/stockage';
 import { declencherEnvoi, notifier } from '@/lib/notifications';
 import { formaterTelephone, normaliserTelephone } from '@/lib/telephone';
-import { estModeleCandidat, rendreMessage, variablesDe, type ContexteMessage } from '@/lib/modeles/variables';
+import { estModeleCandidat, estModeleProposition, rendreMessage, variablesDe, type ContexteMessage } from '@/lib/modeles/variables';
 import { completude, pseudonyme } from './domaine';
 import { peutAccederVivier, type DemandeurVivier } from './acces';
 import { lienFicheCandidat, type ActeurVivier } from './attribution';
@@ -98,7 +98,8 @@ export const utiliseLienReinitialisation = (texte: string) => variablesDe(texte)
 /** Modèles candidat actifs (+ modèles par défaut jamais créés en base). */
 export async function listerModelesCandidat(): Promise<{ nom: string; texte: string }[]> {
   const tous = await getDb().select().from(schema.modeleMessage).orderBy(asc(schema.modeleMessage.nom));
-  const enBase = tous.filter((m) => m.actif && estModeleCandidat(m.texte)).map((m) => ({ nom: m.nom, texte: m.texte }));
+  // Les modèles de proposition (MVP2-03) sont proposés sur la Proposition, pas sur la fiche.
+  const enBase = tous.filter((m) => m.actif && estModeleCandidat(m.texte) && !estModeleProposition(m.texte)).map((m) => ({ nom: m.nom, texte: m.texte }));
   const manquants = MODELES_CANDIDAT_PAR_DEFAUT.filter((d) => !tous.some((m) => m.nom === d.nom));
   return [...enBase, ...manquants].sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
 }

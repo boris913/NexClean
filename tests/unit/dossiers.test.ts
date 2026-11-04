@@ -1,6 +1,6 @@
 // specs/MVP1-02 — statuts (RG-12..18), numérotation (RG-01), téléphones (RG-03).
 import { describe, expect, it } from 'vitest';
-import { estOuvert, phaseDe, transitionsProposees, verifierTransition, type ContexteTransition } from '@/lib/dossiers/statuts';
+import { estOuvert, MESSAGE_CLOTURE_RECHERCHE, phaseDe, transitionsProposees, verifierTransition, type ContexteTransition } from '@/lib/dossiers/statuts';
 import { anneeDouala, formaterNumero } from '@/lib/dossiers/numero';
 import { formaterTelephone, normaliserTelephone } from '@/lib/telephone';
 
@@ -60,9 +60,12 @@ describe('Transitions (RG-12..18)', () => {
       expect(verifierTransition(ctx({ de: 'accepte', vers: 'acompte_recu', aUnJustificatif: true }))).toMatchObject({ ok: false });
       expect(verifierTransition(ctx({ de: 'accepte', vers: 'acompte_recu', aUnJustificatif: true, commentaire: '25 000 MoMo réf. X' }))).toMatchObject({ ok: true });
     });
-    it('« Placements confirmés » exige le nombre en commentaire', () => {
-      expect(verifierTransition(ctx({ de: 'candidats_proposes', vers: 'placements_confirmes' }))).toMatchObject({ ok: false });
-      expect(verifierTransition(ctx({ de: 'candidats_proposes', vers: 'placements_confirmes', commentaire: '7 placés' }))).toMatchObject({ ok: true });
+    it('MVP2-03 RG-22 : « Placements confirmés » passe par la clôture de la recherche, pas par une transition manuelle', () => {
+      expect(verifierTransition(ctx({ de: 'candidats_proposes', vers: 'placements_confirmes' }))).toMatchObject({ ok: false, erreur: MESSAGE_CLOTURE_RECHERCHE });
+      expect(verifierTransition(ctx({ de: 'candidats_proposes', vers: 'placements_confirmes', commentaire: '7 placés' }))).toMatchObject({ ok: false });
+      // Retour en arrière (motif) et réouverture par la Direction restent possibles.
+      expect(verifierTransition(ctx({ de: 'solde_recu', vers: 'placements_confirmes', commentaire: 'Erreur de saisie' }))).toMatchObject({ ok: true, retourArriere: true });
+      expect(transitionsProposees('REC', 'candidats_proposes', false)).toEqual(['refuse', 'sans_suite']);
     });
   });
 
