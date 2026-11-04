@@ -1,7 +1,7 @@
 {
-  "name": "NEXCLEAN SARL — Nettoyage professionnel & entretien",
+  "name": "NEXCLEAN — Services aux entreprises et aux particuliers",
   "short_name": "NEXCLEAN",
-  "description": "Nettoyage professionnel, entretien des espaces verts et produits d'entretien à Douala, Cameroun.",
+  "description": "Propreté et hygiène, recrutement et placement de personnel, espaces verts, offres d'emploi et suivi de dossier en ligne à Douala et Yaoundé, Cameroun.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

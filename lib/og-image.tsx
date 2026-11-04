@@ -1,8 +1,9 @@
 import { ImageResponse } from 'next/og';
 import { readFile } from 'fs/promises';
 import path from 'path';
+import { BRAND } from '@/lib/constants';
 
-export const OG_ALT = 'NEXCLEAN SARL — Nettoyage professionnel & entretien au Cameroun';
+export const OG_ALT = BRAND.ogAlt;
 export const OG_SIZE = { width: 1200, height: 630 };
 
 /** Image de partage (Facebook, WhatsApp, LinkedIn, X) aux couleurs de la marque. */
@@ -40,12 +41,12 @@ export async function renderOgImage(villes: string) {
         <img src={logoSrc} width={449} height={128} alt="" />
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div style={{ fontSize: 64, fontWeight: 800, color: '#FFFFFF', lineHeight: 1.05, letterSpacing: -2 }}>
-            Nettoyage professionnel & entretien
+            Propreté, recrutement & espaces verts
           </div>
-          <div style={{ fontSize: 30, color: '#E2F6CF', marginTop: 16 }}>{`${villes}, Cameroun · Particuliers & entreprises`}</div>
+          <div style={{ fontSize: 30, color: '#E2F6CF', marginTop: 16 }}>{`${BRAND.signature} · ${villes}, Cameroun`}</div>
         </div>
         <div style={{ display: 'flex', gap: 16 }}>
-          {['Devis gratuit sur WhatsApp', 'Espaces verts', 'Produits NexClean'].map((b) => (
+          {['Propreté & hygiène', 'Recrutement', 'Espaces verts', 'Suivi en ligne'].map((b) => (
             <div
               key={b}
               style={{

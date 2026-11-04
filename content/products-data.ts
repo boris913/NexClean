@@ -72,7 +72,7 @@ export const SHOP_INFO = {
   /** Mention affichée à côté de chaque prix. */
   priceNote: 'Livraison non incluse',
   delivery:
-    'Prix hors livraison. Livraison à Douala : frais et délai confirmés sur WhatsApp selon votre quartier. Retrait possible sur rendez-vous.',
+    'Prix hors livraison. Zones, frais et délai de livraison confirmés sur WhatsApp selon votre ville et votre quartier. Retrait possible sur rendez-vous.',
   wholesale:
     'Entreprises, revendeurs et achats en gros : tarifs dédiés sur demande.',
 };
