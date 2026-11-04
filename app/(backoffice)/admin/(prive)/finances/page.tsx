@@ -9,6 +9,7 @@ import { formaterMontant } from '@/lib/devis/domaine';
 import { MOYENS_PAIEMENT, MOYENS_SAISIE, NATURES_ENCAISSEMENT, TYPES_ECRITURE } from '@/lib/encaissements/domaine';
 import { lienFinancesDossier, normaliserFiltres, vueFinances, type LigneEncaissementFinances } from '@/lib/encaissements/vue-finances';
 import { FUSEAU } from '@/lib/domain/referentiels';
+import { lireParametre } from '@/lib/parametres';
 import { Carte, ChiffreCle, classeBouton, classeChamp, classeLibelle, EtatVide, Pastille, TitrePage } from '@/components/backoffice/ui';
 
 export const metadata = { title: 'Finances' };
@@ -21,7 +22,6 @@ const date = (d: Date) => new Intl.DateTimeFormat('fr-FR', { timeZone: FUSEAU, d
 const classeLigne = 'flex flex-wrap items-start justify-between gap-x-4 gap-y-1 px-3 py-3 sm:px-4 text-sm hover:bg-ink-50/60 focus-visible:bg-ink-50';
 const classeListe = 'overflow-hidden rounded-lg border border-ink-100 divide-y divide-ink-100 -mx-1 sm:mx-0';
 /** RG-09 : délai indicatif (jours après émission) au-delà duquel un solde est signalé en rouge. */
-const DELAI_IMPAYE_JOURS = 15;
 
 function Dossier({ numero, client }: { numero: string; client: string }) {
   return (
@@ -65,6 +65,8 @@ export default async function PageFinances({ searchParams }: { searchParams: Pro
   const p = await searchParams;
   const filtres = normaliserFiltres({ du: p.du, au: p.au, moyen: p.moyen });
   const v = await vueFinances(filtres);
+  // MVP2-05 RG-09 : un solde impayé passe en alerte au-delà du délai de relance.
+  const DELAI_IMPAYE_JOURS = await lireParametre('delai_relance_solde_jours');
   const direction = peut(c.roles, 'remboursement.valider');
   const totalImpayes = v.impayes.reduce((t, l) => t + l.resteAPayer, 0);
 

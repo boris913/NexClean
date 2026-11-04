@@ -18,6 +18,7 @@ import { situationFinanciere, tropPercuARegulariser } from '@/lib/encaissements/
 import { verifierClotureDossier } from '@/lib/encaissements/domaine';
 import { documentsManquants } from '@/lib/encaissements/service';
 import { regulariserSansSuite } from '@/lib/encaissements/regularisation';
+import { archiverPdfFactureSansEchec } from '@/lib/devis/facturation';
 import { attribuerAutomatiquement, signalerSiReferentIneligible } from './attribution';
 import { declencherEnvoi, notifier } from '@/lib/notifications';
 import { revoquerAccesNonPlaces } from '@/lib/propositions/revocation';
@@ -241,6 +242,8 @@ export async function creerDemande(entree: NouvelleDemande, auteur?: Acteur | nu
 // ─── Transitions (RG-12..18) ──────────────────────────────────
 
 export async function changerStatut(dossierId: number, vers: Statut, commentaire: string | null, a: Acteur): Promise<void> {
+  // MVP2-05 : facture de solde / avoir émise par la régularisation « Sans suite », archivée en PDF après la transaction.
+  let factureAArchiver: number | null = null;
   await getDb().transaction(async (tx) => {
     const d = await chargerPourEcriture(tx, dossierId, a);
     const docs = await tx
@@ -280,7 +283,10 @@ export async function changerStatut(dossierId: number, vers: Statut, commentaire
     });
     if (!verdict.ok) throw new ErreurMetier(verdict.erreur);
     // MVP2-05 cas limite : « Sans suite » après acompte = clôture de recherche anticipée (lot B).
-    if (vers === 'sans_suite' && d.type === 'REC') await regulariserSansSuite(tx, dossierId, commentaire?.trim() ?? '', { type: 'collaborateur', id: a.id, ip: a.ip ?? null });
+    if (vers === 'sans_suite' && d.type === 'REC') {
+      const r = await regulariserSansSuite(tx, dossierId, commentaire?.trim() ?? '', { type: 'collaborateur', id: a.id, ip: a.ip ?? null });
+      factureAArchiver = r?.factureId ?? null;
+    }
     await tx
       .update(schema.dossier)
       .set({ statut: vers, fermeLe: estFinal(vers) ? new Date() : null })
@@ -293,6 +299,7 @@ export async function changerStatut(dossierId: number, vers: Statut, commentaire
       if (n) await journaliser({ acteurType: 'systeme', action: 'proposition.acces_revoque', objetType: 'dossier', objetId: dossierId, details: { propositions: n, motif: 'fermeture du dossier' } }, tx);
     }
   });
+  if (factureAArchiver !== null) await archiverPdfFactureSansEchec(factureAArchiver);
 }
 
 // ─── Modifications (RG-10, RG-11) ─────────────────────────────
