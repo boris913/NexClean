@@ -1,5 +1,6 @@
-// MVP2-01 RG-09..12 : tableau de bord du candidat. N'affiche jamais : notes internes, statut
-// interne détaillé, autres candidats, budgets des clients.
+// MVP2-01 RG-09..14 : tableau de bord du candidat. N'affiche jamais : notes internes, statut
+// interne détaillé, autres candidats, budgets des clients (le salaire d'un poste seulement si le
+// client l'a autorisé), retours des clients sur les profils.
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { AlertTriangle, ChevronRight, FileText, User } from 'lucide-react';
@@ -7,23 +8,53 @@ import { lireEspace } from '@/lib/candidats/service';
 import { lireCandidaturesCandidat } from '@/lib/candidats/candidatures';
 import { STATUTS_CANDIDATURE_CANDIDAT } from '@/lib/candidats/formulaire-candidature';
 import { exigerCandidat } from '@/lib/candidats/session';
+import { listerNotificationsCandidat, listerPropositionsCandidat, type PropositionCandidat } from '@/lib/propositions/candidat';
 import { FUSEAU } from '@/lib/domain/referentiels';
 import Coque from '../Coque';
 import { BasculeRecherche, BoutonDeconnexion, Documents } from './Elements';
+import { CarteProposition, Notifications, type PropositionAffichee } from './Propositions';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Mon espace candidat', robots: { index: false, follow: false } };
 
 const date = (d: Date) => new Intl.DateTimeFormat('fr-FR', { timeZone: FUSEAU, day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+const dateJour = (iso: string) => date(new Date(`${iso}T12:00:00Z`));
+
+/** Champs RG-13 de la carte (le salaire n'arrive ici que s'il est communicable). */
+function versAffichage(p: PropositionCandidat): PropositionAffichee {
+  const lieu = [p.quartier, p.ville].filter(Boolean).join(', ');
+  const contrat = [p.typeContrat, p.duree].filter(Boolean).join(' — ');
+  const details = [
+    { libelle: 'Secteur', valeur: p.secteur },
+    { libelle: 'Lieu', valeur: lieu },
+    { libelle: 'Contrat', valeur: contrat },
+    { libelle: 'Horaires', valeur: p.horaires },
+    { libelle: 'Salaire', valeur: p.salaire },
+  ].filter((d): d is { libelle: string; valeur: string } => !!d.valeur);
+  return { id: p.id, poste: p.poste, client: p.client, details, recueLe: date(p.creeLe) };
+}
+
+const TONS: Partial<Record<PropositionCandidat['statut'], string>> = {
+  proposee: 'bg-blue-50 text-blue-800',
+  entretien: 'bg-amber-50 text-amber-900',
+  retenue: 'bg-green-50 text-green-800',
+  placee: 'bg-green-100 text-green-900',
+};
 
 export default async function PageEspace() {
   const session = await exigerCandidat();
-  const [e, { profilIncomplet, candidatures }] = await Promise.all([lireEspace(session.id), lireCandidaturesCandidat(session.id)]);
+  const [e, { profilIncomplet, candidatures }, propositions, notifications] = await Promise.all([
+    lireEspace(session.id),
+    lireCandidaturesCandidat(session.id),
+    listerPropositionsCandidat(session.id),
+    listerNotificationsCandidat(session.id),
+  ]);
   const { pourcentage, manquants } = e.completude;
 
   return (
     <Coque titre={`Bonjour ${e.candidat.prenom}`} large>
       <div className="space-y-4">
+        <Notifications notifications={notifications.map((n) => ({ id: n.id, titre: n.titre, texte: n.texte, le: date(n.creeLe), lu: !!n.luLe }))} />
         {profilIncomplet && (
           <div role="status" className="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
             <AlertTriangle className="w-5 h-5 shrink-0" />
@@ -70,7 +101,11 @@ export default async function PageEspace() {
         <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-5 space-y-3">
           <h2 className="font-semibold text-ink-900">Ma recherche</h2>
           <p className="text-sm text-slate-600">
-            {e.enRecherche ? 'Vous êtes visible pour les offres qui correspondent à votre profil.' : 'Vous n’êtes pas proposé(e) pour des offres en ce moment.'}
+            {e.enRecherche
+              ? 'Vous êtes visible pour les offres qui correspondent à votre profil.'
+              : e.place
+                ? 'Vous êtes en poste : vous n’êtes plus proposé(e) pour d’autres offres. Si vous cherchez de nouveau un emploi, signalez-le ici.'
+                : 'Vous n’êtes pas proposé(e) pour des offres en ce moment.'}
           </p>
           <BasculeRecherche enRecherche={e.enRecherche} />
           <p className="text-xs text-slate-500">Métiers : {e.candidat.metiers.join(', ') || '—'}</p>
@@ -83,12 +118,43 @@ export default async function PageEspace() {
           <Documents documents={e.documents.map((d) => ({ id: d.id, categorie: d.categorie, nom: d.nomOrigine, taille: d.taille }))} />
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-5 space-y-2">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-5 space-y-3">
           <h2 className="font-semibold text-ink-900">Propositions et candidatures</h2>
           <p className="text-sm text-slate-600">
             Quand un conseiller souhaite présenter votre profil à un employeur, la proposition apparaît ici : vous acceptez ou refusez d’être présenté(e). Rien n’est transmis sans votre accord.
           </p>
-          <p className="text-sm text-slate-500">Aucune proposition pour le moment.</p>
+          {propositions.enAttente.length > 0 ? (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-ink-900">
+                {propositions.enAttente.length === 1 ? '1 proposition attend votre réponse' : `${propositions.enAttente.length} propositions attendent votre réponse`}
+              </h3>
+              {propositions.enAttente.map((p) => (
+                <CarteProposition key={p.id} p={versAffichage(p)} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500">Aucune proposition en attente de votre réponse.</p>
+          )}
+          {propositions.historique.length > 0 && (
+            <div>
+              <h3 className="text-sm font-semibold text-ink-900 mb-1">Mes propositions</h3>
+              <ul className="divide-y divide-slate-100">
+                {propositions.historique.map((p) => (
+                  <li key={p.id} className="flex items-start justify-between gap-3 py-2 text-sm">
+                    <span className="min-w-0">
+                      <span className="block font-medium text-ink-900">{p.poste}</span>
+                      <span className="block text-xs text-slate-600">{p.client}</span>
+                      {p.reponseLe && <span className="block text-xs text-slate-500">Votre réponse le {date(p.reponseLe)}</span>}
+                      {p.entretienLieu && <span className="block text-xs text-slate-600">Lieu de l’entretien : {p.entretienLieu}</span>}
+                      {p.priseDePosteLe && <span className="block text-xs text-slate-600">Prise de poste le {dateJour(p.priseDePosteLe)}</span>}
+                    </span>
+                    <span className={`shrink-0 max-w-[50%] text-right rounded-2xl px-2.5 py-1 text-xs font-semibold ${TONS[p.statut] ?? 'bg-slate-100 text-slate-700'}`}>{p.libelleStatut}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <h3 className="text-sm font-semibold text-ink-900">Mes candidatures</h3>
           {candidatures.length > 0 ? (
             <ul className="divide-y divide-slate-100">
               {candidatures.map((k) => (

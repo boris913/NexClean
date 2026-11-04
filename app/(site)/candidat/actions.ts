@@ -11,6 +11,7 @@ import { controlerEnvoi } from '@/lib/dossiers/anti-abus';
 import { brouillonCandidatVide, type BrouillonCandidat } from '@/lib/candidats/domaine';
 import * as svc from '@/lib/candidats/service';
 import { marquerProfilComplet } from '@/lib/candidats/candidatures';
+import { marquerLuesCandidat, repondreProposition } from '@/lib/propositions/candidat';
 import { candidatConnecte, exigerCandidat, fermerSession, ouvrirSession } from '@/lib/candidats/session';
 
 const ip = async () => ipDepuisEnTetes(await headers());
@@ -105,4 +106,27 @@ export async function demanderSuppression(motDePasse: string): Promise<ResultatA
   });
   if (r.ok) await fermerSession();
   return r;
+}
+
+/** MVP2-01 RG-13, RG-14 ; MVP2-03 RG-03, RG-04, RG-08 : réponse à une Proposition en attente. */
+export async function repondre(entree: { propositionId: number; reponse: 'accepte' | 'refuse'; motif?: string; numeroCommunicable?: boolean }): Promise<ResultatAction> {
+  return executer(async () => {
+    const c = await exigerCandidat();
+    const reponse = entree?.reponse === 'accepte' ? 'accepte' : entree?.reponse === 'refuse' ? 'refuse' : null;
+    if (!reponse) throw new ErreurMetier('Réponse invalide.');
+    await repondreProposition(c.id, Number(entree.propositionId), reponse, {
+      motif: typeof entree.motif === 'string' ? entree.motif : null,
+      numeroCommunicable: entree.numeroCommunicable === true,
+      ip: await ip(),
+    });
+    return reponse === 'accepte' ? 'Merci : votre profil va être présenté à l’employeur. Votre conseiller vous tiendra informé(e).' : 'Votre refus est enregistré. Cette proposition est close.';
+  });
+}
+
+/** Marque une notification (ou toutes, sans identifiant) comme lue. */
+export async function marquerNotificationsLues(id?: number): Promise<ResultatAction> {
+  return executer(async () => {
+    const c = await exigerCandidat();
+    await marquerLuesCandidat(c.id, id === undefined ? undefined : [Number(id)]);
+  });
 }
