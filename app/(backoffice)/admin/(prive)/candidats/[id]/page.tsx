@@ -1,6 +1,7 @@
 // MVP2-02 : fiche candidat du Back-Office. Accès : Direction et référents ayant le service
 // Recrutement (RG-13, 403 journalisé sinon) ; chaque consultation est journalisée.
 import Link from 'next/link';
+import { CheckCircle2, FileText } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { exigerAccesVivier } from '@/lib/candidats/acces-page';
 import { DISPONIBILITES, HORAIRES, STATUTS_CANDIDAT, STATUT_CANDIDAT_CODES, type StatutCandidat } from '@/lib/candidats/domaine';
@@ -62,11 +63,11 @@ const dateCourte = (d: Date) => new Intl.DateTimeFormat('fr-FR', { timeZone: 'Af
 
 function Champs({ lignes }: { lignes: [string, React.ReactNode][] }) {
   return (
-    <dl className="text-sm grid grid-cols-[auto,1fr] gap-x-3 gap-y-1">
+    <dl className="text-sm grid grid-cols-1 gap-y-3 sm:grid-cols-[9rem,1fr] sm:gap-x-4 sm:gap-y-2.5">
       {lignes.map(([k, v]) => (
         <div key={k} className="contents">
-          <dt className="text-ink-500">{k}</dt>
-          <dd className="min-w-0 break-words">{v}</dd>
+          <dt className="text-xs font-medium text-ink-500 sm:text-sm sm:font-normal">{k}</dt>
+          <dd className="-mt-2.5 min-w-0 break-words text-ink-900 sm:mt-0">{v}</dd>
         </div>
       ))}
     </dl>
@@ -127,10 +128,12 @@ export default async function PageCandidat({ params }: { params: Promise<{ id: s
 
   return (
     <>
-      <TitrePage titre={`${k.prenom} ${k.nom}`} retour={{ href: '/admin/candidats', libelle: 'Candidats' }}>
-        <Pastille ton={tonStatut(k.statut)}>{STATUTS_CANDIDAT[k.statut]}</Pastille>
+      <TitrePage titre={`${k.prenom} ${k.nom}`} retour={{ href: '/admin/candidats', libelle: 'Candidats' }} description={k.metiers.length ? k.metiers.join(' · ') : undefined}>
+        <Pastille ton={tonStatut(k.statut)} point>
+          {STATUTS_CANDIDAT[k.statut]}
+        </Pastille>
       </TitrePage>
-      <div className="flex flex-wrap items-center gap-2 text-sm text-ink-600 -mt-3 mb-4">
+      <div className="flex flex-wrap items-center gap-2 text-sm text-ink-600 -mt-3 mb-6">
         <span>{fiche.referentNom ? `Référent : ${fiche.referentNom}` : 'Non attribué'}</span>
         <span aria-hidden>·</span>
         <span>Inscrit le {dateCourte(k.creeLe)} ({k.canalInscription === 'assiste' ? 'inscription assistée' : 'en ligne'})</span>
@@ -138,7 +141,8 @@ export default async function PageCandidat({ params }: { params: Promise<{ id: s
         {fiche.completude.pourcentage < 100 && <Pastille ton={fiche.completude.pourcentage < 60 ? 'orange' : 'neutre'}>Profil complet à {fiche.completude.pourcentage} %</Pastille>}
       </div>
 
-      <div className="space-y-4">
+      <div className="grid gap-4 lg:grid-cols-3 lg:items-start">
+      <div className="space-y-4 lg:col-span-2">
         {suppressionEnCours && (
           <Alerte>
             Suppression des données demandée le {dateCourte(k.suppressionDemandeeLe!)}
@@ -205,12 +209,12 @@ export default async function PageCandidat({ params }: { params: Promise<{ id: s
           />
           <h3 className="text-sm font-semibold mt-4 mb-2">Expériences ({fiche.experiences.length})</h3>
           {fiche.experiences.length === 0 ? (
-            <p className="text-sm text-ink-600">Aucune expérience renseignée.</p>
+            <p className="text-sm text-ink-500">Aucune expérience renseignée.</p>
           ) : (
             <ul className="space-y-2">
               {fiche.experiences.map((e) => (
-                <li key={e.id} className="border border-ink-100 rounded p-2 text-sm">
-                  <strong>{e.poste}</strong>
+                <li key={e.id} className="border-l-2 border-brand-300 bg-ink-50/60 rounded-r-lg px-3 py-2.5 text-sm">
+                  <strong className="text-ink-900">{e.poste}</strong>
                   {e.employeur && ` · ${e.employeur}`}
                   <p className="text-ink-600">{[e.ville, e.duree].filter(Boolean).join(' · ') || '—'}</p>
                   {e.missions && <p className="whitespace-pre-wrap">{e.missions}</p>}
@@ -219,31 +223,38 @@ export default async function PageCandidat({ params }: { params: Promise<{ id: s
             </ul>
           )}
         </Carte>
+      </div>
+      <div className="space-y-4">
 
         <Carte titre="Documents">
           {fiche.documents.length === 0 ? (
-            <p className="text-sm text-ink-600">Aucun CV ni justificatif.</p>
+            <p className="text-sm text-ink-500">Aucun CV ni justificatif.</p>
           ) : (
-            <ul className="divide-y divide-ink-50">
+            <ul className="-my-2 divide-y divide-ink-100">
               {[...cv, ...justificatifs].map((d) => (
-                <li key={d.id} className="py-2 min-w-0">
-                  <a href={lienDocument(d.id)} target="_blank" rel="noopener" className="text-primary font-medium break-all">{d.nom}</a>
-                  <p className="text-xs text-ink-500">{d.categorie === 'cv' ? 'CV' : 'Justificatif'} · {Math.ceil(d.taille / 1024)} Ko · {formatHorodatage(d.creeLe)}</p>
+                <li key={d.id} className="flex items-start gap-3 py-2.5 min-w-0">
+                  <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ocean-50 text-ocean-600">
+                    <FileText className="h-4 w-4" />
+                  </span>
+                  <span className="min-w-0">
+                    <a href={lienDocument(d.id)} target="_blank" rel="noopener" className="text-primary font-medium break-all hover:text-primary-dark">{d.nom}</a>
+                    <span className="block text-xs text-ink-500">{d.categorie === 'cv' ? 'CV' : 'Justificatif'} · {Math.ceil(d.taille / 1024)} Ko · {formatHorodatage(d.creeLe)}</span>
+                  </span>
                 </li>
               ))}
             </ul>
           )}
-          <p className="text-xs text-ink-500 mt-2">Chaque téléchargement est journalisé.</p>
+          <p className="text-xs text-ink-500 mt-3">Chaque téléchargement est journalisé.</p>
           {fiche.completude.manquants.length > 0 && <p className="text-xs text-ink-600 mt-2">Manque au profil : {fiche.completude.manquants.join(', ')}.</p>}
         </Carte>
 
         <Carte titre={`Candidatures (${fiche.candidatures.length})`}>
           {fiche.candidatures.length === 0 ? (
-            <p className="text-sm text-ink-600">Aucune candidature.</p>
+            <p className="text-sm text-ink-500">Aucune candidature.</p>
           ) : (
-            <ul className="divide-y divide-ink-50">
+            <ul className="-my-2 divide-y divide-ink-100">
               {fiche.candidatures.map((x) => (
-                <li key={x.id} className="py-2 text-sm flex flex-wrap items-center justify-between gap-2">
+                <li key={x.id} className="py-2.5 text-sm flex flex-wrap items-center justify-between gap-2">
                   <span className="min-w-0">
                     <Link href={`/recrutement/${x.offreSlug}`} className="text-primary" target="_blank">{x.offreTitre}</Link>
                     <span className="block text-xs text-ink-500">{formatHorodatage(x.creeLe)}</span>
@@ -257,11 +268,11 @@ export default async function PageCandidat({ params }: { params: Promise<{ id: s
 
         <Carte titre={`Propositions (${propositions.length})`}>
           {propositions.length === 0 ? (
-            <p className="text-sm text-ink-600">Aucune proposition.</p>
+            <p className="text-sm text-ink-500">Aucune proposition.</p>
           ) : (
-            <ul className="divide-y divide-ink-50">
+            <ul className="-my-2 divide-y divide-ink-100">
               {propositions.map((p) => (
-                <li key={p.id} className="py-2 text-sm">
+                <li key={p.id} className="py-2.5 text-sm">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="min-w-0">
                       {p.voirDossier ? <Link href={`/admin/dossiers/${p.dossierId}?onglet=propositions#propositions`} className="text-primary">{p.numero}</Link> : p.numero} · {p.intitule} · {p.client}
@@ -281,11 +292,12 @@ export default async function PageCandidat({ params }: { params: Promise<{ id: s
 
         <Carte titre="Consentements">
           {fiche.consentements.length === 0 ? (
-            <p className="text-sm text-ink-600">Aucun consentement enregistré.</p>
+            <p className="text-sm text-ink-500">Aucun consentement enregistré.</p>
           ) : (
-            <ul className="text-sm space-y-1">
+            <ul className="text-sm space-y-2">
               {fiche.consentements.map((x) => (
-                <li key={x.id}>
+                <li key={x.id} className="flex items-start gap-2 text-ink-700">
+                  <CheckCircle2 aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   {TYPE_CONSENTEMENT[x.type] ?? x.type} · version {x.version} · {x.canal === 'assiste' ? 'assisté' : 'site'} · {formatHorodatage(x.horodatage)}
                 </li>
               ))}
@@ -303,36 +315,42 @@ export default async function PageCandidat({ params }: { params: Promise<{ id: s
         )}
 
         {k.referentId && blocReaffecter}
+      </div>
+      </div>
 
+      <div className="mt-4">
         <Carte titre="Historique">
           {fiche.historique.length === 0 ? (
-            <p className="text-sm text-ink-600">Aucun événement.</p>
+            <p className="text-sm text-ink-500">Aucun événement.</p>
           ) : (
-            <ul className="space-y-2">
+            <ol className="relative space-y-3 before:absolute before:left-[5px] before:top-2 before:bottom-2 before:w-px before:bg-ink-200">
               {fiche.historique.map((h) => {
                 const avant = h.avant as { statut?: StatutCandidat } | null;
                 const apres = h.apres as { statut?: StatutCandidat } | null;
                 const details = h.details as { motif?: string; modele?: string; texte?: string } | null;
                 return (
-                  <li key={h.id} className="border border-ink-100 rounded-lg p-3 text-sm">
+                  <li key={h.id} className="relative pl-6 text-sm">
+                    <span aria-hidden className={`absolute left-0 top-1.5 h-[11px] w-[11px] rounded-full ring-4 ring-white ${avant?.statut && apres?.statut ? 'bg-primary' : 'bg-ink-300'}`} />
                     <div className="flex flex-wrap justify-between gap-2 text-xs text-ink-500">
-                      <span>{LIBELLE_ACTION[h.action] ?? h.action} · {h.acteurNom ?? (h.acteurType === 'candidat' ? 'Candidat' : h.acteurType === 'systeme' ? 'Système' : '—')}</span>
-                      <span>{formatHorodatage(h.horodatage)}</span>
+                      <span>
+                        <span className="font-semibold text-ink-800">{LIBELLE_ACTION[h.action] ?? h.action}</span> · {h.acteurNom ?? (h.acteurType === 'candidat' ? 'Candidat' : h.acteurType === 'systeme' ? 'Système' : '—')}
+                      </span>
+                      <span className="tabular-nums">{formatHorodatage(h.horodatage)}</span>
                     </div>
                     {avant?.statut && apres?.statut && <p>{STATUTS_CANDIDAT[avant.statut]} → {STATUTS_CANDIDAT[apres.statut]}</p>}
                     {details?.motif && <p className="whitespace-pre-wrap">Motif : {details.motif}</p>}
                     {details?.modele && <p>Modèle : {details.modele}</p>}
-                    {details?.texte && <p className="whitespace-pre-wrap text-xs bg-ink-50 rounded p-2 mt-1">{details.texte}</p>}
+                    {details?.texte && <p className="whitespace-pre-wrap text-xs bg-ink-50 border border-ink-100 rounded-lg p-2.5 mt-1">{details.texte}</p>}
                     {direction && (h.avant != null || h.apres != null) && !apres?.statut && (
                       <details>
                         <summary className="cursor-pointer text-xs text-primary py-1">Avant / après</summary>
-                        <pre className="text-xs bg-ink-50 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all">{JSON.stringify({ avant: h.avant, apres: h.apres }, null, 2)}</pre>
+                        <pre className="text-xs bg-ink-50 border border-ink-100 rounded-lg p-2.5 overflow-x-auto whitespace-pre-wrap break-all">{JSON.stringify({ avant: h.avant, apres: h.apres }, null, 2)}</pre>
                       </details>
                     )}
                   </li>
                 );
               })}
-            </ul>
+            </ol>
           )}
         </Carte>
       </div>

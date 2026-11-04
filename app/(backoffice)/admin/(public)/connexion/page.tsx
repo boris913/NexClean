@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth/client';
 import { Alerte, classeBouton, classeChamp, classeLibelle } from '@/components/backoffice/ui';
+import CadreAuth from '@/components/backoffice/CadreAuth';
 
 export default function PageConnexion() {
   const router = useRouter();
@@ -48,11 +49,10 @@ export default function PageConnexion() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        <p className="text-center font-display text-2xl font-semibold mb-1">NEXCLEAN</p>
-        <p className="text-center text-ink-600 mb-6">Back-Office</p>
-        <div className="bg-white border border-ink-100 rounded-xl p-5 shadow-sm space-y-4">
+    <CadreAuth
+      titre={etape === 'identifiants' ? 'Connexion' : 'Vérification en deux étapes'}
+      sousTitre={etape === 'identifiants' ? 'Accédez à votre espace de travail.' : codeSecours ? 'Saisissez l’un de vos codes de secours.' : 'Saisissez le code affiché par votre application.'}
+    >
           {erreur && <Alerte>{erreur}</Alerte>}
           {etape === 'identifiants' ? (
             <form action={connexion} className="space-y-4">
@@ -67,7 +67,7 @@ export default function PageConnexion() {
               <button type="submit" disabled={envoi} className={classeBouton('principal', true)}>
                 {envoi ? 'Connexion…' : 'Se connecter'}
               </button>
-              <Link href="/admin/mot-de-passe-oublie" className="block text-center text-sm text-primary py-1">
+              <Link href="/admin/mot-de-passe-oublie" className="block text-center text-sm font-medium text-primary hover:text-primary-dark py-1">
                 Mot de passe oublié ?
               </Link>
             </form>
@@ -90,13 +90,11 @@ export default function PageConnexion() {
               <button type="submit" disabled={envoi} className={classeBouton('principal', true)}>
                 {envoi ? 'Vérification…' : 'Valider'}
               </button>
-              <button type="button" onClick={() => setCodeSecours((v) => !v)} className="block w-full text-center text-sm text-primary py-1">
+              <button type="button" onClick={() => setCodeSecours((v) => !v)} className="block w-full text-center text-sm font-medium text-primary hover:text-primary-dark py-1">
                 {codeSecours ? 'Utiliser l’application d’authentification' : 'Téléphone perdu ? Utiliser un code de secours'}
               </button>
             </form>
           )}
-        </div>
-      </div>
-    </main>
+    </CadreAuth>
   );
 }

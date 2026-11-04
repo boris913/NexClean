@@ -10,7 +10,8 @@ import { PHASES, STATUTS, type Phase } from '@/lib/dossiers/statuts';
 import { DOSSIER_TYPES, DOSSIER_TYPE_CODES, type DossierType } from '@/lib/domain/referentiels';
 import { getDb, schema } from '@/lib/db';
 import { formatHorodatage } from '@/lib/audit-lecture';
-import { classeBouton, classeChamp, classeLibelle, Pastille, TitrePage } from '@/components/backoffice/ui';
+import { Clock, FolderOpen, MapPin, Plus, Search, SlidersHorizontal, User, Users } from 'lucide-react';
+import { classeBouton, classeCarteLien, classeChamp, classeLibelle, classeSurface, EtatVide, Pagination, Pastille, TitrePage } from '@/components/backoffice/ui';
 
 export const metadata = { title: 'Dossiers' };
 
@@ -50,21 +51,26 @@ export default async function PageDossiers({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <TitrePage titre={tous ? 'Dossiers' : 'Mes dossiers'}>
+      <TitrePage titre={tous ? 'Dossiers' : 'Mes dossiers'} description={tous ? 'Tous les dossiers clients, du plus récent au plus ancien.' : 'Les dossiers qui vous sont attribués.'}>
         {peut(c.roles, 'dossier.traiter') && (
           <Link href="/admin/dossiers/nouveau" className={classeBouton()}>
-            + Saisir une demande
+            <Plus aria-hidden className="h-4 w-4" /> Saisir une demande
           </Link>
         )}
       </TitrePage>
 
-      <form className="bg-white border border-ink-100 rounded-xl p-4 shadow-sm mb-4 space-y-3">
+      <form className={`${classeSurface} p-4 mb-5 space-y-3`}>
         <div>
           <label htmlFor="q" className="sr-only">Rechercher</label>
-          <input id="q" name="q" type="search" defaultValue={filtres.q} placeholder="N° de dossier, client ou téléphone" className={classeChamp} />
+          <div className="relative">
+            <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+            <input id="q" name="q" type="search" defaultValue={filtres.q} placeholder="N° de dossier, client ou téléphone" className={`${classeChamp} pl-9`} />
+          </div>
         </div>
         <details>
-          <summary className="cursor-pointer text-sm text-primary py-2">Filtres</summary>
+          <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-lg py-2 text-sm font-medium text-ink-700 hover:text-primary [&::-webkit-details-marker]:hidden">
+            <SlidersHorizontal aria-hidden className="h-4 w-4" /> Filtres
+          </summary>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
             <div>
               <label htmlFor="type" className={classeLibelle}>Type</label>
@@ -114,31 +120,65 @@ export default async function PageDossiers({ searchParams }: { searchParams: Pro
             </div>
           </div>
         </details>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 border-t border-ink-100 pt-3">
           <button type="submit" className={classeBouton()}>Rechercher</button>
           <Link href="/admin/dossiers" className={classeBouton('secondaire')}>Réinitialiser</Link>
         </div>
       </form>
 
-      <ul className="space-y-2">
-        {lignes.length === 0 && <li className="text-sm text-ink-600">Aucun dossier.</li>}
+      {lignes.length === 0 && (
+        <EtatVide
+          icone={FolderOpen}
+          titre="Aucun dossier."
+          description={Object.values(p).some(Boolean) ? 'Aucun dossier ne correspond à cette recherche. Modifiez ou retirez des filtres.' : 'Les demandes reçues du site et les saisies apparaîtront ici.'}
+          action={
+            Object.values(p).some(Boolean) ? (
+              <Link href="/admin/dossiers" className={classeBouton('secondaire')}>
+                Réinitialiser les filtres
+              </Link>
+            ) : undefined
+          }
+        />
+      )}
+      <ul className="grid gap-3 lg:grid-cols-2">
         {lignes.map((d) => {
           const jours = sansActionDepuis(d.derniereActionLe);
           return (
             <li key={d.id}>
-              <Link href={`/admin/dossiers/${d.id}`} className="block bg-white border border-ink-100 rounded-xl p-4 shadow-sm hover:border-primary">
+              <Link href={`/admin/dossiers/${d.id}`} className={`${classeCarteLien} group h-full`}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-mono text-sm font-semibold">{d.numero}</span>
-                  <Pastille ton={d.statut === 'a_completer' ? 'orange' : d.statut === 'refuse' || d.statut === 'sans_suite' ? 'rouge' : 'neutre'}>{STATUTS[d.statut]}</Pastille>
+                  <span className="rounded-md bg-ink-100 px-1.5 py-0.5 font-mono text-xs font-semibold text-ink-700">{d.numero}</span>
+                  <Pastille ton={d.statut === 'a_completer' ? 'orange' : d.statut === 'refuse' || d.statut === 'sans_suite' ? 'rouge' : 'neutre'} point>
+                    {STATUTS[d.statut]}
+                  </Pastille>
                 </div>
-                <p className="font-medium mt-1">{d.clientNom}</p>
-                <p className="text-sm text-ink-600">
-                  {DOSSIER_TYPES[d.type]}
-                  {d.personnes > 0 && ` · ${d.personnes} personne${d.personnes > 1 ? 's' : ''}`}
-                  {` · ${d.ville ?? d.villeAutre ?? 'Ville ?'}`}
+                <p className="mt-2.5 font-semibold text-ink-900 break-words group-hover:text-primary">{d.clientNom}</p>
+                <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-600">
+                  <span>{DOSSIER_TYPES[d.type]}</span>
+                  {d.personnes > 0 && (
+                    <span className="inline-flex items-center gap-1">
+                      <Users aria-hidden className="h-3.5 w-3.5 text-ink-400" />
+                      {`${d.personnes} personne${d.personnes > 1 ? 's' : ''}`}
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin aria-hidden className="h-3.5 w-3.5 text-ink-400" />
+                    {d.ville ?? d.villeAutre ?? 'Ville ?'}
+                  </span>
                 </p>
-                <div className="flex flex-wrap items-center justify-between gap-2 mt-1 text-xs text-ink-500">
-                  <span>{formatHorodatage(d.creeLe)}{tous && ` · ${d.referentNom ?? 'Non attribué'}`}</span>
+                <div className="flex flex-wrap items-center justify-between gap-2 mt-3 pt-3 border-t border-ink-100 text-xs text-ink-500">
+                  <span className="inline-flex flex-wrap items-center gap-x-2">
+                    <span className="inline-flex items-center gap-1">
+                      <Clock aria-hidden className="h-3.5 w-3.5" />
+                      {formatHorodatage(d.creeLe)}
+                    </span>
+                    {tous && (
+                      <span className="inline-flex items-center gap-1">
+                        <User aria-hidden className="h-3.5 w-3.5" />
+                        {d.referentNom ?? 'Non attribué'}
+                      </span>
+                    )}
+                  </span>
                   {jours >= joursSansAction && !['cloture', 'refuse', 'sans_suite'].includes(d.statut) && <Pastille ton="orange">Sans action depuis {jours} j</Pastille>}
                 </div>
               </Link>
@@ -146,10 +186,7 @@ export default async function PageDossiers({ searchParams }: { searchParams: Pro
           );
         })}
       </ul>
-      <nav className="flex justify-between mt-4">
-        {page > 1 ? <Link href={lienPage(page - 1)} className={classeBouton('secondaire')}>← Précédents</Link> : <span />}
-        {suivante && <Link href={lienPage(page + 1)} className={classeBouton('secondaire')}>Suivants →</Link>}
-      </nav>
+      <Pagination page={page} suivante={suivante} lien={lienPage} />
     </>
   );
 }

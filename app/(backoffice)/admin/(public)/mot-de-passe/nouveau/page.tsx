@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { authClient } from '@/lib/auth/client';
 import { Alerte, classeBouton, classeChamp, classeLibelle } from '@/components/backoffice/ui';
+import CadreAuth from '@/components/backoffice/CadreAuth';
 
 function Formulaire() {
   const token = useSearchParams().get('token');
@@ -45,13 +46,10 @@ function Formulaire() {
 
 export default function PageNouveauMotDePasse() {
   return (
-    <main className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-sm bg-white border border-ink-100 rounded-xl p-5 shadow-sm space-y-4">
-        <h1 className="text-lg font-semibold">Nouveau mot de passe</h1>
+    <CadreAuth titre="Nouveau mot de passe" sousTitre="Choisissez le mot de passe de votre compte.">
         <Suspense>
           <Formulaire />
         </Suspense>
-      </div>
-    </main>
+    </CadreAuth>
   );
 }

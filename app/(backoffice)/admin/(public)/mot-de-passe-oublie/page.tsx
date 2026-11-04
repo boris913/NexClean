@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { authClient } from '@/lib/auth/client';
 import { Alerte, classeBouton, classeChamp, classeLibelle } from '@/components/backoffice/ui';
+import CadreAuth from '@/components/backoffice/CadreAuth';
 
 export default function PageMotDePasseOublie() {
   const [envoye, setEnvoye] = useState(false);
@@ -18,9 +19,15 @@ export default function PageMotDePasseOublie() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-sm bg-white border border-ink-100 rounded-xl p-5 shadow-sm space-y-4">
-        <h1 className="text-lg font-semibold">Mot de passe oublié</h1>
+    <CadreAuth
+      titre="Mot de passe oublié"
+      sousTitre="Recevez un lien pour choisir un nouveau mot de passe."
+      pied={
+        <Link href="/admin/connexion" className="font-medium text-primary hover:text-primary-dark">
+          Retour à la connexion
+        </Link>
+      }
+    >
         {envoye ? (
           <Alerte type="succes">Si un compte existe pour cette adresse, un lien valable 30 minutes vient d’être envoyé.</Alerte>
         ) : (
@@ -34,10 +41,6 @@ export default function PageMotDePasseOublie() {
             </button>
           </form>
         )}
-        <Link href="/admin/connexion" className="block text-center text-sm text-primary py-1">
-          Retour à la connexion
-        </Link>
-      </div>
-    </main>
+    </CadreAuth>
   );
 }

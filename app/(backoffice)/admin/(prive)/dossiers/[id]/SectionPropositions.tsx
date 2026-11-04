@@ -5,7 +5,8 @@ import type { Demandeur } from '@/lib/dossiers/acces';
 import { formatHorodatage } from '@/lib/audit-lecture';
 import { MODES_ACCORD, MODES_CONFIRMATION, STATUTS_PROPOSITION, estTransmise, transitionsReferent, type StatutProposition } from '@/lib/propositions/domaine';
 import { formaterDateHeure, formaterJour, lienAttestation, lienPreuveAccord, lienPreuvePlacement, lirePropositionsDossier, listerModelesProposition, type VueProposition } from '@/lib/propositions/service';
-import { Alerte, Carte, Pastille } from '@/components/backoffice/ui';
+import { Users } from 'lucide-react';
+import { Alerte, Carte, EtatVide, Pastille } from '@/components/backoffice/ui';
 import * as P from './Propositions';
 
 const dateCourte = (d: Date) => new Intl.DateTimeFormat('fr-FR', { timeZone: 'Africa/Douala', dateStyle: 'medium' }).format(d);
@@ -35,7 +36,7 @@ export default async function SectionPropositions({ dossierId, demandeur, traite
   return (
     <div id="propositions" className="space-y-4 scroll-mt-4">
       <Carte titre="Clôture de la recherche">
-        <dl className="text-sm grid grid-cols-[auto,1fr] gap-x-3 gap-y-1">
+        <dl className="text-sm grid grid-cols-[7.5rem,1fr] gap-x-4 gap-y-2.5 [&>dt]:text-ink-500 [&>dd]:min-w-0 [&>dd]:text-ink-900">
           <dt className="text-ink-500">Acompte reçu</dt>
           <dd>{etat.acompteLe ? dateCourte(etat.acompteLe) : '—'}</dd>
           <dt className="text-ink-500">Délai</dt>
@@ -49,7 +50,7 @@ export default async function SectionPropositions({ dossierId, demandeur, traite
         </dl>
         {etat.avertissements.map((a) => <div key={a} className="mt-2"><Alerte type="info">{a}</Alerte></div>)}
         {etat.clotureLe ? (
-          <p className="text-sm mt-3">
+          <p className="text-sm text-ink-800 mt-3">
             Recherche clôturée le {formatHorodatage(etat.clotureLe)}{etat.clotureMotif ? ` (${etat.clotureMotif})` : ''} : <strong>{etat.placementsRetenus} placement(s) retenu(s)</strong> pour le montant final.
             {/* Montant final (commission figée × placements retenus) : calculé par MVP2-05. */}
           </p>
@@ -79,7 +80,7 @@ export default async function SectionPropositions({ dossierId, demandeur, traite
       {vue.lignes.map((l) => (
         <Carte key={l.id} titre={l.intitule} actions={<Pastille ton={l.depassement ? 'orange' : l.places >= l.nombre ? 'vert' : 'neutre'}>{l.places} placé{l.places > 1 ? 's' : ''} / {l.nombre} demandé{l.nombre > 1 ? 's' : ''}</Pastille>}>
           {l.propositions.length === 0 ? (
-            <p className="text-sm text-ink-600">Aucune proposition.</p>
+            <EtatVide icone={Users} titre="Aucune proposition." description={peutProposer ? 'Proposez un candidat du vivier avec le formulaire ci-dessus.' : undefined} />
           ) : (
             <ul className="space-y-3">
               {l.propositions.map((p) => (
@@ -118,7 +119,7 @@ function LignePropositionVue({
     m.destinataire === 'candidat' ? !p.candidatSupprime && (p.statut === 'en_attente_accord' || p.statut === 'entretien') : transmise && (m.lien !== 'attestation' || attestationPossible),
   );
   return (
-    <li className="border border-ink-100 rounded-lg p-3 text-sm">
+    <li className="border border-ink-200/70 rounded-xl p-3.5 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
         {p.candidatSupprime ? <span className="font-medium">{p.candidat}</span> : <Link href={`/admin/candidats/${p.candidatId}`} className="font-medium text-primary">{p.candidat}</Link>}
         <Pastille ton={TON_PROPOSITION[p.statut]}>{STATUTS_PROPOSITION[p.statut]}</Pastille>
@@ -148,7 +149,7 @@ function LignePropositionVue({
       {p.placements.length > 0 && (
         <ul className="mt-2 space-y-2">
           {p.placements.map((pl) => (
-            <li key={pl.id} className="bg-ink-50 rounded p-2">
+            <li key={pl.id} className="bg-ink-50 border border-ink-100 rounded-lg p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-medium">Placement : {pl.poste}{pl.remplacement ? ' (remplacement, sans commission)' : ''}</span>
                 <Pastille ton={pl.statut === 'confirme' ? 'vert' : pl.statut === 'annonce' ? 'orange' : pl.statut === 'abandonne' || pl.statut === 'rompu_garantie' ? 'rouge' : 'neutre'}>{pl.libelleStatut}</Pastille>

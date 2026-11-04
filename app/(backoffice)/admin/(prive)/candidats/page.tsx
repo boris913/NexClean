@@ -9,7 +9,8 @@ import { ONGLETS_VIVIER, RAYONS_KM, TRIS_VIVIER, lireFiltres, parametresFiltres,
 import { compterCandidatsNonAttribues, compterNouveauxCandidats, fileCandidatsNonAttribues, fileNouveauxCandidats, rechercherCandidats, referentsRecrutement, type LigneCandidat } from '@/lib/candidats/vivier';
 import { listesLieux } from '@/lib/geo/service';
 import { formatHorodatage } from '@/lib/audit-lecture';
-import { Alerte, classeBouton, classeChamp, classeLibelle, Pastille, TitrePage } from '@/components/backoffice/ui';
+import { FileText, MapPin, Search, SlidersHorizontal, UserPlus, Users } from 'lucide-react';
+import { Alerte, classeBouton, classeChamp, classeLibelle, classeSurface, EtatVide, Onglets, Pagination, Pastille, TitrePage } from '@/components/backoffice/ui';
 import StatutRapide from './StatutRapide';
 
 export const metadata = { title: 'Candidats' };
@@ -33,45 +34,41 @@ function CarteCandidat({ l, voirReferent, extra, children }: { l: LigneCandidat;
   const exp = formatAnnees(l.experienceAnnees);
   const dispo = disponibilite(l);
   return (
-    <li className="bg-white border border-ink-100 rounded-xl p-4 shadow-sm">
-      <Link href={`/admin/candidats/${l.id}`} className="block hover:text-primary">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="font-semibold break-words min-w-0">{nom}</span>
-          <Pastille ton={tonStatut(l.statut)}>{STATUTS_CANDIDAT[l.statut]}</Pastille>
+    <li className={`${classeSurface} group p-4 transition hover:border-brand-300 hover:shadow-md`}>
+      <Link href={`/admin/candidats/${l.id}`} className="block rounded-lg">
+        <div className="flex items-start gap-3">
+          <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink-100 text-sm font-semibold text-ink-700">
+            {`${l.prenom[0] ?? ''}${l.nom[0] ?? ''}`.toUpperCase()}
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+              <span className="font-semibold text-ink-900 break-words min-w-0 group-hover:text-primary">{nom}</span>
+              <Pastille ton={tonStatut(l.statut)} point>
+                {STATUTS_CANDIDAT[l.statut]}
+              </Pastille>
+            </div>
+            {l.metiers.length > 0 && <p className="text-sm font-medium text-ink-800 mt-0.5 break-words">{l.metiers.join(' · ')}</p>}
+          </div>
         </div>
-        {l.metiers.length > 0 && <p className="text-sm text-ink-800 mt-1 break-words">{l.metiers.join(' · ')}</p>}
-        <p className="text-sm text-ink-600 break-words">{[lieu || 'Lieu non précisé', exp].filter(Boolean).join(' · ')}</p>
-        {dispo && <p className="text-sm text-ink-600">{dispo}</p>}
-        <div className="flex flex-wrap items-center gap-1.5 mt-2 text-xs text-ink-500">
+        <p className="mt-3 flex items-start gap-1.5 text-sm text-ink-600 break-words">
+          <MapPin aria-hidden className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-400" />
+          <span className="min-w-0">{[lieu || 'Lieu non précisé', exp].filter(Boolean).join(' · ')}</span>
+        </p>
+        {dispo && <p className="mt-0.5 pl-5 text-sm text-ink-600">{dispo}</p>}
+        <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-3 border-t border-ink-100 text-xs text-ink-500">
           <span>Inscrit le {formatHorodatage(l.creeLe)}</span>
           {voirReferent && <span>· {l.referentNom ?? 'Non attribué'}</span>}
-          {l.cv && <Pastille>CV</Pastille>}
+          {l.cv && (
+            <Pastille ton="bleu">
+              <FileText aria-hidden className="h-3 w-3" /> CV
+            </Pastille>
+          )}
           {l.compteLeger && <Pastille ton="orange">Profil à compléter</Pastille>}
           {extra}
         </div>
       </Link>
       {children}
     </li>
-  );
-}
-
-function Pagination({ page, suivante, lien }: { page: number; suivante: boolean; lien: (n: number) => string }) {
-  if (page <= 1 && !suivante) return null;
-  return (
-    <nav aria-label="Pagination" className="flex justify-between mt-4">
-      {page > 1 ? (
-        <Link href={lien(page - 1)} className={classeBouton('secondaire')}>
-          ← Précédents
-        </Link>
-      ) : (
-        <span />
-      )}
-      {suivante && (
-        <Link href={lien(page + 1)} className={classeBouton('secondaire')}>
-          Suivants →
-        </Link>
-      )}
-    </nav>
   );
 }
 
@@ -89,29 +86,20 @@ export default async function PageCandidats({ searchParams }: { searchParams: Pr
 
   const [nbFile, nbNonAttribues] = await Promise.all([direction ? null : compterNouveauxCandidats(c.id), direction ? compterCandidatsNonAttribues() : null]);
   const onglets = (Object.keys(ONGLETS_VIVIER) as OngletVivier[]).filter((o) => o !== 'non_attribues' || direction);
-  const compteur = (o: OngletVivier) => (o === 'file' && nbFile !== null ? ` (${nbFile})` : o === 'non_attribues' && nbNonAttribues !== null ? ` (${nbNonAttribues})` : '');
+  const compteur = (o: OngletVivier) => (o === 'file' ? nbFile : o === 'non_attribues' ? nbNonAttribues : null);
   const optionsStatut = STATUTS_TRAITEMENT_FILE.map((s) => ({ code: s, libelle: s === 'nouveau' ? 'Laisser « Nouveau »' : STATUTS_CANDIDAT[s] }));
 
   return (
     <>
-      <TitrePage titre="Candidats">
+      <TitrePage titre="Candidats" description="Traitez les nouveaux inscrits et recherchez dans le vivier.">
         <Link href="/admin/candidats/reinitialisations" className={classeBouton('secondaire')}>
           Demandes de réinitialisation
         </Link>
       </TitrePage>
-      <nav aria-label="Onglets des candidats" className="flex gap-1 overflow-x-auto border-b border-ink-100 mb-4 -mx-4 px-4">
-        {onglets.map((o) => (
-          <Link
-            key={o}
-            href={`?onglet=${o}`}
-            aria-current={onglet === o ? 'page' : undefined}
-            className={`shrink-0 px-3 py-3 text-sm font-medium border-b-2 ${onglet === o ? 'border-primary text-primary' : 'border-transparent text-ink-600'}`}
-          >
-            {o === 'file' && direction ? 'Files des référents' : ONGLETS_VIVIER[o]}
-            {compteur(o)}
-          </Link>
-        ))}
-      </nav>
+      <Onglets
+        libelle="Onglets des candidats"
+        onglets={onglets.map((o) => ({ href: `?onglet=${o}`, libelle: o === 'file' && direction ? 'Files des référents' : ONGLETS_VIVIER[o], actif: onglet === o, compteur: compteur(o) }))}
+      />
       {onglet === 'file' && <OngletFile c={c} direction={direction} referentFiltre={referentFiltre} page={page} options={optionsStatut} />}
       {onglet === 'non_attribues' && <OngletNonAttribues page={page} options={optionsStatut} />}
       {onglet === 'vivier' && <OngletRecherche p={p} direction={direction} />}
@@ -126,11 +114,11 @@ async function OngletFile({ c, direction, referentFiltre, page, options }: { c: 
   const lien = (n: number) => `?${new URLSearchParams({ onglet: 'file', ...(referentFiltre ? { referent: referentFiltre } : {}), page: String(n) })}`;
   return (
     <section aria-label="Nouveaux candidats">
-      <p className="text-sm text-ink-600 mb-3">
+      <p className="text-sm text-ink-600 mb-4 max-w-3xl">
         {direction ? 'Nouveaux inscrits attribués aux référents recrutement' : 'Vos nouveaux inscrits'}, les plus anciens d’abord. Consultez le profil, contactez si besoin, puis fixez le statut : le candidat sort de la file dès qu’il n’est plus « Nouveau ».
       </p>
       {direction && (
-        <form className="flex flex-wrap items-end gap-2 mb-4">
+        <form className={`${classeSurface} flex flex-wrap items-end gap-2 p-3 mb-4`}>
           <input type="hidden" name="onglet" value="file" />
           <div className="grow min-w-0">
             <label htmlFor="referent" className={classeLibelle}>
@@ -150,9 +138,9 @@ async function OngletFile({ c, direction, referentFiltre, page, options }: { c: 
           </button>
         </form>
       )}
-      <p className="text-sm text-ink-700 mb-2">{r.total} candidat{r.total > 1 ? 's' : ''} à traiter</p>
-      <ul className="grid gap-2 md:grid-cols-2">
-        {r.lignes.length === 0 && <li className="text-sm text-ink-600">Aucun nouveau candidat à traiter.</li>}
+      <p className="text-sm font-medium text-ink-700 mb-3">{r.total} candidat{r.total > 1 ? 's' : ''} à traiter</p>
+      {r.lignes.length === 0 && <EtatVide icone={UserPlus} titre="Aucun nouveau candidat à traiter." description="Les nouveaux inscrits de vos villes apparaîtront ici." />}
+      <ul className="grid gap-3 md:grid-cols-2">
         {r.lignes.map((l) => (
           <CarteCandidat key={l.id} l={l} voirReferent={direction}>
             {(direction || l.referentId === c.id) && <StatutRapide candidatId={l.id} nom={`${l.prenom} ${l.nom}`} statut={l.statut} options={options} />}
@@ -168,12 +156,12 @@ async function OngletNonAttribues({ page, options }: { page: number; options: Op
   const r = await fileCandidatsNonAttribues({ page });
   return (
     <section aria-label="Candidats non attribués">
-      <p className="text-sm text-ink-600 mb-3">Candidats sans référent recrutement (aucun référent éligible pour leur ville). Ouvrez la fiche pour les attribuer.</p>
-      <p className="text-sm text-ink-700 mb-2">
+      <p className="text-sm text-ink-600 mb-4 max-w-3xl">Candidats sans référent recrutement (aucun référent éligible pour leur ville). Ouvrez la fiche pour les attribuer.</p>
+      <p className="text-sm font-medium text-ink-700 mb-3">
         {r.total} candidat{r.total > 1 ? 's' : ''} non attribué{r.total > 1 ? 's' : ''}
       </p>
-      <ul className="grid gap-2 md:grid-cols-2">
-        {r.lignes.length === 0 && <li className="text-sm text-ink-600">Aucun candidat en attente d’attribution.</li>}
+      {r.lignes.length === 0 && <EtatVide icone={Users} titre="Aucun candidat en attente d’attribution." />}
+      <ul className="grid gap-3 md:grid-cols-2">
         {r.lignes.map((l) => (
           <CarteCandidat key={l.id} l={l} voirReferent={false} extra={l.enFileDepuis ? <Pastille ton="orange">En file depuis le {formatHorodatage(l.enFileDepuis)}</Pastille> : null}>
             {l.statut === 'nouveau' && <StatutRapide candidatId={l.id} nom={`${l.prenom} ${l.nom}`} statut={l.statut} options={options} />}
@@ -209,16 +197,22 @@ async function OngletRecherche({ p, direction }: { p: Params; direction: boolean
 
   return (
     <section aria-label="Rechercher dans le vivier">
-      <form className="bg-white border border-ink-100 rounded-xl p-4 shadow-sm mb-4 space-y-3">
+      <form className={`${classeSurface} p-4 mb-5 space-y-3`}>
         <input type="hidden" name="onglet" value="vivier" />
         <div>
           <label htmlFor="q" className="sr-only">
             Rechercher
           </label>
-          <input id="q" name="q" type="search" defaultValue={f.q} placeholder="Métier, compétence, expérience, qualification…" className={classeChamp} />
+          <div className="relative">
+            <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+            <input id="q" name="q" type="search" defaultValue={f.q} placeholder="Métier, compétence, expérience, qualification…" className={`${classeChamp} pl-9`} />
+          </div>
         </div>
         <details open={ouvert}>
-          <summary className="cursor-pointer text-sm text-primary py-2">Filtres</summary>
+          <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-lg py-2 text-sm font-medium text-ink-700 hover:text-primary [&::-webkit-details-marker]:hidden">
+            <SlidersHorizontal aria-hidden className="h-4 w-4" /> Filtres
+            {ouvert && <span className="rounded-full bg-brand-100 px-1.5 text-xs font-semibold leading-5 text-brand-900">actifs</span>}
+          </summary>
           <fieldset className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
             <legend className="sr-only">Lieu</legend>
             <div>
@@ -347,7 +341,7 @@ async function OngletRecherche({ p, direction }: { p: Params; direction: boolean
             </select>
           </div>
         </details>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 border-t border-ink-100 pt-3">
           <button type="submit" className={classeBouton()}>
             Rechercher
           </button>
@@ -368,12 +362,23 @@ async function OngletRecherche({ p, direction }: { p: Params; direction: boolean
           </Alerte>
         )}
       </div>
-      <p className="text-sm text-ink-700 mb-2" aria-live="polite">
+      <p className="text-sm font-medium text-ink-700 mb-3" aria-live="polite">
         {r.total} candidat{r.total > 1 ? 's' : ''}
         {!f.inclureInactifs && !f.statut && ' (hors placés et indisponibles)'}
       </p>
-      <ul className="grid gap-2 md:grid-cols-2">
-        {r.lignes.length === 0 && <li className="text-sm text-ink-600">Aucun candidat ne correspond à ces critères.</li>}
+      {r.lignes.length === 0 && (
+        <EtatVide
+          icone={Search}
+          titre="Aucun candidat ne correspond à ces critères."
+          description="Élargissez la recherche : retirez un filtre, augmentez le rayon ou activez la correspondance souple."
+          action={
+            <Link href="/admin/candidats?onglet=vivier" className={classeBouton('secondaire')}>
+              Réinitialiser les filtres
+            </Link>
+          }
+        />
+      )}
+      <ul className="grid gap-3 md:grid-cols-2">
         {r.lignes.map((l) => (
           <CarteCandidat
             key={l.id}

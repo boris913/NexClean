@@ -2,8 +2,9 @@
 import { exigerCollaborateur } from '@/lib/authz/session';
 import { listerNotifications } from '@/lib/notifications';
 import { formatHorodatage } from '@/lib/audit-lecture';
-import { TitrePage, classeBouton } from '@/components/backoffice/ui';
+import { classeBouton, EtatVide, TitrePage } from '@/components/backoffice/ui';
 import { ouvrirNotification, toutMarquerLu } from './actions';
+import { Bell } from 'lucide-react';
 
 export const metadata = { title: 'Notifications' };
 
@@ -21,19 +22,22 @@ export default async function PageNotifications() {
         )}
       </TitrePage>
       {liste.length === 0 ? (
-        <p className="text-sm text-ink-600">Aucune notification.</p>
+        <EtatVide icone={Bell} titre="Aucune notification." description="Vous serez prévenu ici des dossiers attribués, des relances et des demandes à traiter." />
       ) : (
-        <ul className="space-y-2">
+        <ul className="overflow-hidden rounded-xl border border-ink-200/70 bg-white shadow-sm divide-y divide-ink-100">
           {liste.map((n) => (
             <li key={n.id}>
               <form action={ouvrirNotification.bind(null, n.id)}>
-                <button className={`w-full text-left bg-white border rounded-lg p-3 text-sm ${n.luLe ? 'border-ink-100' : 'border-primary/40 bg-primary/5'}`}>
-                  <span className="flex justify-between gap-2 text-xs text-ink-500">
-                    <span>{n.luLe ? 'Lu' : 'Nouveau'}</span>
-                    <span>{formatHorodatage(n.creeLe)}</span>
+                <button className={`relative flex w-full gap-3 text-left p-3 sm:px-4 text-sm transition-colors hover:bg-ink-50 ${n.luLe ? '' : 'bg-brand-50/50'}`}>
+                  <span aria-hidden className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${n.luLe ? 'bg-transparent' : 'bg-primary'}`} />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex justify-between gap-2 text-xs text-ink-500">
+                      <span className={n.luLe ? '' : 'font-semibold text-primary'}>{n.luLe ? 'Lu' : 'Nouveau'}</span>
+                      <span className="tabular-nums">{formatHorodatage(n.creeLe)}</span>
+                    </span>
+                    <span className={`mt-0.5 block text-ink-900 ${n.luLe ? '' : 'font-semibold'}`}>{n.titre}</span>
+                    <span className="block whitespace-pre-wrap text-ink-600">{n.texte}</span>
                   </span>
-                  <span className={`block ${n.luLe ? '' : 'font-semibold'}`}>{n.titre}</span>
-                  <span className="block whitespace-pre-wrap text-ink-600">{n.texte}</span>
                 </button>
               </form>
             </li>

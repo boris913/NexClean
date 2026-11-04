@@ -28,7 +28,7 @@ export default async function PageReinitialisations() {
       ) : (
         <ul className="space-y-3">
           {demandes.map((d) => (
-            <li key={d.id} className="bg-white border border-ink-100 rounded-lg p-3 text-sm space-y-2">
+            <li key={d.id} className="bg-white border border-ink-200/70 rounded-xl p-3 shadow-sm text-sm space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <strong className="min-w-0 break-words">{d.prenom} {d.nom}</strong>
                 {d.referentId ? <span className="text-xs text-ink-500">Référent : {d.referentNom ?? '—'}</span> : <Pastille ton="orange">Non attribué</Pastille>}

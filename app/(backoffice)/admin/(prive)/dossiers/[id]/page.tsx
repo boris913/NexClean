@@ -11,7 +11,8 @@ import { formatHorodatage } from '@/lib/audit-lecture';
 import { formaterTelephone } from '@/lib/telephone';
 import { listesLieux } from '@/lib/geo/service';
 import { env } from '@/lib/env';
-import { Carte, Pastille, TitrePage } from '@/components/backoffice/ui';
+import { FileText, Search } from 'lucide-react';
+import { Carte, EtatVide, Onglets, Pastille, TitrePage } from '@/components/backoffice/ui';
 import * as A from './Actions';
 import { formaterFCFA } from '@/lib/dossiers/formulaire-personnel';
 import { getDb } from '@/lib/db';
@@ -106,81 +107,92 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
 
   return (
     <>
-      <TitrePage titre={d.numero} retour={{ href: '/admin/dossiers', libelle: 'Dossiers' }}>
-        <Pastille ton={d.statut === 'a_completer' ? 'orange' : phaseDe(d.statut) === 'issue' ? 'rouge' : 'vert'}>{STATUTS[d.statut]}</Pastille>
+      <TitrePage
+        titre={d.numero}
+        retour={{ href: '/admin/dossiers', libelle: 'Dossiers' }}
+        description={
+          <>
+            {DOSSIER_TYPES[d.type]} · <span className="font-medium text-ink-700">{client.nom}</span> · {fiche.referentNom ? `Référent : ${fiche.referentNom}` : 'Non attribué'}
+          </>
+        }
+      >
+        <Pastille ton={d.statut === 'a_completer' ? 'orange' : phaseDe(d.statut) === 'issue' ? 'rouge' : 'vert'} point>
+          {STATUTS[d.statut]}
+        </Pastille>
       </TitrePage>
-      <p className="text-sm text-ink-600 -mt-3 mb-4">
-        {DOSSIER_TYPES[d.type]} · {client.nom} · {fiche.referentNom ? `Référent : ${fiche.referentNom}` : 'Non attribué'}
-      </p>
 
-      <nav aria-label="Onglets du dossier" className="flex gap-1 overflow-x-auto border-b border-ink-100 mb-4 -mx-4 px-4">
-        {onglets.map(([k, libelle]) => (
-          <Link key={k} href={`?onglet=${k}`} aria-current={onglet === k ? 'page' : undefined} className={`shrink-0 px-3 py-3 text-sm font-medium border-b-2 ${onglet === k ? 'border-primary text-primary' : 'border-transparent text-ink-600'}`}>
-            {libelle}
-            {k === 'documents' && fiche.documents.length > 0 && ` (${fiche.documents.length})`}
-            {k === 'demandes' && fiche.demandes.length > 1 && ` (${fiche.demandes.length})`}
-          </Link>
-        ))}
-      </nav>
+      <Onglets
+        libelle="Onglets du dossier"
+        onglets={onglets.map(([k, libelle]) => ({
+          href: `?onglet=${k}`,
+          libelle,
+          actif: onglet === k,
+          compteur: k === 'documents' && fiche.documents.length > 0 ? fiche.documents.length : k === 'demandes' && fiche.demandes.length > 1 ? fiche.demandes.length : null,
+        }))}
+      />
 
       {onglet === 'resume' && (
-        <div className="space-y-4">
-          {peutReaffecter && !d.referentId && reaffectation}
-          {traiter && <A.ChangerStatut dossierId={d.id} options={transitionsProposees(d.type, d.statut, direction).map((s) => ({ code: s, libelle: STATUTS[s] }))} />}
-          {recherche && (
-            <section id="propositions" className="scroll-mt-4">
-              <Carte titre="Recherche de candidats" actions={<Link href={lienOngletPropositions(d.id)} className="text-sm text-primary py-2">Propositions →</Link>}>
-                <ul className="text-sm space-y-1">
-                  {recherche.lignes.map((l) => (
-                    <li key={l.id} className="flex justify-between gap-2">
-                      <span>{l.intitule}</span>
-                      <span className={l.places >= l.nombre ? 'text-brand-900 font-medium' : 'text-ink-600'}>{l.places} placé{l.places > 1 ? 's' : ''} / {l.nombre} demandé{l.nombre > 1 ? 's' : ''}</span>
-                    </li>
-                  ))}
-                </ul>
-                {recherche.clotureLe ? (
-                  <p className="text-xs text-ink-600 mt-2">Recherche clôturée : {recherche.placementsRetenus} placement(s) retenu(s).</p>
-                ) : recherche.echeance ? (
-                  <p className="text-xs text-ink-600 mt-2">Échéance de la recherche : {formatHorodatage(recherche.echeance)}{recherche.annonces.length ? ` · ${recherche.annonces.length} placement(s) annoncé(s) à confirmer` : ''}</p>
-                ) : null}
-              </Carte>
-            </section>
-          )}
-          <Carte titre="Client">
-            <dl className="text-sm grid grid-cols-[auto,1fr] gap-x-3 gap-y-1">
-              <dt className="text-ink-500">Nom</dt><dd>{client.nom} ({client.type})</dd>
-              {client.contact && (<><dt className="text-ink-500">Contact</dt><dd>{client.contact}</dd></>)}
-              <dt className="text-ink-500">WhatsApp</dt>
-              <dd><a className="text-primary" href={`https://wa.me/${client.whatsapp.replace('+', '')}`} target="_blank" rel="noopener noreferrer">{formaterTelephone(client.whatsapp)}</a></dd>
-              {client.autreTelephone && (<><dt className="text-ink-500">Autre tél.</dt><dd><a className="text-primary" href={`tel:${client.autreTelephone}`}>{formaterTelephone(client.autreTelephone)}</a></dd></>)}
-              {client.email && (<><dt className="text-ink-500">E-mail</dt><dd className="break-all">{client.email}</dd></>)}
-            </dl>
-            {traiter && modeles.length > 0 && <A.EnvoyerWhatsApp dossierId={d.id} numero={client.whatsapp} modeles={modeles} />}
-            {traiter && coordonneesDifferentes && recu && <A.CoordonneesRecues dossierId={d.id} clientId={client.id} recu={{ nom: recu.nom ?? null, contact: recu.contact ?? null, email: recu.email ?? null }} />}
-          </Carte>
-          <Carte titre="Lieu et besoin">
-            <dl className="text-sm grid grid-cols-[auto,1fr] gap-x-3 gap-y-1 mb-3">
-              <dt className="text-ink-500">Ville</dt><dd>{fiche.ville ?? d.villeAutre ?? '—'}</dd>
-              <dt className="text-ink-500">Quartier</dt><dd>{fiche.quartier ?? d.quartierAutre ?? '—'}</dd>
-              {d.lieu && (<><dt className="text-ink-500">Lieu</dt><dd>{d.lieu}</dd></>)}
-              {d.secteur && (<><dt className="text-ink-500">Secteur</dt><dd>{d.secteur}</dd></>)}
-            </dl>
-            {d.description && <p className="text-sm whitespace-pre-wrap bg-ink-50 rounded p-2">{d.description}</p>}
-            {traiter && (
-              <A.ModifierLieu
-                dossierId={d.id}
-                listes={listes}
-                valeur={{ villeId: d.villeId, villeAutre: d.villeAutre, quartierId: d.quartierId, quartierAutre: d.quartierAutre, lieu: d.lieu, secteur: d.secteur, description: d.description }}
-                type={d.type}
-                statut={d.statut}
-              />
+        <div className="grid gap-4 lg:grid-cols-3 lg:items-start">
+          <div className="space-y-4 lg:col-span-2">
+            {peutReaffecter && !d.referentId && reaffectation}
+            {traiter && <A.ChangerStatut dossierId={d.id} options={transitionsProposees(d.type, d.statut, direction).map((s) => ({ code: s, libelle: STATUTS[s] }))} />}
+            <Carte titre="Client">
+              <dl className="text-sm grid grid-cols-[6.5rem,1fr] gap-x-4 gap-y-2.5 [&>dt]:text-ink-500 [&>dd]:min-w-0 [&>dd]:text-ink-900">
+                <dt className="text-ink-500">Nom</dt><dd>{client.nom} ({client.type})</dd>
+                {client.contact && (<><dt className="text-ink-500">Contact</dt><dd>{client.contact}</dd></>)}
+                <dt className="text-ink-500">WhatsApp</dt>
+                <dd><a className="text-primary" href={`https://wa.me/${client.whatsapp.replace('+', '')}`} target="_blank" rel="noopener noreferrer">{formaterTelephone(client.whatsapp)}</a></dd>
+                {client.autreTelephone && (<><dt className="text-ink-500">Autre tél.</dt><dd><a className="text-primary" href={`tel:${client.autreTelephone}`}>{formaterTelephone(client.autreTelephone)}</a></dd></>)}
+                {client.email && (<><dt className="text-ink-500">E-mail</dt><dd className="break-all">{client.email}</dd></>)}
+              </dl>
+              {traiter && modeles.length > 0 && <A.EnvoyerWhatsApp dossierId={d.id} numero={client.whatsapp} modeles={modeles} />}
+              {traiter && coordonneesDifferentes && recu && <A.CoordonneesRecues dossierId={d.id} clientId={client.id} recu={{ nom: recu.nom ?? null, contact: recu.contact ?? null, email: recu.email ?? null }} />}
+            </Carte>
+            <Carte titre="Lieu et besoin">
+              <dl className="text-sm grid grid-cols-[6.5rem,1fr] gap-x-4 gap-y-2.5 [&>dt]:text-ink-500 [&>dd]:min-w-0 [&>dd]:text-ink-900 mb-3">
+                <dt className="text-ink-500">Ville</dt><dd>{fiche.ville ?? d.villeAutre ?? '—'}</dd>
+                <dt className="text-ink-500">Quartier</dt><dd>{fiche.quartier ?? d.quartierAutre ?? '—'}</dd>
+                {d.lieu && (<><dt className="text-ink-500">Lieu</dt><dd>{d.lieu}</dd></>)}
+                {d.secteur && (<><dt className="text-ink-500">Secteur</dt><dd>{d.secteur}</dd></>)}
+              </dl>
+              {d.description && <p className="text-sm whitespace-pre-wrap bg-ink-50 border border-ink-100 rounded-lg p-3 text-ink-800">{d.description}</p>}
+              {traiter && (
+                <A.ModifierLieu
+                  dossierId={d.id}
+                  listes={listes}
+                  valeur={{ villeId: d.villeId, villeAutre: d.villeAutre, quartierId: d.quartierId, quartierAutre: d.quartierAutre, lieu: d.lieu, secteur: d.secteur, description: d.description }}
+                  type={d.type}
+                  statut={d.statut}
+                />
+              )}
+            </Carte>
+          </div>
+          <div className="space-y-4">
+            {recherche && (
+              <section id="propositions" className="scroll-mt-4">
+                <Carte titre="Recherche de candidats" actions={<Link href={lienOngletPropositions(d.id)} className="text-sm font-medium text-primary py-2">Propositions →</Link>}>
+                  <ul className="-my-1 divide-y divide-ink-100 text-sm">
+                    {recherche.lignes.map((l) => (
+                      <li key={l.id} className="flex justify-between gap-3 py-2">
+                        <span className="min-w-0 text-ink-800">{l.intitule}</span>
+                        <span className={`shrink-0 tabular-nums ${l.places >= l.nombre ? 'text-brand-900 font-medium' : 'text-ink-600'}`}>{l.places} placé{l.places > 1 ? 's' : ''} / {l.nombre} demandé{l.nombre > 1 ? 's' : ''}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {recherche.clotureLe ? (
+                    <p className="text-xs text-ink-600 mt-3">Recherche clôturée : {recherche.placementsRetenus} placement(s) retenu(s).</p>
+                  ) : recherche.echeance ? (
+                    <p className="text-xs text-ink-600 mt-3">Échéance de la recherche : {formatHorodatage(recherche.echeance)}{recherche.annonces.length ? ` · ${recherche.annonces.length} placement(s) annoncé(s) à confirmer` : ''}</p>
+                  ) : null}
+                </Carte>
+              </section>
             )}
-          </Carte>
-          <Carte titre="Suivi client">
-            <p className="text-sm text-ink-600 mb-2">Phase affichée au client : <strong>{PHASES[phaseDe(d.statut)]}</strong></p>
-            <A.LienSuivi dossierId={d.id} lien={lienSuivi} peutRegenerer={traiter} />
-          </Carte>
-          {d.referentId && reaffectation}
+            <Carte titre="Suivi client">
+              <p className="text-sm text-ink-600 mb-2">Phase affichée au client : <strong>{PHASES[phaseDe(d.statut)]}</strong></p>
+              <A.LienSuivi dossierId={d.id} lien={lienSuivi} peutRegenerer={traiter} />
+            </Carte>
+            {d.referentId && reaffectation}
+          </div>
         </div>
       )}
 
@@ -192,7 +204,7 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
               {estimationMontree(dem.donnees) && <p className="text-sm text-ink-800 mb-2">Estimation montrée au client : {estimationMontree(dem.donnees)}</p>}
               <details>
                 <summary className="cursor-pointer text-sm text-primary py-1">Données reçues (non modifiables)</summary>
-                <pre className="text-xs bg-ink-50 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all">{JSON.stringify(dem.donnees, null, 2)}</pre>
+                <pre className="mt-1 text-xs bg-ink-50 border border-ink-100 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-all text-ink-700">{JSON.stringify(dem.donnees, null, 2)}</pre>
               </details>
               {traiter && <A.Rattacher dossierId={d.id} demandeId={dem.id} cibles={cibles} />}
             </Carte>
@@ -207,7 +219,7 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
           ) : (
             <ul className="space-y-2 text-sm">
               {fiche.lignes.map((l) => (
-                <li key={l.id} className="border border-ink-100 rounded p-2">
+                <li key={l.id} className="border border-ink-100 rounded-lg p-3">
                   <strong>{l.intitule}</strong> × {l.nombre} {l.typeContrat && `· ${l.typeContrat}`} {l.experience && `· ${l.experience}`}
                   {l.missions && <p className="text-ink-600">{l.missions}</p>}
                 </li>
@@ -220,7 +232,8 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
               <ul className="flex flex-wrap gap-2">
                 {fiche.lignes.map((l) => (
                   <li key={l.id}>
-                    <Link href={lienTrouverCandidats(l, trouver)} className="inline-flex items-center min-h-11 px-3 rounded-lg border border-ink-200 text-sm font-medium text-primary hover:border-primary">
+                    <Link href={lienTrouverCandidats(l, trouver)} className="inline-flex items-center gap-2 min-h-11 sm:min-h-10 px-3 rounded-lg bg-brand-50 ring-1 ring-inset ring-brand-600/20 text-sm font-medium text-brand-900 hover:bg-brand-100">
+                      <Search aria-hidden className="h-4 w-4" />
                       Trouver des candidats : {l.intitule}
                     </Link>
                   </li>
@@ -238,12 +251,15 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
           {traiter && <A.AjouterDocument dossierId={d.id} categories={Object.entries(CATEGORIES_DOCUMENT).map(([code, libelle]) => ({ code, libelle }))} />}
           <Carte titre="Documents">
             {fiche.documents.length === 0 ? (
-              <p className="text-sm text-ink-600">Aucun document.</p>
+              <EtatVide icone={FileText} titre="Aucun document." description={traiter ? 'Ajoutez un devis, un contrat ou une pièce du client avec le formulaire ci-dessus.' : undefined} />
             ) : (
-              <ul className="divide-y divide-ink-50">
+              <ul className="-my-2 divide-y divide-ink-100">
                 {fiche.documents.map((doc) => (
-                  <li key={doc.id} className="py-2 flex items-center justify-between gap-2">
-                    <div className="min-w-0">
+                  <li key={doc.id} className="py-3 flex items-center justify-between gap-3">
+                    <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ocean-50 text-ocean-600">
+                      <FileText className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
                       <a href={`/admin/documents/${doc.id}`} target="_blank" rel="noopener" className="text-primary font-medium break-all">{doc.nom}</a>
                       <p className="text-xs text-ink-500">
                         {CATEGORIES_DOCUMENT[doc.categorie]} · {Math.ceil(doc.taille / 1024)} Ko · {doc.auteurNom ?? '—'} · {formatHorodatage(doc.creeLe)}
@@ -261,14 +277,18 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
       {(onglet === 'historique' || onglet === 'notes') && (
         <div className="space-y-4">
           {onglet === 'notes' && traiter && <A.AjouterNote dossierId={d.id} />}
-          <ul className="space-y-2">
+          <ol className="relative space-y-3 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-px before:bg-ink-200">
             {fiche.evenements
               .filter(({ ev }) => onglet === 'historique' || ev.type === 'note')
               .map(({ ev, auteurNom }) => (
-                <li key={ev.id} className="bg-white border border-ink-100 rounded-lg p-3 text-sm">
-                  <div className="flex flex-wrap justify-between gap-2 text-xs text-ink-500">
-                    <span>{LIBELLE_EVENEMENT[ev.type] ?? ev.type} · {auteurNom ?? (ev.auteurId ? '—' : 'Système / client')}</span>
-                    <span>{formatHorodatage(ev.horodatage)}</span>
+                <li key={ev.id} className="relative pl-9 text-sm">
+                  <span aria-hidden className={`absolute left-[5px] top-3.5 h-3 w-3 rounded-full ring-4 ring-ink-50 ${ev.type === 'transition' ? 'bg-primary' : ev.type === 'note' ? 'bg-amber-500' : 'bg-ink-300'}`} />
+                  <div className="bg-white border border-ink-200/70 rounded-xl p-3 shadow-sm">
+                  <div className="flex flex-wrap justify-between gap-2 text-xs text-ink-500 mb-1">
+                    <span>
+                      <span className="font-semibold text-ink-700">{LIBELLE_EVENEMENT[ev.type] ?? ev.type}</span> · {auteurNom ?? (ev.auteurId ? '—' : 'Système / client')}
+                    </span>
+                    <span className="tabular-nums">{formatHorodatage(ev.horodatage)}</span>
                   </div>
                   {ev.deStatut || ev.versStatut ? (
                     <p>{ev.deStatut ? `${STATUTS[ev.deStatut]} → ` : ''}{ev.versStatut ? STATUTS[ev.versStatut] : ''}</p>
@@ -278,17 +298,18 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
                     <p className="text-xs text-ink-600">Règle : {(ev.apres as { regle: string }).regle}</p>
                   )}
                   {ev.type === 'whatsapp' && typeof (ev.apres as { texte?: unknown } | null)?.texte === 'string' && (
-                    <p className="whitespace-pre-wrap text-xs bg-ink-50 rounded p-2 mt-1">{(ev.apres as { texte: string }).texte}</p>
+                    <p className="whitespace-pre-wrap text-xs bg-ink-50 border border-ink-100 rounded-lg p-2.5 mt-1.5">{(ev.apres as { texte: string }).texte}</p>
                   )}
                   {(ev.avant != null || ev.apres != null) && ev.type !== 'note' && (
                     <details>
                       <summary className="cursor-pointer text-xs text-primary py-1">Avant / après</summary>
-                      <pre className="text-xs bg-ink-50 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all">{JSON.stringify({ avant: ev.avant, apres: ev.apres }, null, 2)}</pre>
+                      <pre className="text-xs bg-ink-50 border border-ink-100 rounded-lg p-2.5 overflow-x-auto whitespace-pre-wrap break-all text-ink-700">{JSON.stringify({ avant: ev.avant, apres: ev.apres }, null, 2)}</pre>
                     </details>
                   )}
+                  </div>
                 </li>
               ))}
-          </ul>
+          </ol>
         </div>
       )}
     </>
