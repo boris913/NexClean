@@ -1,6 +1,6 @@
 'use server';
 // Actions du client sur la page de suivi et les liens temporaires (specs/MVP2-03 RG-07, RG-11,
-// RG-16). Chaque action recharge le contexte depuis le jeton et, sauf la vérification
+// RG-16 ; MVP2-04 RG-13, RG-14). Chaque action recharge le contexte depuis le jeton et, sauf la vérification
 // elle-même, exige le cookie de vérification des 4 chiffres.
 import { headers } from 'next/headers';
 import { ipDepuisEnTetes } from '@/lib/audit';
@@ -8,6 +8,7 @@ import { executer } from '@/lib/actions';
 import type { ResultatAction } from '@/components/backoffice/ui';
 import { ErreurMetier } from '@/lib/collaborateurs/service';
 import * as client from '@/lib/propositions/client';
+import * as devisClient from '@/lib/devis/client';
 
 export type Source = 'suivi' | 'profil';
 
@@ -62,5 +63,37 @@ export async function confirmerPriseDePoste(
       await ip(),
     );
     return 'Merci, la prise de poste est confirmée.';
+  });
+}
+
+const navigateur = async () => (await headers()).get('user-agent')?.slice(0, 300) ?? null;
+
+/** MVP2-04 RG-13 : « J'accepte le devis » (nom, fonction, case des conditions). Page de suivi uniquement. */
+export async function accepterDevis(
+  jeton: string,
+  devisId: number,
+  saisie: { signataireNom: string; signataireFonction: string; conditionsAcceptees: boolean },
+): Promise<ResultatAction> {
+  return executer(async () => {
+    const ctx = await contexteVerifie('suivi', jeton);
+    const r = await devisClient.accepterDevisClient(ctx, Number(devisId), {
+      signataireNom: String(saisie?.signataireNom ?? ''),
+      signataireFonction: String(saisie?.signataireFonction ?? ''),
+      conditionsAcceptees: saisie?.conditionsAcceptees === true,
+      ip: await ip(),
+      navigateur: await navigateur(),
+    });
+    return r.facture
+      ? `Merci, votre acceptation est enregistrée. La facture d’acompte ${r.facture.numero} est disponible dans vos documents ; votre référent NEXCLEAN vous contacte pour le règlement.`
+      : 'Merci, votre acceptation est enregistrée. Votre référent NEXCLEAN est prévenu.';
+  });
+}
+
+/** MVP2-04 RG-14 : refus du devis (motif facultatif). Page de suivi uniquement. */
+export async function refuserDevis(jeton: string, devisId: number, motif: string | null): Promise<ResultatAction> {
+  return executer(async () => {
+    const ctx = await contexteVerifie('suivi', jeton);
+    await devisClient.refuserDevisClient(ctx, Number(devisId), motif ? String(motif) : null, await ip());
+    return 'Votre réponse est enregistrée. Votre référent NEXCLEAN est prévenu et peut vous proposer un nouveau devis.';
   });
 }

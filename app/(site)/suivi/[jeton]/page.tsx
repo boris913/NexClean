@@ -6,8 +6,11 @@ import { lireSuivi } from '@/lib/dossiers/service';
 import { LIBELLE_CLIENT, phaseDe, type Phase } from '@/lib/dossiers/statuts';
 import { DOSSIER_TYPES, FUSEAU } from '@/lib/domain/referentiels';
 import { getWhatsAppLink } from '@/lib/constants';
-import { chargerContexteSuivi, compterVisibles } from '@/lib/propositions/client';
+import { blocageEnCours, chargerContexteSuivi, compterVisibles, estVerifie } from '@/lib/propositions/client';
+import { devisEnvoyeExiste } from '@/lib/devis/client';
 import SectionProfils from './SectionProfils';
+import { SectionDevis, SectionDocuments } from './SectionDevis';
+import { FormulaireVerification } from './Interactions';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
@@ -18,6 +21,7 @@ export const metadata: Metadata = {
 
 const ETAPES: Phase[] = ['nouveau', 'qualification', 'devis', 'accepte', 'execution', 'termine'];
 const date = (d: Date) => new Intl.DateTimeFormat('fr-FR', { timeZone: FUSEAU, dateStyle: 'long' }).format(d);
+const heure = (d: Date) => new Intl.DateTimeFormat('fr-FR', { timeZone: FUSEAU, hour: '2-digit', minute: '2-digit' }).format(d);
 
 export default async function PageSuivi({ params }: { params: Promise<{ jeton: string }> }) {
   const { jeton } = await params;
@@ -35,9 +39,12 @@ export default async function PageSuivi({ params }: { params: Promise<{ jeton: s
     );
   }
 
-  // MVP2-03 RG-07 : profils transmis (dossier de recrutement), après vérification des 4 chiffres.
+  // Dossier de recrutement : devis (MVP2-04 RG-12), documents (RG-19) et profils transmis
+  // (MVP2-03 RG-07), derrière une seule vérification des 4 chiffres pour toute la page.
   const ctx = vue.type === 'REC' ? await chargerContexteSuivi(jeton) : null;
-  const avecProfils = !!ctx && (await compterVisibles(ctx)) > 0;
+  const [avecProfils, avecDevis, verifie] = ctx ? await Promise.all([compterVisibles(ctx).then((n) => n > 0), devisEnvoyeExiste(ctx), estVerifie(ctx)]) : [false, false, false];
+  const bloque = ctx && !verifie ? await blocageEnCours(ctx.cle) : null;
+  const objetVerification = [avecDevis && 'votre devis', 'vos documents', avecProfils && 'les profils proposés'].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' et $1');
   const phase = phaseDe(vue.statut);
   const rangActuel = ETAPES.indexOf(phase);
   return (
@@ -60,7 +67,27 @@ export default async function PageSuivi({ params }: { params: Promise<{ jeton: s
           ))}
         </ol>
       )}
-      {avecProfils && ctx && <SectionProfils ctx={ctx} />}
+      {ctx && !verifie && (
+        <section aria-labelledby="section-verification" className="rounded-2xl border border-ink-100 bg-white p-5 shadow-card mb-8">
+          <h2 id="section-verification" className="text-lg font-display font-semibold mb-2">
+            {avecDevis ? 'Votre devis et vos documents' : 'Vos documents'}
+          </h2>
+          <p className="text-sm text-ink-600 mb-4">Pour protéger vos informations, confirmez votre identité avant d’afficher {objetVerification}.</p>
+          <FormulaireVerification
+            source="suivi"
+            jeton={ctx.jeton}
+            bloque={bloque ? `Trop d’essais. Réessayez après ${heure(bloque)} ou contactez NEXCLEAN sur WhatsApp.` : null}
+            libelle={avecDevis ? 'Afficher mon devis' : 'Afficher mes documents'}
+          />
+        </section>
+      )}
+      {ctx && verifie && (
+        <>
+          <SectionDevis ctx={ctx} />
+          {avecProfils && <SectionProfils ctx={ctx} />}
+          <SectionDocuments ctx={ctx} />
+        </>
+      )}
       <a href={getWhatsAppLink(`Bonjour NEXCLEAN, je vous contacte au sujet de ma demande n° ${vue.numero}.`)} className="inline-flex w-full justify-center min-h-11 items-center px-5 rounded-full bg-cta font-semibold">
         Écrire à NEXCLEAN sur WhatsApp
       </a>
