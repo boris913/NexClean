@@ -10,6 +10,7 @@ import { dateLocale, estApresHuitHeuresUnJourOuvre, prochaineEscalade } from '@/
 import { STATUTS_FINAUX } from '@/lib/dossiers/statuts';
 import { executerSuppressionsDues } from '@/lib/candidats/service';
 import { alerterCandidatsNonTraites, escaladerCandidatsNonAttribues } from '@/lib/candidats/escalade';
+import { alerterEcheancesRecherche, signalerAccordsSansReponse } from '@/lib/propositions/service';
 
 const JOUR_MS = 24 * 60 * 60 * 1000;
 
@@ -94,7 +95,10 @@ export async function executerTaches(maintenant = new Date()) {
   // MVP2-02 RG-03 : candidats non attribués (Direction) et nouveaux candidats non traités (référent).
   const escaladesCandidats = await escaladerCandidatsNonAttribues(maintenant);
   const candidatsNonTraites = await alerterCandidatsNonTraites(maintenant);
+  // MVP2-01 RG-14 : propositions sans réponse du candidat depuis 72 h ; MVP2-03 RG-20 : échéance de la recherche à J-5.
+  const accordsSansReponse = await signalerAccordsSansReponse(maintenant);
+  const echeancesRecherche = await alerterEcheancesRecherche(maintenant);
   const emails = await envoyerNotificationsEnAttente(200);
-  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, emails };
+  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, emails };
 }
 

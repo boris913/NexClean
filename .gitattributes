@@ -1,3 +1,5 @@
 # Scripts exécutés sous Linux (conteneur, VPS) : fins de ligne LF obligatoires.
 *.sh text eol=lf
 Dockerfile text eol=lf
+# Migrations SQL : comparées au texte du code par les tests (tests/unit/centroides.test.ts).
+*.sql text eol=lf

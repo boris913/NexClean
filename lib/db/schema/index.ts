@@ -6,3 +6,4 @@ export * from './dossiers';
 export * from './parametres';
 export * from './notifications';
 export * from './candidats';
+export * from './propositions';

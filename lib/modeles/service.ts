@@ -8,7 +8,7 @@ import { env } from '@/lib/env';
 import { DOSSIER_TYPE_CODES, DOSSIER_TYPES, type DossierType } from '@/lib/domain/referentiels';
 import { ErreurMetier, type Auteur } from '@/lib/collaborateurs/service';
 import { formaterTelephone } from '@/lib/telephone';
-import { estModeleCandidat, variableInconnue, type ContexteMessage } from './variables';
+import { estModeleCandidat, estModeleProposition, variableInconnue, type ContexteMessage } from './variables';
 
 export const schemaModele = z.object({
   nom: z.string().trim().min(2, 'Nom trop court').max(80),
@@ -26,7 +26,9 @@ function verifierTexte(texte: string) {
 /** Avec `type` (fiche dossier), les modèles candidat (variables `candidat.*`) sont exclus. */
 export async function listerModeles(options: { type?: DossierType; actifsSeulement?: boolean } = {}) {
   const tous = await getDb().select().from(schema.modeleMessage).orderBy(asc(schema.modeleMessage.nom));
-  return tous.filter((m) => (!options.actifsSeulement || m.actif) && (!options.type || ((m.types.length === 0 || m.types.includes(options.type)) && !estModeleCandidat(m.texte))));
+  return tous.filter(
+    (m) => (!options.actifsSeulement || m.actif) && (!options.type || ((m.types.length === 0 || m.types.includes(options.type)) && !estModeleCandidat(m.texte) && !estModeleProposition(m.texte))),
+  );
 }
 
 export async function enregistrerModele(id: number | null, entree: z.input<typeof schemaModele>, auteur: Auteur): Promise<number> {

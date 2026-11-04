@@ -1,7 +1,7 @@
 // Service métier des dossiers (specs/MVP1-02). Indépendant de Next.js : utilisé par les
 // actions serveur, les routes publiques (formulaires du site) et les tests d'intégration.
 import { createHash, randomBytes } from 'node:crypto';
-import { and, eq, gt, isNull, lt, sql } from 'drizzle-orm';
+import { and, eq, gt, inArray, isNull, lt, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { getDb, schema } from '@/lib/db';
 import { journaliser } from '@/lib/audit';
@@ -15,6 +15,7 @@ import { anneeDouala, formaterNumero } from './numero';
 import { estFinal, STATUTS, verifierTransition, type Statut } from './statuts';
 import { attribuerAutomatiquement, signalerSiReferentIneligible } from './attribution';
 import { declencherEnvoi, notifier } from '@/lib/notifications';
+import { revoquerAccesNonPlaces } from '@/lib/propositions/revocation';
 
 type Tx = Parameters<Parameters<ReturnType<typeof getDb>['transaction']>[0]>[0];
 
@@ -257,6 +258,11 @@ export async function changerStatut(dossierId: number, vers: Statut, commentaire
       .where(eq(schema.dossier.id, dossierId));
     await evenement(tx, { dossierId, auteurId: a.id, type: 'transition', deStatut: d.statut, versStatut: vers, commentaire: commentaire?.trim() || null });
     await journaliser({ ...auteurAudit(a), action: 'dossier.transition', objetType: 'dossier', objetId: dossierId, avant: d.statut, apres: vers, details: commentaire ? { commentaire } : undefined }, tx);
+    // MVP2-03 RG-23 : à la fermeture du Dossier, l'accès client aux profils non placés est révoqué.
+    if (estFinal(vers) && d.type === 'REC') {
+      const n = await revoquerAccesNonPlaces(tx, dossierId);
+      if (n) await journaliser({ acteurType: 'systeme', action: 'proposition.acces_revoque', objetType: 'dossier', objetId: dossierId, details: { propositions: n, motif: 'fermeture du dossier' } }, tx);
+    }
   });
 }
 
@@ -281,8 +287,26 @@ export async function remplacerLignes(dossierId: number, lignes: LignePosteSaisi
     const d = await chargerPourEcriture(tx, dossierId, a);
     if (d.type !== 'REC') throw new ErreurMetier('Les lignes de poste ne concernent que les dossiers de recrutement.');
     const avant = await tx.select().from(schema.lignePoste).where(eq(schema.lignePoste.dossierId, dossierId)).orderBy(schema.lignePoste.ordre);
-    await tx.delete(schema.lignePoste).where(eq(schema.lignePoste.dossierId, dossierId));
-    await tx.insert(schema.lignePoste).values(nouvelles.map((l, i) => ({ ...l, dossierId, ordre: i + 1 })));
+    // Mise à jour en place (les Propositions et Placements référencent les lignes, MVP2-03) ;
+    // une ligne retirée qui porte des Propositions ne peut pas être supprimée.
+    const retirees = avant.slice(nouvelles.length);
+    if (retirees.length) {
+      const liees = await tx
+        .select({ lignePosteId: schema.proposition.lignePosteId })
+        .from(schema.proposition)
+        .where(inArray(schema.proposition.lignePosteId, retirees.map((l) => l.id)))
+        .limit(1);
+      if (liees.length) {
+        const l = retirees.find((x) => x.id === liees[0]!.lignePosteId)!;
+        throw new ErreurMetier(`Le poste « ${l.intitule} » a des propositions de candidats : il ne peut pas être supprimé.`);
+      }
+      await tx.delete(schema.lignePoste).where(inArray(schema.lignePoste.id, retirees.map((l) => l.id)));
+    }
+    for (const [i, l] of nouvelles.entries()) {
+      const existante = avant[i];
+      if (existante) await tx.update(schema.lignePoste).set({ ...l, ordre: i + 1 }).where(eq(schema.lignePoste.id, existante.id));
+      else await tx.insert(schema.lignePoste).values({ ...l, dossierId, ordre: i + 1 });
+    }
     await evenement(tx, {
       dossierId,
       auteurId: a.id,

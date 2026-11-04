@@ -22,6 +22,8 @@ import { estFinal } from '@/lib/dossiers/statuts';
 import { peutAccederVivier } from '@/lib/candidats/acces';
 import { lienTrouverCandidats } from '@/lib/candidats/recherche';
 import { quartiersGeolocalises } from '@/lib/candidats/vivier';
+import { etatRecherche, lienOngletPropositions } from '@/lib/propositions/service';
+import SectionPropositions from './SectionPropositions';
 
 /** MVP1-03 RG-06 : estimation enregistrée dans la Demande (preuve de ce qui a été affiché). */
 function estimationMontree(donnees: unknown): string | null {
@@ -36,6 +38,7 @@ const ONGLETS = [
   ['resume', 'Résumé'],
   ['demandes', 'Demandes'],
   ['postes', 'Postes'],
+  ['propositions', 'Propositions'],
   ['documents', 'Documents'],
   ['historique', 'Historique'],
   ['notes', 'Notes'],
@@ -54,6 +57,8 @@ const LIBELLE_EVENEMENT: Record<string, string> = {
   whatsapp: 'WhatsApp',
   lien_suivi: 'Lien de suivi',
   client: 'Client',
+  proposition: 'Proposition',
+  placement: 'Placement',
 };
 
 export default async function PageDossier({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ onglet?: string }> }) {
@@ -70,7 +75,7 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
   const traiter = peutTraiter(c, d.referentId);
   const direction = c.roles.includes('direction');
   const lienSuivi = `${env().BETTER_AUTH_URL}/suivi/${d.jetonSuivi}`;
-  const onglets = ONGLETS.filter(([k]) => k !== 'postes' || d.type === 'REC');
+  const onglets = ONGLETS.filter(([k]) => (k !== 'postes' && k !== 'propositions') || d.type === 'REC');
   const derniereDemande = fiche.demandes.at(-1);
   const recu = (derniereDemande?.donnees as { client?: Record<string, string | null> } | undefined)?.client;
   const listes = onglet === 'resume' && traiter ? await listesLieux() : [];
@@ -95,6 +100,8 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
     onglet === 'postes' && d.type === 'REC' && fiche.lignes.length > 0 && (await peutAccederVivier(c))
       ? { villeId: d.villeId, quartierId: d.quartierId, quartierGeolocalise: !!d.quartierId && (await quartiersGeolocalises([d.quartierId])).has(d.quartierId) }
       : null;
+  // MVP2-03 : décompte « X placés / Y demandés » en résumé, dès l'exécution du dossier de recrutement.
+  const recherche = onglet === 'resume' && d.type === 'REC' && ['execution', 'termine', 'cloture'].includes(phaseDe(d.statut)) ? await etatRecherche(d.id, c) : null;
   const coordonneesDifferentes = !!recu && (recu.nom !== client.nom || (recu.contact ?? null) !== (client.contact ?? null) || (!!recu.email && recu.email !== client.email));
 
   return (
@@ -120,6 +127,25 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
         <div className="space-y-4">
           {peutReaffecter && !d.referentId && reaffectation}
           {traiter && <A.ChangerStatut dossierId={d.id} options={transitionsProposees(d.type, d.statut, direction).map((s) => ({ code: s, libelle: STATUTS[s] }))} />}
+          {recherche && (
+            <section id="propositions" className="scroll-mt-4">
+              <Carte titre="Recherche de candidats" actions={<Link href={lienOngletPropositions(d.id)} className="text-sm text-primary py-2">Propositions →</Link>}>
+                <ul className="text-sm space-y-1">
+                  {recherche.lignes.map((l) => (
+                    <li key={l.id} className="flex justify-between gap-2">
+                      <span>{l.intitule}</span>
+                      <span className={l.places >= l.nombre ? 'text-brand-900 font-medium' : 'text-ink-600'}>{l.places} placé{l.places > 1 ? 's' : ''} / {l.nombre} demandé{l.nombre > 1 ? 's' : ''}</span>
+                    </li>
+                  ))}
+                </ul>
+                {recherche.clotureLe ? (
+                  <p className="text-xs text-ink-600 mt-2">Recherche clôturée : {recherche.placementsRetenus} placement(s) retenu(s).</p>
+                ) : recherche.echeance ? (
+                  <p className="text-xs text-ink-600 mt-2">Échéance de la recherche : {formatHorodatage(recherche.echeance)}{recherche.annonces.length ? ` · ${recherche.annonces.length} placement(s) annoncé(s) à confirmer` : ''}</p>
+                ) : null}
+              </Carte>
+            </section>
+          )}
           <Carte titre="Client">
             <dl className="text-sm grid grid-cols-[auto,1fr] gap-x-3 gap-y-1">
               <dt className="text-ink-500">Nom</dt><dd>{client.nom} ({client.type})</dd>
@@ -204,6 +230,8 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
           )}
         </Carte>
       )}
+
+      {onglet === 'propositions' && d.type === 'REC' && <SectionPropositions dossierId={d.id} demandeur={c} traiter={traiter} />}
 
       {onglet === 'documents' && (
         <div className="space-y-4">
