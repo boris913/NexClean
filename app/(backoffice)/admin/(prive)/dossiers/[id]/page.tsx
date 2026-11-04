@@ -4,7 +4,7 @@ import { forbidden, notFound } from 'next/navigation';
 import { exigerCollaborateur } from '@/lib/authz/session';
 import { lireDossier, dossiersDuClient } from '@/lib/dossiers/lecture';
 import { peutTraiter } from '@/lib/dossiers/acces';
-import { CATEGORIES_DOCUMENT } from '@/lib/dossiers/service';
+import { CATEGORIES_DOCUMENT, CATEGORIES_DOCUMENT_GENERE, LIBELLES_CATEGORIE_DOCUMENT } from '@/lib/dossiers/service';
 import { STATUTS, PHASES, phaseDe, transitionsProposees } from '@/lib/dossiers/statuts';
 import { DOSSIER_TYPES } from '@/lib/domain/referentiels';
 import { formatHorodatage } from '@/lib/audit-lecture';
@@ -262,10 +262,10 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
                     <div className="min-w-0 flex-1">
                       <a href={`/admin/documents/${doc.id}`} target="_blank" rel="noopener" className="text-primary font-medium break-all">{doc.nom}</a>
                       <p className="text-xs text-ink-500">
-                        {CATEGORIES_DOCUMENT[doc.categorie]} · {Math.ceil(doc.taille / 1024)} Ko · {doc.auteurNom ?? '—'} · {formatHorodatage(doc.creeLe)}
+                        {LIBELLES_CATEGORIE_DOCUMENT[doc.categorie]} · {Math.ceil(doc.taille / 1024)} Ko · {doc.auteurNom ?? '—'} · {formatHorodatage(doc.creeLe)}
                       </p>
                     </div>
-                    {traiter && (direction || (doc.auteurId === c.id && Date.now() - doc.creeLe.getTime() < 86_400_000)) && <A.SupprimerDocument dossierId={d.id} documentId={doc.id} />}
+                    {traiter && !(doc.categorie in CATEGORIES_DOCUMENT_GENERE) && (direction || (doc.auteurId === c.id && Date.now() - doc.creeLe.getTime() < 86_400_000)) && <A.SupprimerDocument dossierId={d.id} documentId={doc.id} />}
                   </li>
                 ))}
               </ul>
