@@ -21,7 +21,7 @@ function Message({ etat }: { etat: Etat }) {
   );
 }
 
-export function FormulaireVerification({ source, jeton, bloque }: { source: Source; jeton: string; bloque: string | null }) {
+export function FormulaireVerification({ source, jeton, bloque, libelle = 'Afficher les profils' }: { source: Source; jeton: string; bloque: string | null; libelle?: string }) {
   const router = useRouter();
   const id = useId();
   const [chiffres, setChiffres] = useState('');
@@ -72,7 +72,7 @@ export function FormulaireVerification({ source, jeton, bloque }: { source: Sour
       </div>
       <Message etat={etat} />
       <button type="submit" disabled={envoi} className={`${bouton} bg-cta text-ink-900`}>
-        {envoi && <Loader2 className="w-4 h-4 animate-spin" aria-hidden />} Afficher les profils
+        {envoi && <Loader2 className="w-4 h-4 animate-spin" aria-hidden />} {libelle}
       </button>
     </form>
   );

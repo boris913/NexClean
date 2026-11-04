@@ -1,10 +1,11 @@
-// Réponses des routes CV / attestation de la page de suivi et des liens temporaires
-// (specs/MVP2-03 RG-09, RG-15) : contrôle du jeton + cookie de vérification, affichage inline,
-// pas de cache, pas de détection de type.
+// Réponses des routes CV / attestation / documents de la page de suivi et des liens temporaires
+// (specs/MVP2-03 RG-09, RG-15 ; MVP2-04 RG-19) : contrôle du jeton + cookie de vérification,
+// affichage inline, pas de cache, pas de détection de type.
 import { headers } from 'next/headers';
 import { ipDepuisEnTetes } from '@/lib/audit';
 import { ErreurMetier } from '@/lib/collaborateurs/service';
 import * as client from '@/lib/propositions/client';
+import * as devisClient from '@/lib/devis/client';
 
 type Source = 'suivi' | 'profil';
 
@@ -53,5 +54,27 @@ export async function servirAttestation(source: Source, jeton: string, placement
   } catch (e) {
     if (e instanceof ErreurMetier) return texte(e.message, 404);
     throw e;
+  }
+}
+
+export type DocumentSuivi = { type: 'accuse_reception' } | { type: 'devis'; id: string } | { type: 'facture'; id: string };
+
+/** MVP2-04 RG-19 : accusé de réception, PDF d'un devis ou d'une facture du Dossier (page de suivi uniquement). */
+export async function servirDocumentSuivi(jeton: string, doc: DocumentSuivi): Promise<Response> {
+  const r = await contexteVerifie('suivi', jeton);
+  if (!r.ctx) return r.erreur!;
+  const ip = ipDepuisEnTetes(await headers());
+  try {
+    const f =
+      doc.type === 'accuse_reception'
+        ? await devisClient.accuseReceptionClient(r.ctx, ip)
+        : doc.type === 'devis'
+          ? await devisClient.pdfDevisClient(r.ctx, Number(doc.id), ip)
+          : await devisClient.pdfFactureClient(r.ctx, Number(doc.id), ip);
+    return fichier(f.octets, 'application/pdf', f.nom);
+  } catch (e) {
+    if (e instanceof ErreurMetier) return texte(e.message, 404);
+    console.error(e);
+    return texte('Document momentanément indisponible. Réessayez plus tard ou contactez votre référent NEXCLEAN.', 503);
   }
 }
