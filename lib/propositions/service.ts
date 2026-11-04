@@ -50,6 +50,8 @@ import { cheminAcces, empreinteJeton, genererJetonAcces } from './jetons';
 import { revoquerAccesNonPlaces, revoquerLiensProposition } from './revocation';
 import { archiverPdfFactureSansEchec, facturerCloture, type ResultatFacturation } from '@/lib/devis/facturation';
 import { archiverAttestation } from '@/lib/documents/archivage';
+import { appliquerClotureFinanciere } from '@/lib/encaissements/regularisation';
+import type { IssueCloture } from '@/lib/encaissements/domaine';
 
 type Db = ReturnType<typeof getDb>;
 type Lecteur = Pick<Db, 'select'>;
@@ -955,6 +957,12 @@ export interface ResultatCloture {
   avertissements: string[];
   /** MVP2-04 RG-18 : montant final et facture de solde / avoir émis (rien sans devis accepté). */
   facturation: ResultatFacturation;
+  /**
+   * MVP2-05 RG-08 : issue financière (montant final − encaissements nets) ; null sans devis accepté.
+   * Solde > 0 : le Dossier reste « Placements confirmés » ; solde nul : « Solde reçu » ; trop-perçu :
+   * ajustement à préparer (référent notifié).
+   */
+  issue: IssueCloture | null;
 }
 
 /**
@@ -962,6 +970,7 @@ export interface ResultatCloture {
  * avant avec motif ; bloquée tant que des placements sont annoncés. Fige le nombre de placements
  * retenus (hors remplacements), fait passer le Dossier à « Placements confirmés », retire les
  * Propositions en cours (candidats notifiés) et révoque l'accès client aux profils non placés.
+ * MVP2-04 RG-18 : facture de solde ou avoir ; MVP2-05 RG-08 : montant final enregistré et issue financière.
  */
 export async function cloturerRecherche(dossierId: number, motif: string | null, a: ActeurProposition, maintenant = new Date()): Promise<ResultatCloture> {
   const m = texteCourt(motif, 500);
@@ -1017,8 +1026,11 @@ export async function cloturerRecherche(dossierId: number, motif: string | null,
     await revoquerAccesNonPlacesHorsRemplacements(tx, dossierId, maintenant);
     // MVP2-04 RG-18 (ADR 0010) : montant final (commission figée × placements retenus) et facture
     // de solde ou avoir, dans la même transaction que la clôture.
-    const facturation = await facturerCloture(tx, dossierId, { type: 'collaborateur', id: a.id, ip: a.ip ?? null });
-    return { placementsRetenus: retenus, propositionsRetirees: retirees.length, avertissements: [...etat.avertissements, ...facturation.avertissements], facturation };
+    const auteur: AuteurEffet = { type: 'collaborateur', id: a.id, ip: a.ip ?? null };
+    const facturation = await facturerCloture(tx, dossierId, auteur);
+    // MVP2-05 RG-08 : montant final figé sur le Dossier, puis solde / solde nul / trop-perçu.
+    const issue = await appliquerClotureFinanciere(tx, dossierId, facturation, auteur);
+    return { placementsRetenus: retenus, propositionsRetirees: retirees.length, avertissements: [...etat.avertissements, ...facturation.avertissements], facturation, issue };
   });
   declencherEnvoi();
   // RG-19 : PDF de la facture archivé après la transaction ; un échec ne remet pas la clôture en cause.

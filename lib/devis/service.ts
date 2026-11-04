@@ -52,6 +52,8 @@ import {
 } from './domaine';
 import { accepterDevis, archiverPdf, archiverPdfFacture, auditDe, evenementDossier, lienDevisDossier, prochainNumero, refuserDevis, transitionAutomatique, type AuteurEffet, type Tx } from './effets';
 import { consoliderLignes, devisAccepte, type LigneFacturable } from './lignes';
+import { creditDisponible } from '@/lib/encaissements/effets';
+import { deductionProposee } from '@/lib/encaissements/domaine';
 
 export interface ActeurDevis extends Demandeur {
   ip?: string | null;
@@ -218,12 +220,15 @@ export async function creerDevis(dossierId: number, a: ActeurDevis): Promise<{ d
       g,
       g.tauxAcompteDefaut,
     );
+    // MVP2-05 RG-12 : déduction du crédit client proposée (le référent peut la retirer).
+    const deductionCredit = deductionProposee(await creditDisponible(tx, dos.clientId), t.totalTtc);
     const numero = await prochainNumero(tx, 'devis');
     const [dv] = await tx
       .insert(schema.devis)
       .values({
         dossierId,
         clientId: dos.clientId,
+        deductionCredit,
         type: 'devis',
         numero,
         version: 1,
@@ -243,8 +248,8 @@ export async function creerDevis(dossierId: number, a: ActeurDevis): Promise<{ d
         auteurId: a.id,
       })
       .returning({ id: schema.devis.id });
-    await evenementDossier(tx, dossierId, `Devis ${numero} v1 créé (brouillon) : ${formaterMontant(t.totalTtc)}`, auteurDe(a), 'document', { devisId: dv!.id, numero, version: 1 });
-    await journaliser({ ...auditDe(auteurDe(a)), action: 'devis.cree', objetType: 'devis', objetId: dv!.id, apres: { numero, version: 1, totalTtc: t.totalTtc, tauxAcompte: t.tauxAcompte }, details: { dossierId } }, tx);
+    await evenementDossier(tx, dossierId, `Devis ${numero} v1 créé (brouillon) : ${formaterMontant(t.totalTtc)}${deductionCredit ? ` — déduction du crédit client proposée : ${formaterMontant(deductionCredit)}` : ''}`, auteurDe(a), 'document', { devisId: dv!.id, numero, version: 1, deductionCredit });
+    await journaliser({ ...auditDe(auteurDe(a)), action: 'devis.cree', objetType: 'devis', objetId: dv!.id, apres: { numero, version: 1, totalTtc: t.totalTtc, tauxAcompte: t.tauxAcompte, deductionCredit }, details: { dossierId } }, tx);
     return { devisId: dv!.id, numero };
   });
   return r;
@@ -261,6 +266,8 @@ export const schemaModification = z.object({
   /** Avenant : prolongation du délai de recherche. */
   prolongationJours: z.number().int('Nombre de jours entier').min(0).max(365).optional().nullable(),
   conditionsParticulieres: z.string().trim().max(2000, 'Conditions particulières : 2 000 caractères maximum').optional().nullable(),
+  /** MVP2-05 RG-12 : conserver (vrai) ou retirer (faux) la déduction du crédit client ; absent : inchangé (plafonnée au nouveau total). */
+  conserverDeduction: z.boolean().optional(),
 });
 export type Modification = z.input<typeof schemaModification>;
 
@@ -309,12 +316,16 @@ export async function modifierDevis(devisId: number, entree: Modification, a: Ac
       Object.assign(maj, totauxFiges(lignes, dv.tauxTva, 0), { prolongationJours: prolongation });
     }
     maj.lignes = lignes;
+    if (dv.type === 'devis') {
+      const conserver = m.conserverDeduction ?? dv.deductionCredit > 0;
+      maj.deductionCredit = conserver ? deductionProposee(await creditDisponible(tx, dv.clientId), maj.totalTtc ?? dv.totalTtc) : 0;
+    }
     if (m.conditionsParticulieres !== undefined) maj.conditionsParticulieres = m.conditionsParticulieres || null;
     // Un devis « en attente de validation direction » modifié repasse en brouillon (à revalider).
     if (dv.statut === 'attente_direction') maj.statut = 'brouillon';
     await tx.update(schema.devis).set(maj).where(eq(schema.devis.id, devisId));
-    const avant = { lignes: dv.lignes.map((l) => l.nombre), tauxAcompte: dv.tauxAcompte, delaiRechercheJours: dv.delaiRechercheJours, prolongationJours: dv.prolongationJours, totalTtc: dv.totalTtc };
-    const apres = { lignes: lignes.map((l) => l.nombre), tauxAcompte: maj.tauxAcompte ?? dv.tauxAcompte, delaiRechercheJours: maj.delaiRechercheJours ?? dv.delaiRechercheJours, prolongationJours: maj.prolongationJours ?? dv.prolongationJours, totalTtc: maj.totalTtc };
+    const avant = { lignes: dv.lignes.map((l) => l.nombre), tauxAcompte: dv.tauxAcompte, delaiRechercheJours: dv.delaiRechercheJours, prolongationJours: dv.prolongationJours, totalTtc: dv.totalTtc, deductionCredit: dv.deductionCredit };
+    const apres = { lignes: lignes.map((l) => l.nombre), tauxAcompte: maj.tauxAcompte ?? dv.tauxAcompte, delaiRechercheJours: maj.delaiRechercheJours ?? dv.delaiRechercheJours, prolongationJours: maj.prolongationJours ?? dv.prolongationJours, totalTtc: maj.totalTtc, deductionCredit: maj.deductionCredit ?? dv.deductionCredit };
     await evenementDossier(tx, dos.id, `${libelleDevis(dv)} modifié : ${formaterMontant(maj.totalTtc ?? dv.totalTtc)}`, auteurDe(a), 'modification', { devisId, ...apres });
     await journaliser({ ...auditDe(auteurDe(a)), action: 'devis.modifie', objetType: 'devis', objetId: devisId, avant, apres, details: maj.justificationTaux ? { justificationTaux: maj.justificationTaux } : undefined }, tx);
   });
@@ -338,7 +349,9 @@ export async function reprendrePostes(devisId: number, a: ActeurDevis): Promise<
         return { lignePosteId: p.id, intitule: p.intitule, nombre: p.nombre, commission, montantHt: commission * p.nombre };
       });
     const t = totauxFiges(lignes, dv.tauxTva, dv.tauxAcompte);
-    await tx.update(schema.devis).set({ lignes, ...t, statut: 'brouillon', majLe: new Date() }).where(eq(schema.devis.id, devisId));
+    // MVP2-05 RG-12 : une déduction conservée reste plafonnée au nouveau total.
+    const deductionCredit = dv.deductionCredit > 0 ? deductionProposee(await creditDisponible(tx, dv.clientId), t.totalTtc) : 0;
+    await tx.update(schema.devis).set({ lignes, ...t, deductionCredit, statut: 'brouillon', majLe: new Date() }).where(eq(schema.devis.id, devisId));
     await evenementDossier(tx, dos.id, `${libelleDevis(dv)} : postes du dossier repris (${formaterMontant(t.totalTtc)})`, auteurDe(a), 'modification', { devisId, lignes: lignes.map((l) => ({ lignePosteId: l.lignePosteId, nombre: l.nombre })) });
     await journaliser({ ...auditDe(auteurDe(a)), action: 'devis.modifie', objetType: 'devis', objetId: devisId, avant: { totalTtc: dv.totalTtc }, apres: { totalTtc: t.totalTtc }, details: { postesRepris: true } }, tx);
   });
@@ -457,6 +470,8 @@ export async function nouvelleVersion(devisId: number, a: ActeurDevis): Promise<
       tauxTva = initial.tauxTva;
     }
     const t = totauxFiges(lignes, tauxTva, dv.type === 'devis' ? dv.tauxAcompte : 0);
+    // MVP2-05 RG-12 : nouvelle version d'un devis → déduction du crédit client re-proposée (crédit actuel).
+    const deductionCredit = dv.type === 'devis' ? deductionProposee(await creditDisponible(tx, dos.clientId), t.totalTtc) : 0;
     const version = dv.version + 1;
     const [nv] = await tx
       .insert(schema.devis)
@@ -483,6 +498,7 @@ export async function nouvelleVersion(devisId: number, a: ActeurDevis): Promise<
         conditionsParticulieres: dv.conditionsParticulieres,
         mentionsLegales: g.mentionsLegales,
         prolongationJours: dv.prolongationJours,
+        deductionCredit,
         auteurId: a.id,
       })
       .returning({ id: schema.devis.id });
@@ -813,6 +829,8 @@ export interface VueDevisDossier {
   bornes: BornesAcompte;
   /** Message WhatsApp de chaque devis envoyé (bouton « Ouvrir WhatsApp »). */
   messages: Record<number, MessageEnvoi>;
+  /** MVP2-05 RG-12 : crédit disponible du Client (déduction proposée sur le devis). */
+  creditClient: number;
 }
 
 /** Données de l'onglet Devis ; null si le Dossier n'est pas REC ; lecture : `peutVoir`. */
@@ -847,6 +865,7 @@ export async function lireDevisDossier(dossierId: number, a: ActeurDevis): Promi
     tauxAcompteDefaut: g.tauxAcompteDefaut,
     bornes: g.bornes,
     messages,
+    creditClient: await creditDisponible(db, dos.clientId),
   };
 }
 
