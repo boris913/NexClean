@@ -1,7 +1,7 @@
 # Décisions — Refonte positionnement & identité (site public)
 
 > Branche : `feat/refonte-positionnement`. Base factuelle : `docs/audit.md`.
-> Statut : **Phase 1 — proposé, en attente de validation** (D-01 à D-12).
+> Statut : **Phase 1 — validé le 2026-11-04**, avec D-07 retirée (logo traité dans une autre conversation).
 > Périmètre : site public `app/(site)/`, composants partagés, SEO, marque. Le back-office (`app/(backoffice)/`) n'est pas redessiné. Il n'est touché que si un token partagé l'impose.
 
 ## D-01 — Fonctionnalités présentées : uniquement celles qui existent dans le code
@@ -65,15 +65,11 @@ Toutes les routes restent en place, pour le SEO, les tests e2e et les liens What
 - **Icônes** : `lucide-react` uniquement. On retire `react-icons`, qui n'est jamais importé. La mise à jour de lucide est envisagée si elle ne casse pas les imports ; sinon, elle est reportée.
 - **Bouton WhatsApp** : le texte blanc sur `#25D366` est en échec de contraste (1,98:1). Il passera en texte encre sur `#25D366`, ou sur un vert WhatsApp foncé `#128C7E` avec texte blanc, au choix du Design System selon la mesure AA.
 
-## D-07 — Logo : on remplace le symbole, avec 3 pistes
-Le logo actuel (le N et l'étincelle sur un carré dégradé) est propre, mais l'étincelle l'enferme dans le nettoyage. On garde la continuité par la couleur et le nom, et on change de symbole. Les trois pistes ci-dessous sont des constructions géométriques originales, sans imitation d'un logo existant :
-- **Piste A — « N relais »** : un N formé de deux montants et d'une diagonale qui les relie par deux points. Il évoque la mise en relation (client ↔ prestataire, entreprise ↔ candidat). Construit sur une grille 24×24, il reste lisible en favicon.
-- **Piste B — « N en avant »** : un N dont la diagonale se prolonge en flèche vers le haut à droite. Il fait écho à « Nex » (next) et évoque le progrès et la prise en charge. Très lisible, mais plus générique.
-- **Piste C — « Trois modules »** : trois formes simples (carré, cercle, feuille) assemblées en N, une par pilier. C'est la piste la plus narrative, mais elle tient moins bien sous 32 px.
-
-**Recommandation : la piste A.** C'est la plus mémorable des trois, elle colle au cœur du nouveau métier (mettre en relation) et tient en monochrome.
-
-Livrables dans `assets/brand/` : symbole, logotype, horizontal et vertical, chacun en couleur, blanc et mono. S'y ajoutent `favicon.svg`, `icon-192/512.png`, `apple-icon.png`, `palette.md` et `typographie.md`. Une copie va dans `public/images/brand/` pour le service. On garde les mêmes noms de fichiers que l'actuel, pour que `Logo.tsx` et les métadonnées basculent sans casse.
+## D-07 — Logo : hors périmètre de cette refonte
+*Décision de l'utilisateur (2026-11-04).* Le logo est refait dans une autre conversation. Cette refonte ne crée ni ne modifie aucun fichier de marque : `public/images/brand/**`, `app/icon.svg`, `app/apple-icon.png` et le visuel du logo dans l'image OG restent tels quels.
+- L'interface de `components/ui/Logo.tsx` (props `variant`, `height`) et les noms de fichiers restent inchangés. Le nouveau logo pourra ainsi s'y brancher sans toucher aux pages.
+- D-02 (NEX gras / CLEAN régulier) n'est transmise à l'autre conversation qu'à titre de suggestion.
+- Le livrable `assets/brand/` est donc retiré de cette refonte.
 
 ## D-08 — SEO
 - On repositionne `lib/seo.ts` : titre, description, mots-clés, alt OG et JSON-LD (`Organization` + `LocalBusiness`, avec `knowsAbout` et `hasOfferCatalog` multi-piliers). On repositionne aussi `lib/og-image.tsx`, `site.webmanifest` et `classification`.
@@ -88,8 +84,7 @@ Pour éviter les conflits, chaque agent a son périmètre de fichiers. L'Orchest
 
 | Phase | Agent | Fichiers |
 |---|---|---|
-| 2 (parallèle) | Contenu | `content/*.ts`, `lib/seo.ts`, `lib/constants.ts` (textes), `docs/contenu.md` (copy de toutes les pages) |
-| 2 (parallèle) | Identité / Logo | `assets/brand/**`, `public/images/brand/**`, `app/icon.svg`, `app/apple-icon.png`, `lib/og-image.tsx` (visuel) |
+| 2 (parallèle) | Contenu | `content/*.ts`, `lib/seo.ts`, `lib/constants.ts` (textes), textes de `lib/og-image.tsx` et `public/site.webmanifest`, `docs/contenu.md` (copy de toutes les pages) |
 | 2 (parallèle) | Design System | `tailwind.config.ts`, `app/globals.css`, `components/ui/**` (Button, Card, Section, Container, PillarBadge…), `docs/design-system.md` |
 | 3a | Intégration Accueil | `app/(site)/page.tsx`, `components/sections/**`, `components/navigation/**` |
 | 3b (parallèle, worktrees) | Intégration Pages | lot 1 : services, particuliers, professionnels, espaces-verts, abonnements, tarifs · lot 2 : recrutement, candidat, suivi · lot 3 : boutique, réalisations, à propos, blog, contact, légales |
