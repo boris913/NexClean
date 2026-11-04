@@ -12,7 +12,8 @@ import { validerFichier } from '@/lib/fichiers/validation';
 import { normaliserTelephone } from '@/lib/telephone';
 import { peutTraiter, peutVoir, type Demandeur } from './acces';
 import { anneeDouala, formaterNumero } from './numero';
-import { estFinal, STATUTS, verifierTransition, type Statut } from './statuts';
+import { estCircuitDevis, estFinal, STATUTS, verifierTransition, type Statut } from './statuts';
+import { etatDevisDossier } from '@/lib/devis/lignes';
 import { attribuerAutomatiquement, signalerSiReferentIneligible } from './attribution';
 import { declencherEnvoi, notifier } from '@/lib/notifications';
 import { revoquerAccesNonPlaces } from '@/lib/propositions/revocation';
@@ -242,14 +243,19 @@ export async function changerStatut(dossierId: number, vers: Statut, commentaire
       .select({ categorie: schema.document.categorie })
       .from(schema.document)
       .where(and(eq(schema.document.dossierId, dossierId), isNull(schema.document.supprimeLe)));
+    const aUnDevisExterne = docs.some((x) => x.categorie === 'devis_externe');
+    // MVP2-04 RG-08 : dossiers REC sur le circuit du devis intégré (sauf mode transitoire en cours).
+    const devis = d.type === 'REC' ? await etatDevisDossier(dossierId, tx) : { aDesDevis: false, dernierDevisRefuse: false };
     const verdict = verifierTransition({
       type: d.type,
       de: d.statut,
       vers,
       commentaire,
       direction: a.roles.includes('direction'),
-      aUnDevisExterne: docs.some((x) => x.categorie === 'devis_externe'),
+      aUnDevisExterne,
       aUnJustificatif: docs.some((x) => x.categorie === 'justificatif'),
+      circuitDevis: estCircuitDevis({ type: d.type, statut: d.statut, aDesDevis: devis.aDesDevis, aUnDevisExterne }),
+      dernierDevisRefuse: devis.dernierDevisRefuse,
     });
     if (!verdict.ok) throw new ErreurMetier(verdict.erreur);
     await tx

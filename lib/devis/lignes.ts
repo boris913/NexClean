@@ -61,3 +61,17 @@ export async function lignesFacturables(dossierId: number, db: Lecteur = getDb()
     .orderBy(schema.devis.accepteLe, schema.devis.id);
   return consoliderLignes([d.lignes, ...avenants.map((a) => a.lignes)]);
 }
+
+/**
+ * RG-08 : état des devis du Dossier pour les transitions manuelles (`changerStatut`) : présence de
+ * devis intégrés (mode transitoire sinon) et dernier devis (type `devis`) refusé (réouverture).
+ */
+export async function etatDevisDossier(dossierId: number, db: Lecteur = getDb()): Promise<{ aDesDevis: boolean; dernierDevisRefuse: boolean }> {
+  const [dernier] = await db
+    .select({ statut: schema.devis.statut })
+    .from(schema.devis)
+    .where(and(eq(schema.devis.dossierId, dossierId), eq(schema.devis.type, 'devis')))
+    .orderBy(desc(schema.devis.id))
+    .limit(1);
+  return { aDesDevis: !!dernier, dernierDevisRefuse: dernier?.statut === 'refuse' };
+}

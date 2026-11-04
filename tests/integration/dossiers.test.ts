@@ -133,8 +133,8 @@ describe.skipIf(!baseDisponible)('Dossiers (intégration)', async () => {
       ]);
     });
 
-    it('RG-16 : « Devis prêt » exige un devis externe joint ; « Acompte reçu » un justificatif', async () => {
-      const r = await svc.creerDemande(demandeRec('671000004'));
+    it('RG-16 (hors REC, MVP2-04 RG-03) : « Devis prêt » exige un devis externe joint ; « Acompte reçu » un justificatif', async () => {
+      const r = await svc.creerDemande({ ...demandeRec('671000004'), type: 'NET', lignes: [], formulaire: 'devis' });
       await attribuer(r.dossierId, referentA);
       await svc.changerStatut(r.dossierId, 'en_qualification', null, referentA);
       await expect(svc.changerStatut(r.dossierId, 'devis_pret', null, referentA)).rejects.toThrow(/devis/);
@@ -145,6 +145,19 @@ describe.skipIf(!baseDisponible)('Dossiers (intégration)', async () => {
       await expect(svc.changerStatut(r.dossierId, 'acompte_recu', '25 000 MoMo réf. MP1', referentA)).rejects.toThrow(/justificatif/);
       await svc.ajouterDocument(r.dossierId, { nom: 'recu.pdf', octets: PDF }, 'justificatif', referentA);
       await svc.changerStatut(r.dossierId, 'acompte_recu', '25 000 MoMo réf. MP1', referentA);
+    });
+
+    it('MVP2-04 RG-08 : sur un dossier REC, « Devis prêt », « Devis envoyé » et « Accepté » suivent le devis intégré', async () => {
+      const r = await svc.creerDemande(demandeRec('671000014'));
+      await attribuer(r.dossierId, referentA);
+      await svc.changerStatut(r.dossierId, 'en_qualification', null, referentA);
+      await svc.ajouterDocument(r.dossierId, { nom: 'devis.pdf', octets: PDF }, 'devis_externe', referentA);
+      await expect(svc.changerStatut(r.dossierId, 'devis_pret', null, referentA)).rejects.toThrow(/onglet Devis/);
+      await expect(svc.changerStatut(r.dossierId, 'devis_pret', null, direction)).rejects.toThrow(/onglet Devis/);
+      // Mode transitoire en cours (dossier ouvert avant MVP-2, devis externe, aucun devis intégré) : il termine son cycle à la main.
+      await getDb().update(schema.dossier).set({ statut: 'devis_pret' }).where(eq(schema.dossier.id, r.dossierId));
+      await svc.changerStatut(r.dossierId, 'devis_envoye', null, referentA);
+      await svc.changerStatut(r.dossierId, 'accepte', null, referentA);
     });
 
     it('RG-18 : un dossier clôturé n’est rouvrable que par la Direction', async () => {

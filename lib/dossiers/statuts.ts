@@ -107,6 +107,27 @@ export interface ContexteTransition {
   /** Pièces du dossier, pour les gardes transitoires MVP-1 (RG-16). */
   aUnDevisExterne: boolean;
   aUnJustificatif: boolean;
+  /**
+   * MVP2-04 RG-08 : le Dossier suit le circuit du devis intégré (« Devis prêt », « Devis envoyé »,
+   * « Accepté » fixés par le devis). Par défaut : dossiers REC. Voir `estCircuitDevis`.
+   */
+  circuitDevis?: boolean;
+  /** MVP2-04 RG-08 : le dernier devis du Dossier est refusé (réouverture par le référent). */
+  dernierDevisRefuse?: boolean;
+}
+
+/** MVP2-04 RG-08 : statuts fixés par le devis intégré (dossiers REC). */
+export const STATUTS_DU_DEVIS: readonly Statut[] = ['devis_pret', 'devis_envoye', 'accepte'];
+export const MESSAGE_CIRCUIT_DEVIS = 'Pour un dossier de recrutement, « Devis prêt », « Devis envoyé » et « Accepté » suivent le devis : passez par l’onglet Devis (valider, « Valider et envoyer », acceptation).';
+
+/**
+ * MVP2-04 RG-03, RG-08 : un dossier REC suit le circuit du devis intégré, sauf un dossier ouvert
+ * avant MVP-2 en mode transitoire (devis externe joint, aucun devis intégré, déjà « Devis prêt » ou
+ * « Devis envoyé ») : il termine son cycle à la main. Les autres types restent en mode transitoire.
+ */
+export function estCircuitDevis(c: { type: DossierType; statut: Statut; aDesDevis: boolean; aUnDevisExterne: boolean }): boolean {
+  if (c.type !== 'REC') return false;
+  return !(!c.aDesDevis && c.aUnDevisExterne && (c.statut === 'devis_pret' || c.statut === 'devis_envoye'));
 }
 
 export type Verdict = { ok: true; retourArriere: boolean } | { ok: false; erreur: string };
@@ -128,6 +149,13 @@ export function verifierTransition(c: ContexteTransition): Verdict {
   if (c.automatique) {
     return de === 'nouvelle_demande' && vers === 'attribuee' ? { ok: true, retourArriere: false } : { ok: false, erreur: 'Transition automatique non autorisée.' };
   }
+
+  const circuit = c.circuitDevis ?? type === 'REC';
+  // MVP2-04 RG-08 : statuts fixés par le devis intégré, jamais posés à la main.
+  if (circuit && STATUTS_DU_DEVIS.includes(vers)) return { ok: false, erreur: MESSAGE_CIRCUIT_DEVIS };
+
+  // MVP2-04 RG-08 : le référent rouvre un dossier REC refusé, pour une nouvelle version du devis refusé.
+  if (circuit && de === 'refuse' && vers === 'en_qualification' && c.dernierDevisRefuse) return { ok: true, retourArriere: true };
 
   // RG-18 : statuts finaux réouvrables par la Direction uniquement, avec commentaire.
   if (estFinal(de)) {
@@ -184,13 +212,19 @@ export function verifierTransition(c: ContexteTransition): Verdict {
 }
 
 /** Statuts proposés dans l'interface depuis un statut donné (avancée, À compléter, issues). */
-export function transitionsProposees(type: DossierType, de: Statut, direction: boolean): Statut[] {
-  if (estFinal(de)) return direction ? cycleDe(type).filter((s) => !estFinal(s) && s !== 'nouvelle_demande' && s !== 'attribuee') : [];
+export function transitionsProposees(type: DossierType, de: Statut, direction: boolean, o: { circuitDevis?: boolean; dernierDevisRefuse?: boolean } = {}): Statut[] {
+  const circuit = o.circuitDevis ?? type === 'REC';
+  const manuel = (s: Statut) => !(circuit && STATUTS_DU_DEVIS.includes(s));
+  if (estFinal(de)) {
+    if (direction) return cycleDe(type).filter((s) => !estFinal(s) && s !== 'nouvelle_demande' && s !== 'attribuee' && manuel(s));
+    return circuit && de === 'refuse' && o.dernierDevisRefuse ? ['en_qualification'] : [];
+  }
   const cycle = cycleDe(type);
   const suivant = de === 'a_completer' ? 'en_qualification' : cycle[rang(type, de) + 1];
   const liste: Statut[] = [];
   // « Placements confirmés » : bouton « Clôturer la recherche » (MVP2-03 RG-22), pas une transition manuelle.
-  if (suivant && suivant !== 'attribuee' && suivant !== 'placements_confirmes') liste.push(suivant);
+  // MVP2-04 RG-08 : statuts du devis intégré fixés par l'onglet Devis.
+  if (suivant && suivant !== 'attribuee' && suivant !== 'placements_confirmes' && manuel(suivant)) liste.push(suivant);
   if (de === 'en_qualification') liste.push('a_completer');
   liste.push('refuse', 'sans_suite');
   return liste;
