@@ -97,3 +97,11 @@ Aucune nouvelle dépendance n'est prévue. Les animations restent sur framer-mot
 
 ## D-12 — Placeholders
 Toute information manquante (chiffres clés, témoignages réels sur le recrutement, photos d'équipes placées, délais garantis) apparaît sous la forme `[À COMPLÉTER : …]`, dans le code et dans le rapport final. Aucun lorem ipsum.
+
+## D-13 — Contrôles réellement disponibles (constat du 2026-11-05)
+- **Lint** : ESLint n'est pas configuré dans le projet. `npm run lint` s'arrête sur l'assistant de configuration et ne vérifie rien. On ne l'ajoute pas ici (hors périmètre) : `typecheck`, `test` et `build` tiennent lieu de contrôle. Point signalé au rapport final.
+- **Tests d'intégration** : ils sont ignorés sans `DATABASE_URL_TEST`. On les lance sur un serveur PostgreSQL jetable (dossier temporaire de session, port 54331). `.env.local` vise un port où rien n'écoute.
+- **Sur cette machine**, le délai de 10 s des hooks peut être dépassé en suite complète : relancer le fichier concerné avec `--hookTimeout=90000` avant de conclure à une régression.
+
+## D-14 — Fin de Phase 2
+Contenu et Design System fusionnés dans `feat/refonte-positionnement` sans conflit. Typecheck et build réussis, 482/482 tests (dont 2 fichiers relancés seuls, cf. D-13). `react-icons` retiré, jamais importé. Le nouveau logo vit sur `feat/ux-backoffice` et ne recoupe cette branche que dans `lib/og-image.tsx`, sur des lignes distinctes.
