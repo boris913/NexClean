@@ -55,7 +55,9 @@ export function ChangerStatut({ dossierId, options, encaissementsIntegres = fals
           </label>
           <textarea id="commentaire" name="commentaire" rows={2} className={classeChamp} />
         </div>
-        <button type="submit" disabled={envoi || !vers} className={classeBouton('principal', true)}>Valider</button>
+        <button type="submit" disabled={envoi || !vers} className={classeBouton('principal', true)}>
+          {vers ? `Passer à « ${options.find((o) => o.code === vers)?.libelle ?? ''} »` : 'Changer le statut'}
+        </button>
       </form>
     </Carte>
   );

@@ -1,4 +1,5 @@
-// RG-21 / RG-23 : liste des dossiers, filtrable, en cartes sur mobile.
+// RG-21 / RG-23 : liste des dossiers, filtrable, en cartes sur mobile. Vue de pilotage
+// (Direction, Finances) : tableau dense sur grand écran (≥ xl), cartes en dessous.
 import Link from 'next/link';
 import { forbidden } from 'next/navigation';
 import { asc, eq } from 'drizzle-orm';
@@ -14,6 +15,9 @@ import { Clock, FolderOpen, MapPin, Plus, Search, SlidersHorizontal, User, Users
 import { classeBouton, classeCarteLien, classeChamp, classeLibelle, classeSurface, EtatVide, Pagination, Pastille, TitrePage } from '@/components/backoffice/ui';
 
 export const metadata = { title: 'Dossiers' };
+
+const dateCourte = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Africa/Douala', day: '2-digit', month: '2-digit', year: '2-digit' });
+const tonStatut = (s: string) => (s === 'a_completer' ? 'orange' : s === 'refuse' || s === 'sans_suite' ? 'rouge' : 'neutre') as 'orange' | 'rouge' | 'neutre';
 
 type Params = Record<string, string | undefined>;
 
@@ -140,7 +144,55 @@ export default async function PageDossiers({ searchParams }: { searchParams: Pro
           }
         />
       )}
-      <ul className="grid gap-3 lg:grid-cols-2">
+      {tous && lignes.length > 0 && (
+        <div className={`${classeSurface} hidden overflow-x-auto xl:block`}>
+          <table className="w-full text-sm">
+            <caption className="sr-only">Dossiers, page {page}</caption>
+            <thead className="border-b border-ink-200 bg-ink-50 text-left text-xs font-semibold uppercase tracking-wide text-ink-500">
+              <tr>
+                <th scope="col" className="px-3 py-2.5">N°</th>
+                <th scope="col" className="px-3 py-2.5">Client</th>
+                <th scope="col" className="px-3 py-2.5">Type</th>
+                <th scope="col" className="px-3 py-2.5 text-right">Pers.</th>
+                <th scope="col" className="px-3 py-2.5">Ville</th>
+                <th scope="col" className="px-3 py-2.5">Statut</th>
+                <th scope="col" className="px-3 py-2.5">Référent</th>
+                <th scope="col" className="px-3 py-2.5">Créé le</th>
+                <th scope="col" className="px-3 py-2.5">Dernière action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-ink-100">
+              {lignes.map((d) => {
+                const jours = sansActionDepuis(d.derniereActionLe);
+                const enRetard = jours >= joursSansAction && !['cloture', 'refuse', 'sans_suite'].includes(d.statut);
+                return (
+                  <tr key={d.id} className="relative hover:bg-brand-50/60 focus-within:bg-brand-50/60">
+                    <td className="whitespace-nowrap px-3 py-2">
+                      {/* Le lien couvre toute la ligne (after:absolute) : un seul arrêt de tabulation par dossier. */}
+                      <Link href={`/admin/dossiers/${d.id}`} className="font-mono text-xs font-semibold text-ink-800 after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-brand-400">
+                        {d.numero}
+                      </Link>
+                    </td>
+                    <td className="max-w-[14rem] truncate px-3 py-2 font-medium text-ink-900" title={d.clientNom}>{d.clientNom}</td>
+                    <td className="whitespace-nowrap px-3 py-2 text-xs font-semibold text-ink-600"><abbr title={DOSSIER_TYPES[d.type]} className="no-underline">{d.type}</abbr></td>
+                    <td className="px-3 py-2 text-right tabular-nums text-ink-600">{d.personnes > 0 ? d.personnes : '—'}</td>
+                    <td className="max-w-[9rem] truncate px-3 py-2 text-ink-600">{d.ville ?? d.villeAutre ?? '—'}</td>
+                    <td className="whitespace-nowrap px-3 py-2">
+                      <Pastille ton={tonStatut(d.statut)} point>{STATUTS[d.statut]}</Pastille>
+                    </td>
+                    <td className={`max-w-[9rem] truncate px-3 py-2 ${d.referentNom ? 'text-ink-600' : 'font-medium text-amber-700'}`}>{d.referentNom ?? 'Non attribué'}</td>
+                    <td className="whitespace-nowrap px-3 py-2 tabular-nums text-ink-600">{dateCourte.format(d.creeLe)}</td>
+                    <td className="whitespace-nowrap px-3 py-2 tabular-nums">
+                      {enRetard ? <Pastille ton="orange">{jours} j sans action</Pastille> : <span className="text-ink-600">{jours === 0 ? 'Aujourd’hui' : `Il y a ${jours} j`}</span>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <ul className={`grid gap-3 lg:grid-cols-2${tous ? ' xl:hidden' : ''}`}>
         {lignes.map((d) => {
           const jours = sansActionDepuis(d.derniereActionLe);
           return (
@@ -148,7 +200,7 @@ export default async function PageDossiers({ searchParams }: { searchParams: Pro
               <Link href={`/admin/dossiers/${d.id}`} className={`${classeCarteLien} group h-full`}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="rounded-md bg-ink-100 px-1.5 py-0.5 font-mono text-xs font-semibold text-ink-700">{d.numero}</span>
-                  <Pastille ton={d.statut === 'a_completer' ? 'orange' : d.statut === 'refuse' || d.statut === 'sans_suite' ? 'rouge' : 'neutre'} point>
+                  <Pastille ton={tonStatut(d.statut)} point>
                     {STATUTS[d.statut]}
                   </Pastille>
                 </div>
