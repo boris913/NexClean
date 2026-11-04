@@ -57,6 +57,13 @@
       "when": 1793742209845,
       "tag": "0007_vivier_candidatures",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793751659962,
+      "tag": "0008_modeles_candidat_centroides",
+      "breakpoints": true
     }
   ]
 }

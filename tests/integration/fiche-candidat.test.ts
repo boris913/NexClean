@@ -291,7 +291,10 @@ describe.skipIf(!baseDisponible)('Fiche candidat (intégration)', async () => {
 
   describe('Modèles WhatsApp candidat', () => {
     it('initialisation idempotente ; jamais proposés dans un dossier', async () => {
-      expect(await fiche.initialiserModelesCandidat()).toBe(3);
+      // Déjà créés par la migration 0008 ; l'initialisation ne recrée que ceux qui manquent.
+      expect(await fiche.initialiserModelesCandidat()).toBe(0);
+      await getDb().delete(schema.modeleMessage).where(eq(schema.modeleMessage.nom, 'Compléter votre profil'));
+      expect(await fiche.initialiserModelesCandidat()).toBe(1);
       expect(await fiche.initialiserModelesCandidat()).toBe(0);
       const pourDossier = await modeles.listerModeles({ type: 'REC', actifsSeulement: true });
       expect(pourDossier.some((m) => m.nom === 'Bienvenue candidat')).toBe(false);
