@@ -178,6 +178,23 @@ describe.skipIf(!baseDisponible)('Devis — Back-Office (intégration)', async (
     expect(await devis(v2.devisId)).toMatchObject({ statut: 'valide', totalTtc: 30_000 });
   });
 
+  it('brouillon : un poste ajouté au dossier après la création est repris (commission figée conservée pour les postes existants)', async () => {
+    const dossierId = await nouveauDossier();
+    const { devisId } = await svc.creerDevis(dossierId, rita);
+    await params.definirParametre('commission_par_personne', 6000, { id: diane.id });
+    try {
+      await dossiers.remplacerLignes(dossierId, [{ intitule: 'Serveur', nombre: 10 }, { intitule: 'Plongeur', nombre: 1 }], rita);
+      await svc.reprendrePostes(devisId, rita);
+      const d = await devis(devisId);
+      expect(d.lignes.map((l) => [l.intitule, l.nombre, l.commission])).toEqual([['Serveur', 10, 5000], ['Plongeur', 1, 6000]]);
+      expect(d.totalTtc).toBe(56_000);
+      await svc.validerDevis(devisId, rita);
+      await expect(svc.reprendrePostes(devisId, rita)).rejects.toThrow(/brouillon/);
+    } finally {
+      await params.definirParametre('commission_par_personne', 5000, { id: diane.id });
+    }
+  });
+
   it('RG-02 : un devis validé à 5 000 reste à 5 000 après passage de la commission à 6 000 ; un nouveau devis utilise 6 000', async () => {
     const dossierId = await nouveauDossier();
     const { devisId } = await svc.creerDevis(dossierId, rita);

@@ -320,6 +320,30 @@ export async function modifierDevis(devisId: number, entree: Modification, a: Ac
   });
 }
 
+/**
+ * Brouillon d'un devis : reprend les postes actuels du Dossier (poste ajouté ou retiré après la
+ * création). Commission figée conservée pour les postes déjà au devis, grille en vigueur pour les nouveaux.
+ */
+export async function reprendrePostes(devisId: number, a: ActeurDevis): Promise<void> {
+  const g = await grilleActuelle();
+  await getDb().transaction(async (tx) => {
+    const { dos, dv } = await devisPourEcriture(tx, devisId, a);
+    if (dv.type !== 'devis' || !estModifiable(dv.statut)) throw new ErreurMetier('Seul un devis en brouillon peut reprendre les postes du dossier.');
+    const { lignes: postes, manques } = await donneesDossier(tx, dos);
+    if (manques.length) throw new ErreurDonneesManquantes(manques);
+    const lignes: LigneDevis[] = postes
+      .filter((p) => p.nombre > 0)
+      .map((p) => {
+        const commission = dv.lignes.find((l) => l.lignePosteId === p.id)?.commission ?? commissionPour(p.intitule, g);
+        return { lignePosteId: p.id, intitule: p.intitule, nombre: p.nombre, commission, montantHt: commission * p.nombre };
+      });
+    const t = totauxFiges(lignes, dv.tauxTva, dv.tauxAcompte);
+    await tx.update(schema.devis).set({ lignes, ...t, statut: 'brouillon', majLe: new Date() }).where(eq(schema.devis.id, devisId));
+    await evenementDossier(tx, dos.id, `${libelleDevis(dv)} : postes du dossier repris (${formaterMontant(t.totalTtc)})`, auteurDe(a), 'modification', { devisId, lignes: lignes.map((l) => ({ lignePosteId: l.lignePosteId, nombre: l.nombre })) });
+    await journaliser({ ...auditDe(auteurDe(a)), action: 'devis.modifie', objetType: 'devis', objetId: devisId, avant: { totalTtc: dv.totalTtc }, apres: { totalTtc: t.totalTtc }, details: { postesRepris: true } }, tx);
+  });
+}
+
 // ─── Validation (RG-06, RG-07, RG-08) ────────────────────────
 
 async function marquerValide(tx: Tx, dos: Dossier, dv: Devis, a: ActeurDevis, direction: boolean): Promise<void> {
