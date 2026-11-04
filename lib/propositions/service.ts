@@ -48,6 +48,8 @@ import {
 import { chargerProposition, confirmerPlacement, enregistrerAccord, evenementDossier, lienPropositionsDossier, notifierCandidat, type AuteurEffet, type Tx } from './effets';
 import { cheminAcces, empreinteJeton, genererJetonAcces } from './jetons';
 import { revoquerAccesNonPlaces, revoquerLiensProposition } from './revocation';
+import { archiverPdfFactureSansEchec, facturerCloture, type ResultatFacturation } from '@/lib/devis/facturation';
+import { archiverAttestation } from '@/lib/documents/archivage';
 
 type Db = ReturnType<typeof getDb>;
 type Lecteur = Pick<Db, 'select'>;
@@ -464,8 +466,9 @@ function verifierRechercheOuverte(d: DossierVerrouille, p: { remplacePlacementId
 
 /** RG-14 : Placement « annoncé » depuis une Proposition « retenue ». */
 export async function annoncerPlacement(propositionId: number, e: EntreePlacement, a: ActeurProposition): Promise<ResultatPlacement> {
+  let resultat: ResultatPlacement;
   try {
-    return await getDb().transaction(async (tx) => {
+    resultat = await getDb().transaction(async (tx) => {
       const { d, p } = await propositionPourReferent(tx, propositionId, a);
       verifierRechercheOuverte(d, p);
       if (p.statut !== 'retenue') throw new ErreurMetier('Seule une proposition « Retenue » peut donner lieu à un placement.');
@@ -478,6 +481,9 @@ export async function annoncerPlacement(propositionId: number, e: EntreePlacemen
     if (codeErreur(err) === '23505') throw new ErreurMetier(MESSAGE_PLACEMENT_EN_COURS);
     throw err;
   }
+  // MVP2-04 RG-16, RG-19 : attestation pré-remplie archivée dans les Documents du Dossier (échec non bloquant).
+  await archiverAttestation(resultat.placementId, { type: 'collaborateur', id: a.id, ip: a.ip ?? null });
+  return resultat;
 }
 
 export interface PreuvePlacement {
@@ -943,6 +949,8 @@ export interface ResultatCloture {
   placementsRetenus: number;
   propositionsRetirees: number;
   avertissements: string[];
+  /** MVP2-04 RG-18 : montant final et facture de solde / avoir émis (rien sans devis accepté). */
+  facturation: ResultatFacturation;
 }
 
 /**
@@ -962,8 +970,7 @@ export async function cloturerRecherche(dossierId: number, motif: string | null,
     const verdict = verifierCloture({ tousPourvus: etat.tousPourvus, echeance: etat.echeance, maintenant, motif: m, annonces: etat.annonces });
     if (!verdict.ok) throw new ErreurCloture(verdict.erreur, verdict.annonces);
 
-    // RG-22 : nombre figé. Le calcul du montant final (commission figée × placements retenus,
-    // ADR 0010) sera déclenché ici par MVP2-05 (non disponible à ce jalon).
+    // RG-22 : nombre figé.
     const retenus = etat.retenus;
     await tx
       .update(schema.dossier)
@@ -1004,9 +1011,14 @@ export async function cloturerRecherche(dossierId: number, motif: string | null,
     }
     // RG-23 : accès client révoqué pour les candidats non placés (sauf remplacements en cours).
     await revoquerAccesNonPlacesHorsRemplacements(tx, dossierId, maintenant);
-    return { placementsRetenus: retenus, propositionsRetirees: retirees.length, avertissements: etat.avertissements };
+    // MVP2-04 RG-18 (ADR 0010) : montant final (commission figée × placements retenus) et facture
+    // de solde ou avoir, dans la même transaction que la clôture.
+    const facturation = await facturerCloture(tx, dossierId, { type: 'collaborateur', id: a.id, ip: a.ip ?? null });
+    return { placementsRetenus: retenus, propositionsRetirees: retirees.length, avertissements: [...etat.avertissements, ...facturation.avertissements], facturation };
   });
   declencherEnvoi();
+  // RG-19 : PDF de la facture archivé après la transaction ; un échec ne remet pas la clôture en cause.
+  if (resultat.facturation.facture) await archiverPdfFactureSansEchec(resultat.facturation.facture.id);
   return resultat;
 }
 
