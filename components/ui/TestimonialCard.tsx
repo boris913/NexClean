@@ -1,4 +1,6 @@
 import { Star } from 'lucide-react';
+import Card from '@/components/ui/Card';
+import { cx } from '@/components/ui/cx';
 import { Testimonial } from '@/content/testimonials-data';
 
 interface TestimonialCardProps {
@@ -6,7 +8,6 @@ interface TestimonialCardProps {
 }
 
 export default function TestimonialCard({ testimonial }: TestimonialCardProps) {
-  // Generate initials avatar
   const initials = testimonial.name
     .split(' ')
     .map((n) => n[0])
@@ -15,39 +16,32 @@ export default function TestimonialCard({ testimonial }: TestimonialCardProps) {
     .slice(0, 2);
 
   return (
-    <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-card hover:shadow-card-hover transition-all duration-300">
-      {/* Stars */}
-      <div className="flex gap-0.5 mb-4">
+    <Card padding="sm" className="h-full">
+      <div className="mb-4 flex gap-0.5" role="img" aria-label={`Note : ${testimonial.rating} sur 5`}>
         {Array.from({ length: 5 }).map((_, i) => (
           <Star
             key={i}
-            className={`w-4 h-4 ${i < testimonial.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}`}
+            className={cx('h-4 w-4', i < testimonial.rating ? 'fill-sun text-sun' : 'fill-ink-200 text-ink-200')}
             strokeWidth={0}
+            aria-hidden="true"
           />
         ))}
       </div>
 
-      {/* Quote */}
-      <blockquote className="text-sm text-slate-700 italic leading-relaxed mb-5">
-        &ldquo;{testimonial.comment}&rdquo;
-      </blockquote>
+      <blockquote className="mb-5 text-small italic text-ink-700">&ldquo;{testimonial.comment}&rdquo;</blockquote>
 
-      {/* Author */}
-      <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+      <div className="mt-auto flex items-center justify-between border-t border-ink-100 pt-4">
         <div className="flex items-center gap-3">
-          {/* Avatar */}
-          <div className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center text-primary text-xs font-bold">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-light text-xs font-bold text-primary">
             {initials}
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-900">{testimonial.name}</p>
+            <p className="text-small font-semibold text-ink-900">{testimonial.name}</p>
             <p className="text-xs text-muted">{testimonial.location}</p>
           </div>
         </div>
-        <span className="text-xs text-muted text-right leading-tight max-w-[100px]">
-          {testimonial.service}
-        </span>
+        <span className="max-w-[100px] text-right text-xs leading-tight text-muted">{testimonial.service}</span>
       </div>
-    </div>
+    </Card>
   );
 }

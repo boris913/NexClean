@@ -1,27 +1,24 @@
-'use client';
-
 import Link from 'next/link';
 import Image from 'next/image';
-import { BlogPost } from '@/types/blog';
 import { ChevronLeft } from 'lucide-react';
 import Breadcrumb from '@/components/ui/Breadcrumb';
+import Button from '@/components/ui/Button';
+import Section from '@/components/ui/Section';
+import { SITE_URL } from '@/lib/seo';
+import { BlogPost } from '@/types/blog';
 
 interface BlogPostClientProps {
   post: BlogPost;
 }
 
-export default function BlogPostClient({ post }: BlogPostClientProps) {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
+// Fuseau fixe : la date de l'article ne dépend pas du serveur.
+const formatDate = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeZone: 'UTC' });
 
-  const canonicalUrl = `https://nexclean.xyz/blog/${post.slug}`;
-  const coverImage = post.coverImage || '/og-image.png';
+/** Les articles Markdown répètent leur titre en `# …` : un seul h1 par page, celui de l'en-tête. */
+const sansTitreInitial = (html: string) => html.replace(/^\s*<h1>[\s\S]*?<\/h1>\s*/, '');
+
+export default function BlogPostClient({ post }: BlogPostClientProps) {
+  const canonicalUrl = `${SITE_URL}/blog/${post.slug}`;
 
   const breadcrumbItems = [
     { name: 'Accueil', href: '/' },
@@ -29,117 +26,77 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
     { name: post.title },
   ];
 
-  return (
-    <div className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-      {/* Fil d'Ariane avec taille réduite sur mobile */}
-      <div className="text-xs sm:text-sm">
-        <Breadcrumb items={breadcrumbItems} />
-      </div>
+  const partages = [
+    { label: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(canonicalUrl)}` },
+    {
+      label: 'Twitter',
+      href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(canonicalUrl)}`,
+    },
+    { label: 'LinkedIn', href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(canonicalUrl)}` },
+  ];
 
-      {/* Retour */}
+  return (
+    <Section spacing="sm" container="narrow">
+      <Breadcrumb items={breadcrumbItems} className="mb-3" />
+
       <Link
         href="/blog"
-        className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-primary mb-8 transition-colors"
+        className="mb-6 inline-flex min-h-tap items-center gap-2 text-small text-ink-600 transition-colors hover:text-primary"
       >
-        <ChevronLeft className="w-4 h-4" />
+        <ChevronLeft className="h-4 w-4" aria-hidden="true" />
         Retour au blog
       </Link>
 
-      <article className="bg-white rounded-2xl border border-slate-100 shadow-card p-4 md:p-10">
-        {/* Image de couverture */}
-        {coverImage && coverImage !== '/og-image.png' && (
-          <div className="aspect-video bg-slate-100 rounded-xl overflow-hidden mb-8 relative">
-            <Image
-              src={coverImage}
-              alt={post.title}
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        )}
-
-        {/* En-tête */}
-        <header className="mb-6 md:mb-8">
-          <h1 className="font-display font-extrabold text-3xl md:text-4xl lg:text-5xl text-ink-900 mb-3 md:mb-4 leading-tight">
-            {post.title}
-          </h1>
-          <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-slate-500 border-b border-slate-100 pb-3 md:pb-4">
-            <time dateTime={post.date}>{formatDate(post.date)}</time>
-            <span>•</span>
+      <article>
+        <header className="mb-8">
+          <h1 className="mb-4 font-display text-h2 text-ink-900">{post.title}</h1>
+          <div className="flex flex-wrap items-center gap-2 border-b border-ink-100 pb-4 text-small text-muted">
+            <time dateTime={post.date}>{formatDate.format(new Date(post.date))}</time>
+            <span aria-hidden="true">•</span>
             <span>Par {post.author}</span>
-            {post.tags && post.tags.length > 0 && (
-              <>
-                <span>•</span>
-                <div className="flex flex-wrap gap-1">
-                  {post.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="bg-slate-100 text-slate-700 px-2 py-1 rounded-full text-xs"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </>
-            )}
+            {post.tags?.map((tag) => (
+              <span key={tag} className="rounded-full bg-ink-100 px-2 py-1 text-xs text-ink-700">
+                {tag}
+              </span>
+            ))}
           </div>
         </header>
 
-        {/* Contenu HTML typographié */}
+        {post.coverImage && (
+          <div className="relative mb-8 aspect-video overflow-hidden rounded-card bg-ink-100">
+            <Image src={post.coverImage} alt={post.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 768px" priority />
+          </div>
+        )}
+
         <div
-          className="prose prose-base md:prose-lg max-w-none 
-            prose-headings:font-display prose-headings:text-slate-900 
-            prose-headings:text-2xl md:prose-headings:text-3xl 
-            prose-h2:text-xl md:prose-h2:text-2xl 
-            prose-h3:text-lg md:prose-h3:text-xl 
-            prose-p:text-slate-700 prose-a:text-primary 
-            prose-a:no-underline hover:prose-a:underline 
-            prose-strong:text-slate-900 prose-code:text-primary 
-            prose-code:bg-primary-light prose-code:px-1 prose-code:py-0.5 
-            prose-code:rounded prose-pre:bg-slate-900 prose-pre:text-slate-100 
-            prose-img:rounded-xl prose-img:shadow-lg 
-            prose-blockquote:border-l-4 prose-blockquote:border-primary 
-            prose-blockquote:pl-4 prose-blockquote:italic 
+          className="prose prose-base max-w-none md:prose-lg
+            prose-headings:font-display prose-headings:text-ink-900
+            prose-h2:text-xl md:prose-h2:text-2xl
+            prose-h3:text-lg md:prose-h3:text-xl
+            prose-p:text-ink-700 prose-li:text-ink-700 prose-a:text-primary
+            prose-a:no-underline hover:prose-a:underline
+            prose-strong:text-ink-900 prose-code:text-primary
+            prose-code:rounded prose-code:bg-primary-light prose-code:px-1 prose-code:py-0.5
+            prose-pre:bg-ink-900 prose-pre:text-ink-100
+            prose-img:rounded-2xl prose-img:shadow-card
+            prose-blockquote:border-l-4 prose-blockquote:border-primary
+            prose-blockquote:pl-4 prose-blockquote:italic
             prose-ul:list-disc prose-ol:list-decimal
-            [&_table]:block [&_table]:overflow-x-auto [&_table]:whitespace-nowrap 
-            [&_table]:w-full"
-          dangerouslySetInnerHTML={{ __html: post.content }}
+            [&_table]:block [&_table]:w-full [&_table]:overflow-x-auto [&_table]:whitespace-nowrap"
+          dangerouslySetInnerHTML={{ __html: sansTitreInitial(post.content) }}
         />
 
-        {/* Partage */}
-        <div className="mt-10 md:mt-12 pt-6 md:pt-8 border-t border-slate-100">
-          <h3 className="text-base md:text-lg font-semibold text-slate-900 mb-3 md:mb-4">
-            Partager cet article
-          </h3>
+        <div className="mt-10 border-t border-ink-100 pt-6">
+          <h2 className="mb-3 text-h3 text-ink-900">Partager cet article</h2>
           <div className="flex flex-wrap gap-3">
-            <a
-              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(canonicalUrl)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-[#1877F2] text-white px-5 py-3 md:px-4 md:py-2 rounded-lg text-sm font-medium hover:bg-[#0e5fc7] transition-colors min-h-[44px] flex items-center justify-center"
-            >
-              Facebook
-            </a>
-            <a
-              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(canonicalUrl)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-[#1DA1F2] text-white px-5 py-3 md:px-4 md:py-2 rounded-lg text-sm font-medium hover:bg-[#1981c9] transition-colors min-h-[44px] flex items-center justify-center"
-            >
-              Twitter
-            </a>
-            <a
-              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(canonicalUrl)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-[#0A66C2] text-white px-5 py-3 md:px-4 md:py-2 rounded-lg text-sm font-medium hover:bg-[#004182] transition-colors min-h-[44px] flex items-center justify-center"
-            >
-              LinkedIn
-            </a>
+            {partages.map((p) => (
+              <Button key={p.label} href={p.href} variant="outline" size="sm">
+                {p.label}
+              </Button>
+            ))}
           </div>
         </div>
       </article>
-    </div>
+    </Section>
   );
 }
