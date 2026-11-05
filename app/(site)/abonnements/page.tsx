@@ -37,6 +37,7 @@ export default function AbonnementsPage() {
   return (
     <>
       <PageHero
+        illustration="proprete"
         label="Abonnements"
         pillar="proprete"
         title="L'entretien régulier, planifié pour vous"

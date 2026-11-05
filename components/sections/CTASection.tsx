@@ -30,11 +30,13 @@ export default function CTASection({
     <Section spacing="sm">
       <Reveal
         from="scale"
-        className="surface-dark rounded-4xl bg-navy px-6 py-12 text-center text-white sm:px-12 sm:py-16"
+        className="surface-dark rounded-4xl bg-navy px-6 py-10 text-white sm:px-12 sm:py-14 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-12"
       >
-        <h2 className="mx-auto max-w-2xl font-display text-h2 text-white">{title}</h2>
-        <p className="mx-auto mt-4 max-w-xl text-lead text-brand-100">{subtitle}</p>
-        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
+        <div>
+          <h2 className="max-w-2xl text-h2 text-white">{title}</h2>
+          <p className="mt-4 max-w-xl text-lead text-brand-100">{subtitle}</p>
+        </div>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap lg:mt-0 lg:max-w-md lg:flex-col">
           <Button href={formHref} size="lg" icon={FileText}>
             {formLabel}
           </Button>

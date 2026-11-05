@@ -29,9 +29,9 @@ export default function PhotoTraitee({ src, alt, traitement = 'duotone', legende
         fill
         sizes={sizes}
         priority={priority}
-        className={cx('object-cover', cadrage, duotone ? 'grayscale contrast-125' : 'saturate-[0.85]')}
+        className={cx('object-cover', cadrage, duotone ? 'grayscale brightness-125 contrast-110' : 'saturate-[0.85]')}
       />
-      {duotone && <div aria-hidden="true" className="absolute inset-0 bg-brand-600 mix-blend-multiply" />}
+      {duotone && <div aria-hidden="true" className="absolute inset-0 bg-brand-600 opacity-70 mix-blend-multiply" />}
       <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-navy/70 via-navy/0 to-navy/0" />
       {legende && (
         <figcaption className="absolute bottom-3 left-4 right-4 font-mono text-eyebrow uppercase text-white">{legende}</figcaption>

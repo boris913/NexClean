@@ -63,6 +63,11 @@
     @apply font-display tracking-tight;
   }
 
+  /* IBM Plex Mono n'est chargé qu'en 500 : pas de faux gras quand une taille impose 600. */
+  .font-mono {
+    font-synthesis-weight: none;
+  }
+
   ::selection {
     @apply bg-lime-200 text-ink-900;
   }

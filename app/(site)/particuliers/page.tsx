@@ -41,6 +41,7 @@ export default function ParticuliersPage() {
   return (
     <>
       <PageHero
+        illustration="maison"
         label="Particuliers"
         title="Votre maison entretenue, votre personnel bien choisi"
         subtitle="Ménage, grand nettoyage, vitres, jardin, et recrutement de personnel de maison : une seule demande, un seul suivi."
