@@ -32,7 +32,7 @@ const fontDisplay = localFont({
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#2C4B1A',
+  themeColor: '#0A1626',
 };
 
 export async function generateMetadata(): Promise<Metadata> {

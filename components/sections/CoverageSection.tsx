@@ -49,7 +49,7 @@ export default async function CoverageSection({ eyebrow = 'Zone de couverture', 
           </div>
         ))}
 
-        <div className="rounded-card bg-forest p-6 text-center text-white sm:p-7">
+        <div className="rounded-card bg-navy p-6 text-center text-white sm:p-7">
           <p className="mb-1 font-semibold">Votre quartier n&apos;est pas listé ?</p>
           <p className="text-small text-brand-100">
             Contactez-nous : nous étudions toutes les demandes. Des frais de déplacement peuvent s&apos;appliquer.

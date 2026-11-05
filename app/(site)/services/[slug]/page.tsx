@@ -75,7 +75,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
               ))}
             </ul>
           </Card>
-          <div className="surface-dark rounded-card bg-forest p-6 text-white sm:p-7">
+          <div className="surface-dark rounded-card bg-navy p-6 text-white sm:p-7">
             <h2 className="mb-2 font-display text-h3 text-white">Tarif</h2>
             <p className="mb-3 text-2xl font-bold">{service.priceRange}</p>
             <p className="mb-4 text-small text-brand-100">

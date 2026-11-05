@@ -28,7 +28,7 @@ export default function PageHero({ label, title, subtitle, breadcrumb, children,
     <section
       className={cx(
         'relative overflow-hidden',
-        dark ? 'surface-dark bg-forest text-white' : 'bg-gradient-to-b from-brand-50 to-white border-b border-ink-100',
+        dark ? 'surface-dark bg-navy text-white' : 'bg-gradient-to-b from-brand-50 to-white border-b border-ink-100',
       )}
     >
       {decor && <PropreteDecor variant="blobs" tone={tone} />}

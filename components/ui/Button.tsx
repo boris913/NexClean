@@ -6,10 +6,11 @@ import { cx } from '@/components/ui/cx';
 
 /**
  * Variantes :
- * - `primary`   : lime + texte encre (9,04:1) — action principale.
- * - `secondary` : vert profond + texte blanc (9,87:1) — action forte secondaire.
- * - `outline`   : contour, texte vert profond — action tertiaire sur fond clair.
- * - `ghost`     : texte seul (brand-700, 5,94:1).
+ * - `primary`   : action principale. Fond clair : bleu + texte blanc (5,81:1) ;
+ *                 dans une `.surface-dark` : lime + texte encre (9,26:1).
+ * - `secondary` : bleu nuit + texte blanc (18,17:1) — action forte secondaire.
+ * - `outline`   : contour, texte bleu nuit — action tertiaire sur fond clair.
+ * - `ghost`     : texte seul (primary, 5,81:1).
  * - `whatsapp`  : canal secondaire, fond blanc + icône vert WhatsApp foncé (7,67:1).
  * - `inverse`   : contour blanc sur fond sombre (Section `dark`, PageHero `dark`).
  */
@@ -63,12 +64,12 @@ const base =
   'disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50';
 
 export const buttonVariantClasses: Record<ButtonVariant, string> = {
+  // Couleurs lues dans des variables CSS (globals.css) : bleu d'action sur fond clair,
+  // lime + encre dans une `.surface-dark`. Un seul bouton `primary` par bloc.
   primary:
-    'bg-cta text-ink-900 shadow-btn hover:bg-cta-hover hover:shadow-btn-hover active:bg-brand-500 motion-safe:hover:-translate-y-0.5',
-  secondary:
-    'bg-forest text-white shadow-btn hover:bg-forest-deep active:bg-forest-deep motion-safe:hover:-translate-y-0.5',
-  outline:
-    'border border-ink-300 bg-white text-forest hover:border-forest hover:bg-brand-50 active:bg-brand-100',
+    'bg-[color:var(--ds-btn-bg)] text-[color:var(--ds-btn-fg)] shadow-btn hover:bg-[color:var(--ds-btn-bg-hover)] active:bg-[color:var(--ds-btn-bg-hover)]',
+  secondary: 'bg-navy text-white shadow-btn hover:bg-navy-light active:bg-navy-light',
+  outline: 'border border-ink-300 bg-white text-navy hover:border-primary hover:bg-brand-50 active:bg-brand-100',
   ghost: 'text-primary hover:text-primary-dark hover:bg-brand-50 active:bg-brand-100',
   // Canal secondaire : fond clair, icône aux couleurs de WhatsApp. Quand WhatsApp est l'action
   // principale d'un bloc, utiliser `primary` + `whatsappIcon` (un seul bouton plein par bloc).

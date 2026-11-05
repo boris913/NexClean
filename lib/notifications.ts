@@ -53,7 +53,7 @@ function contenuEmail(n: { titre: string; texte: string; lien: string | null }) 
   const text = [n.texte, url ? `\nOuvrir dans le Back-Office (connexion requise) : ${url}` : '', '\nNEXCLEAN Back-Office'].join('\n');
   const html = `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.5;color:#1f2937;max-width:560px">
 <p style="white-space:pre-line">${echapperHtml(n.texte)}</p>
-${url ? `<p><a href="${echapperHtml(url)}" style="display:inline-block;background:#3d7a1e;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Ouvrir dans le Back-Office</a></p><p style="color:#6b7280;font-size:13px">Connexion requise.</p>` : ''}
+${url ? `<p><a href="${echapperHtml(url)}" style="display:inline-block;background:#1F5FD1;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Ouvrir dans le Back-Office</a></p><p style="color:#6b7280;font-size:13px">Connexion requise.</p>` : ''}
 <p style="color:#6b7280">NEXCLEAN Back-Office</p></div>`;
   return { subject: `[NEXCLEAN] ${n.titre}`, text, html };
 }

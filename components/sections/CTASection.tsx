@@ -30,7 +30,7 @@ export default function CTASection({
     <Section spacing="sm">
       <Reveal
         from="scale"
-        className="surface-dark rounded-4xl bg-forest px-6 py-12 text-center text-white sm:px-12 sm:py-16"
+        className="surface-dark rounded-4xl bg-navy px-6 py-12 text-center text-white sm:px-12 sm:py-16"
       >
         <h2 className="mx-auto max-w-2xl font-display text-h2 text-white">{title}</h2>
         <p className="mx-auto mt-4 max-w-xl text-lead text-brand-100">{subtitle}</p>
