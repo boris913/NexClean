@@ -243,7 +243,9 @@ export function ActionsProposition({
                 <input id={`motif-${propositionId}`} name="motif" required={vers !== 'retenue'} maxLength={500} className={classeChamp} />
               </div>
             )}
-            <button type="submit" disabled={envoi || !vers} className={classeBouton('principal', true)}>Valider</button>
+            <button type="submit" disabled={envoi || !vers} className={classeBouton('principal', true)}>
+              {vers ? `Passer à « ${transitions.find((t) => t.code === vers)?.libelle ?? ''} »` : 'Changer le statut'}
+            </button>
           </form>
         </Volet>
       )}

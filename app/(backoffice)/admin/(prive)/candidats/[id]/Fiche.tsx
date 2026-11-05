@@ -50,7 +50,9 @@ export function ChangerStatut({ candidatId, statut, options }: { candidatId: num
           <label htmlFor="statut-motif" className={classeLibelle}>Motif (facultatif)</label>
           <input id="statut-motif" maxLength={500} value={motif} onChange={(e) => setMotif(e.target.value)} className={classeChamp} />
         </div>
-        <button type="submit" disabled={envoi || !vers} className={classeBouton('principal', true)}>Valider</button>
+        <button type="submit" disabled={envoi || !vers} className={classeBouton('principal', true)}>
+          {vers ? `Passer à « ${options.find((o) => o.code === vers)?.libelle ?? ''} »` : 'Changer le statut'}
+        </button>
       </form>
     </Carte>
   );

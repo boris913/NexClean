@@ -11,13 +11,13 @@ import BoutonDeconnexion from './BoutonDeconnexion';
 import { compterNonLues } from '@/lib/notifications';
 import { peutAccederVivier } from '@/lib/candidats/acces';
 import { LiensNav, MenuMobile, type GroupeNav, type LienNav } from '@/components/backoffice/Navigation';
+import { RechercheRapide } from '@/components/backoffice/RechercheRapide';
 
 function Marque() {
   return (
     <Link href="/admin" className="flex items-center gap-2.5 rounded-lg">
-      <span aria-hidden className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary font-display text-sm font-bold text-white shadow-sm">
-        N
-      </span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/images/brand/logo-symbole.svg" alt="" width={32} height={32} className="h-8 w-8 shrink-0" />
       <span className="leading-tight">
         <span className="block font-display text-[15px] font-semibold tracking-tight text-ink-900">NEXCLEAN</span>
         <span className="block text-[11px] font-medium text-ink-500">Back-Office</span>
@@ -102,6 +102,9 @@ export default async function LayoutPrive({ children }: { children: React.ReactN
         <div className="flex h-16 shrink-0 items-center px-5">
           <Marque />
         </div>
+        <div className="shrink-0 px-3 pb-1">
+          <RechercheRapide groupes={groupes} />
+        </div>
         <nav aria-label="Navigation du Back-Office" className="flex-1 overflow-y-auto px-3 py-3">
           <LiensNav groupes={groupes} />
         </nav>
@@ -115,16 +118,19 @@ export default async function LayoutPrive({ children }: { children: React.ReactN
             <MenuMobile groupes={groupes} entete={<Marque />} pied={compte} />
             <Marque />
           </div>
-          <Link
-            href="/admin/notifications"
-            aria-label={`Notifications${nonLues ? ` : ${nonLues} non lue${nonLues > 1 ? 's' : ''}` : ''}`}
-            className="relative inline-flex h-11 w-11 items-center justify-center rounded-lg text-ink-700 hover:bg-ink-100"
-          >
-            <Bell aria-hidden className="h-5 w-5" />
-            {nonLues > 0 && (
-              <span className="absolute right-1 top-1 min-w-5 rounded-full bg-red-600 px-1 text-center text-[11px] font-bold leading-5 text-white ring-2 ring-white">{nonLues > 99 ? '99+' : nonLues}</span>
-            )}
-          </Link>
+          <div className="flex items-center">
+            <RechercheRapide groupes={groupes} variante="icone" />
+            <Link
+              href="/admin/notifications"
+              aria-label={`Notifications${nonLues ? ` : ${nonLues} non lue${nonLues > 1 ? 's' : ''}` : ''}`}
+              className="relative inline-flex h-11 w-11 items-center justify-center rounded-lg text-ink-700 hover:bg-ink-100"
+            >
+              <Bell aria-hidden className="h-5 w-5" />
+              {nonLues > 0 && (
+                <span className="absolute right-1 top-1 min-w-5 rounded-full bg-red-600 px-1 text-center text-[11px] font-bold leading-5 text-white ring-2 ring-white">{nonLues > 99 ? '99+' : nonLues}</span>
+              )}
+            </Link>
+          </div>
         </div>
       </header>
 

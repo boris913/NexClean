@@ -213,7 +213,7 @@ test.describe('Back-Office', () => {
     await expect(bo.locator('main')).toContainText('Attribuée');
 
     await bo.selectOption('#vers', { label: 'En qualification' });
-    await bo.getByRole('button', { name: 'Valider' }).click();
+    await bo.getByRole('button', { name: 'Passer à « En qualification »' }).click();
     await expect(bo.locator('main')).toContainText('En qualification');
     await sansDefilementHorizontal(bo);
 

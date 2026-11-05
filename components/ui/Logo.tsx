@@ -6,7 +6,7 @@ const VARIANTS = {
   mono: '/images/brand/logo-horizontal-mono.svg',
 };
 
-/** Logo officiel NEXCLEAN SARL (fichiers générés depuis Figma). */
+/** Logo officiel NEXCLEAN SARL (version « Épuré », 2026 ; fichiers dans public/images/brand). */
 export default function Logo({
   variant = 'couleur',
   height = 40,
@@ -22,7 +22,7 @@ export default function Logo({
     <Image
       src={VARIANTS[variant]}
       alt="NEXCLEAN SARL"
-      width={Math.round((height * 449) / 128)}
+      width={Math.round((height * 454) / 96)}
       height={height}
       priority={priority}
       unoptimized
