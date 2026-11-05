@@ -53,6 +53,7 @@ export interface EnTeteSection {
 export const HERO = {
   h1: BRAND.promesse,
   sousTitre: (villes: string) => BRAND.sousTitre(villes),
+  photo: { src: '/images/team/equipe-nexclean.jpg', alt: "L'équipe NEXCLEAN" },
   portes: [
     {
       titre: "J'ai besoin d'un service",
@@ -188,10 +189,12 @@ export const FOCUS_RECRUTEMENT = {
 };
 
 // ─── 5. Focus propreté (condensé) ────────────────────────────
-export const FOCUS_PROPRETE: EnTeteSection & { cta: Lien; lienSecondaire: Lien } = {
+export const FOCUS_PROPRETE: EnTeteSection & { abonnementsTitre: string; abonnementsNote: string; cta: Lien; lienSecondaire: Lien } = {
   surtitre: 'Propreté & hygiène',
   titre: 'Des interventions préparées et contrôlées',
   sousTitre: "Avant / après de nos interventions et formules d'entretien régulier.",
+  abonnementsTitre: "Formules d'entretien régulier",
+  abonnementsNote: 'Tarifs indicatifs : le prix final dépend de la surface, de l’état et de la fréquence.',
   cta: { label: 'Voir les réalisations', href: '/realisations' },
   lienSecondaire: { label: 'Découvrir les abonnements', href: '/abonnements' },
 };
@@ -214,10 +217,12 @@ export const SUIVI_EN_LIGNE = {
 };
 
 // ─── 7. Emploi / offres récentes ─────────────────────────────
-export const EMPLOI_EN_TETE: EnTeteSection & { cta: Lien; lienSecondaire: Lien } = {
+export const EMPLOI_EN_TETE: EnTeteSection & { voirOffre: string; aucuneOffre: string; cta: Lien; lienSecondaire: Lien } = {
   surtitre: 'Emploi',
   titre: 'Vous cherchez un emploi ?',
   sousTitre: 'Consultez les offres en cours et créez votre profil candidat. C’est gratuit.',
+  voirOffre: 'Voir l’offre et postuler',
+  aucuneOffre: 'Aucune offre ouverte pour le moment : créez votre profil candidat pour être contacté(e) dès qu’une offre vous correspond.',
   cta: { label: 'Voir toutes les offres', href: '/recrutement' },
   lienSecondaire: { label: 'Créer mon profil', href: '/candidat/inscription' },
 };
@@ -227,6 +232,14 @@ export const TEMOIGNAGES_EN_TETE: EnTeteSection = {
   surtitre: 'Avis clients',
   titre: 'Ils nous ont fait confiance',
   sousTitre: 'Seuls les avis vérifiés et autorisés par nos clients sont publiés.',
+};
+
+/** Affiché seul tant qu'aucun avis n'est vérifié (docs/contenu.md, accueil). */
+export const AVIS_ENCART = {
+  titre: 'Vous avez fait appel à NEXCLEAN ?',
+  texte: 'Votre avis nous aide à progresser et rassure nos futurs clients.',
+  cta: 'Laisser un avis',
+  whatsappMessage: 'Bonjour NEXCLEAN, je souhaite laisser un avis sur votre prestation :',
 };
 
 export const ZONES_EN_TETE = {
