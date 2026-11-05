@@ -68,7 +68,7 @@ export default function ContactSection() {
               </div>
             </Card>
 
-            <div className="surface-dark rounded-card bg-forest p-5 text-white">
+            <div className="surface-dark rounded-card bg-navy p-5 text-white">
               <p className="mb-3 flex items-center gap-2 text-small font-semibold">
                 <Clock className="h-4 w-4 text-brand-300" aria-hidden="true" />
                 Horaires d&apos;intervention

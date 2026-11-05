@@ -6,11 +6,12 @@ import { cx } from '@/components/ui/cx';
 
 /**
  * Variantes :
- * - `primary`   : lime + texte encre (9,04:1) — action principale.
- * - `secondary` : vert profond + texte blanc (9,87:1) — action forte secondaire.
- * - `outline`   : contour, texte vert profond — action tertiaire sur fond clair.
- * - `ghost`     : texte seul (brand-700, 5,94:1).
- * - `whatsapp`  : vert WhatsApp + texte encre (8,94:1).
+ * - `primary`   : action principale. Fond clair : bleu + texte blanc (5,81:1) ;
+ *                 dans une `.surface-dark` : lime + texte encre (9,26:1).
+ * - `secondary` : bleu nuit + texte blanc (18,17:1) — action forte secondaire.
+ * - `outline`   : contour, texte bleu nuit — action tertiaire sur fond clair.
+ * - `ghost`     : texte seul (primary, 5,81:1).
+ * - `whatsapp`  : canal secondaire, fond blanc + icône vert WhatsApp foncé (7,67:1).
  * - `inverse`   : contour blanc sur fond sombre (Section `dark`, PageHero `dark`).
  */
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'whatsapp' | 'inverse';
@@ -57,21 +58,23 @@ export function resolveButtonVariant(variant: ButtonVariant | LegacyButtonVarian
 }
 
 const base =
-  'group/btn relative inline-flex items-center justify-center font-semibold rounded-full select-none ' +
+  'group/btn relative inline-flex items-center justify-center font-semibold rounded-lg select-none ' +
   'transition-[background-color,border-color,color,box-shadow,transform] duration-300 ease-out-expo ' +
   'motion-safe:active:scale-[0.97] ' +
   'disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50';
 
 export const buttonVariantClasses: Record<ButtonVariant, string> = {
+  // Couleurs lues dans des variables CSS (globals.css) : bleu d'action sur fond clair,
+  // lime + encre dans une `.surface-dark`. Un seul bouton `primary` par bloc.
   primary:
-    'bg-cta text-ink-900 shadow-btn hover:bg-cta-hover hover:shadow-btn-hover active:bg-brand-500 motion-safe:hover:-translate-y-0.5',
-  secondary:
-    'bg-forest text-white shadow-btn hover:bg-forest-deep active:bg-forest-deep motion-safe:hover:-translate-y-0.5',
-  outline:
-    'border border-ink-300 bg-white text-forest hover:border-forest hover:bg-brand-50 active:bg-brand-100',
+    'bg-[color:var(--ds-btn-bg)] text-[color:var(--ds-btn-fg)] shadow-btn hover:bg-[color:var(--ds-btn-bg-hover)] active:bg-[color:var(--ds-btn-bg-hover)]',
+  secondary: 'bg-navy text-white shadow-btn hover:bg-navy-light active:bg-navy-light',
+  outline: 'border border-ink-300 bg-white text-navy hover:border-primary hover:bg-brand-50 active:bg-brand-100',
   ghost: 'text-primary hover:text-primary-dark hover:bg-brand-50 active:bg-brand-100',
+  // Canal secondaire : fond clair, icône aux couleurs de WhatsApp. Quand WhatsApp est l'action
+  // principale d'un bloc, utiliser `primary` + `whatsappIcon` (un seul bouton plein par bloc).
   whatsapp:
-    'bg-whatsapp text-whatsapp-ink shadow-btn hover:bg-whatsapp-hover hover:shadow-whatsapp active:bg-whatsapp-hover motion-safe:hover:-translate-y-0.5',
+    'border border-ink-200 bg-white text-ink-900 shadow-btn hover:border-whatsapp-dark hover:bg-ink-50 active:bg-ink-100',
   inverse: 'border border-white/60 text-white hover:bg-white/10 hover:border-white active:bg-white/20',
 };
 
@@ -127,7 +130,9 @@ export default function Button({
         <Loader2 className={cx(iconClass, 'animate-spin')} aria-hidden="true" />
       ) : (
         <>
-          {whatsappIcon && <WhatsAppIcon className={iconClass} />}
+          {whatsappIcon && (
+            <WhatsAppIcon className={cx(iconClass, resolveButtonVariant(variant) === 'whatsapp' && 'text-whatsapp-dark')} />
+          )}
           {Icon && iconPosition === 'left' && <Icon className={iconClass} aria-hidden="true" />}
         </>
       )}

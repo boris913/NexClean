@@ -41,12 +41,13 @@ export default function ParticuliersPage() {
   return (
     <>
       <PageHero
+        illustration="maison"
         label="Particuliers"
         title="Votre maison entretenue, votre personnel bien choisi"
         subtitle="Ménage, grand nettoyage, vitres, jardin, et recrutement de personnel de maison : une seule demande, un seul suivi."
         breadcrumb={[{ name: 'Particuliers' }]}
       >
-        <Button href={getWhatsAppLink(QUICK_QUOTE_MSG)} variant="whatsapp" size="lg" whatsappIcon>
+        <Button href={getWhatsAppLink(QUICK_QUOTE_MSG)} size="lg" whatsappIcon>
           Demander un devis
         </Button>
         <Button href={RECRUTEMENT_HREF} variant="outline" size="lg">

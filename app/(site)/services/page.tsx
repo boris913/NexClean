@@ -24,6 +24,7 @@ export default async function ServicesPage() {
   return (
     <>
       <PageHero
+        illustration="proprete"
         label={PILLARS.proprete.label}
         pillar="proprete"
         decor

@@ -33,6 +33,7 @@ export default function RecrutementPage() {
   return (
     <>
       <PageHero
+        illustration="candidat"
         label="Emploi"
         pillar="emploi"
         title="Offres d'emploi et candidature"

@@ -561,7 +561,7 @@ function emailDevis(p: { contact: string; libelle: string; montant: string; acom
   const html = `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.5;color:#1f2937;max-width:560px">
 <p>Bonjour ${echapperHtml(p.contact)},</p>
 <p>Veuillez trouver ci-joint notre ${echapperHtml(p.libelle)}.<br>Montant : <strong>${echapperHtml(p.montant)}</strong> — acompte à l’acceptation : <strong>${echapperHtml(p.acompte)}</strong>.<br>Ce devis est valable jusqu’au ${echapperHtml(p.validite)}.</p>
-<p><a href="${echapperHtml(p.lienSuivi)}" style="display:inline-block;background:#3d7a1e;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Consulter et accepter le devis</a></p>
+<p><a href="${echapperHtml(p.lienSuivi)}" style="display:inline-block;background:#1F5FD1;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Consulter et accepter le devis</a></p>
 <p style="color:#6b7280">${echapperHtml(p.referent)}, NEXCLEAN</p></div>`;
   return { text: lignes.join('\n'), html };
 }

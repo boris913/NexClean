@@ -78,7 +78,7 @@ export default function SubscriptionsSection({
               <div
                 className={
                   featured
-                    ? 'surface-dark relative flex h-full flex-col rounded-card bg-forest p-6 text-white shadow-card-hover sm:p-7'
+                    ? 'surface-dark relative flex h-full flex-col rounded-card bg-navy p-6 text-white shadow-card-hover sm:p-7'
                     : cardClasses({ className: 'h-full' })
                 }
               >

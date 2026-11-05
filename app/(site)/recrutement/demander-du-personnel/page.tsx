@@ -35,6 +35,7 @@ export default async function PageDemanderPersonnel() {
     <>
       <JsonLd data={recrutementServiceSchema(couverture.villes)} />
       <PageHero
+        illustration="equipe"
         label="Recrutement & placement"
         pillar="recrutement"
         title="Demander du personnel"

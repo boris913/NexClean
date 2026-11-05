@@ -91,6 +91,18 @@ export default function FormulairePersonnel({ listes, commission, metiers }: { l
     } catch {
       /* brouillon illisible : on repart de zéro */
     }
+    // Venue du simulateur de l'accueil (?poste=&personnes=) : préremplit la première ligne si elle est vierge.
+    const q = new URLSearchParams(window.location.search);
+    const poste = q.get('poste')?.trim().slice(0, 120) ?? '';
+    const nombre = Number(q.get('personnes'));
+    if (poste || (Number.isInteger(nombre) && nombre >= 1)) {
+      setB((prec) => {
+        const [premiere, ...autres] = prec.lignes;
+        if (!premiere || premiere.intitule) return prec;
+        const n = Number.isInteger(nombre) && nombre >= 1 ? String(Math.min(nombre, MAX_PERSONNES_PAR_LIGNE)) : premiere.nombre;
+        return { ...prec, lignes: [{ ...premiere, intitule: poste, nombre: n }, ...autres] };
+      });
+    }
     setCharge(true);
   }, []);
   useEffect(() => {
@@ -222,7 +234,7 @@ export default function FormulairePersonnel({ listes, commission, metiers }: { l
         <p className="text-sm text-muted">{MENTION_ESTIMATION}</p>
         <p className="mt-4 text-ink-700">Un conseiller vous contacte sous 24 h ouvrées.</p>
         <div className="mt-6 space-y-3">
-          <Button href={getWhatsAppLink(recapitulatif(false, c))} variant="whatsapp" whatsappIcon fullWidth>
+          <Button href={getWhatsAppLink(recapitulatif(false, c))} whatsappIcon fullWidth>
             Recevoir le récapitulatif sur WhatsApp
           </Button>
           <Button

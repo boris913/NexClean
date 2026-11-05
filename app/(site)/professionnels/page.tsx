@@ -43,6 +43,7 @@ export default function ProfessionnelsPage() {
   return (
     <>
       <PageHero
+        illustration="immeuble"
         label="Professionnels"
         title="Vos locaux entretenus, vos postes pourvus"
         subtitle="Nous étudions votre site, vos horaires et vos besoins en personnel avant de proposer un devis et un planning adaptés."

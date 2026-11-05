@@ -15,7 +15,7 @@ const lien = 'inline-flex min-h-11 items-center gap-2 text-primary font-semibold
 
 const tonsEtat: Record<DevisClient['etat'], string> = {
   a_accepter: 'bg-cta/30 text-ink-900',
-  accepte: 'bg-brand-100 text-brand-900',
+  accepte: 'bg-success-soft text-success',
   refuse: 'bg-ink-100 text-ink-700',
   expire: 'bg-ink-100 text-ink-700',
   remplace: 'bg-ink-100 text-ink-700',

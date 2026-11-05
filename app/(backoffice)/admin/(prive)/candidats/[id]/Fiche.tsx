@@ -19,7 +19,7 @@ function useAction() {
 }
 
 const lienWhatsApp = (numero: string, texte: string) => `https://wa.me/${numero.replace(/^\+/, '')}?text=${encodeURIComponent(texte)}`;
-const classeWhatsApp = `${classeBouton('principal', true)} !bg-[#25D366] text-center`;
+const classeWhatsApp = `${classeBouton('principal', true)} !bg-whatsapp !text-ink-900 hover:!bg-whatsapp-hover text-center`;
 
 export function ChangerStatut({ candidatId, statut, options }: { candidatId: number; statut: string; options: { code: string; libelle: string }[] }) {
   const { lancer, envoi, retour } = useAction();

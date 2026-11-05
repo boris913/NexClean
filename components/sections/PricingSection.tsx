@@ -55,7 +55,7 @@ export default function PricingSection({
 
   return (
     <Section id="tarifs" tone="muted" labelledBy={`${id}-titre`} className="scroll-mt-20">
-      <SectionHeader id={`${id}-titre`} align="center" eyebrow={eyebrow} title={title} intro={intro} className="!mb-8" />
+      <SectionHeader id={`${id}-titre`} eyebrow={eyebrow} title={title} intro={intro} className="!mb-8" />
 
       <div className="mb-10 flex justify-center">
         <div role="tablist" aria-label="Type de client" onKeyDown={auClavier} className="inline-flex gap-1 rounded-full bg-ink-100 p-1">

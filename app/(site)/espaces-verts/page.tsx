@@ -69,6 +69,7 @@ export default async function EspacesVertsPage() {
   return (
     <>
       <PageHero
+        illustration="jardin"
         label="Espaces verts"
         pillar="espaces-verts"
         title={`Entretien des espaces verts à ${villes}`}

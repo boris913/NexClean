@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { exigerCollaborateur } from '@/lib/authz/session';
 import { executer } from '@/lib/actions';
 import { definirParametre } from '@/lib/parametres';
+import { revaliderCommissionPublique } from '@/lib/commission-publique';
 import { ErreurMetier } from '@/lib/collaborateurs/service';
 import { commissionsDepuisPaires, verifierAcompte, type PaireCategorie } from './grille';
 
@@ -16,6 +17,7 @@ export async function enregistrerCommission(montant: number) {
     await definirParametre('commission_par_personne', montant, await auteur());
     revalidatePath('/admin/parametres');
     revalidatePath('/recrutement/demander-du-personnel');
+    revaliderCommissionPublique();
     return 'Commission enregistrée. Elle s’applique aux nouveaux devis ; les devis existants et les demandes déjà reçues conservent leurs montants.';
   });
 }

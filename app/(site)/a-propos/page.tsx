@@ -51,6 +51,7 @@ export default async function AProposPage() {
   return (
     <>
       <PageHero
+        illustration="equipe"
         label="À propos"
         title="NEXCLEAN, des services organisés pour vos espaces et vos équipes"
         subtitle={`NEXCLEAN SARL est une entreprise camerounaise implantée à ${villes}. Nous accompagnons entreprises et particuliers pour la propreté de leurs espaces, le recrutement de leur personnel et l'entretien de leurs espaces verts.`}

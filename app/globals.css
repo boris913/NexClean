@@ -6,8 +6,8 @@
 
   /* ─── Tokens du design system (source : tailwind.config.ts, doc : docs/design-system.md) ─── */
   :root {
-    --ds-forest: theme('colors.forest.DEFAULT');
-    --ds-forest-deep: theme('colors.forest.deep');
+    --ds-navy: theme('colors.navy.DEFAULT');
+    --ds-navy-deep: theme('colors.navy.deep');
     --ds-cta: theme('colors.cta.DEFAULT');
     --ds-cta-hover: theme('colors.cta.hover');
     --ds-ink: theme('colors.ink.900');
@@ -31,15 +31,22 @@
     --ds-section-y: theme('spacing.section');
     --ds-section-y-sm: theme('spacing.section-sm');
     --ds-tap: theme('spacing.tap');
-    /* Anneau de focus : brand-700 sur blanc = 5,94:1 (≥ 3:1 exigé). */
+    /* Anneau de focus : brand-700 sur blanc = 7,53:1 (≥ 3:1 exigé). */
     --ds-focus-ring: theme('colors.brand.700');
     --ds-focus-offset: theme('colors.white');
+    /* Bouton principal sur fond clair : bleu d'action, texte blanc (5,81:1). */
+    --ds-btn-bg: theme('colors.brand.600');
+    --ds-btn-bg-hover: theme('colors.brand.700');
+    --ds-btn-fg: theme('colors.white');
   }
 
-  /* Surfaces sombres : anneau lime brand-300 sur forest = 6,22:1. */
+  /* Surfaces sombres : anneau lime sur navy (≥ 9:1), bouton principal lime + encre (9,26:1). */
   .surface-dark {
-    --ds-focus-ring: theme('colors.brand.300');
-    --ds-focus-offset: theme('colors.forest.DEFAULT');
+    --ds-focus-ring: theme('colors.lime.300');
+    --ds-focus-offset: theme('colors.navy.DEFAULT');
+    --ds-btn-bg: theme('colors.cta.DEFAULT');
+    --ds-btn-bg-hover: theme('colors.cta.hover');
+    --ds-btn-fg: theme('colors.ink.900');
   }
 
   html {
@@ -56,8 +63,13 @@
     @apply font-display tracking-tight;
   }
 
+  /* IBM Plex Mono n'est chargé qu'en 500 : pas de faux gras quand une taille impose 600. */
+  .font-mono {
+    font-synthesis-weight: none;
+  }
+
   ::selection {
-    @apply bg-brand-200 text-ink-900;
+    @apply bg-lime-200 text-ink-900;
   }
 
   /* Focus homogène : anneau 2 px + liseré, contraste ≥ 3:1 sur fond clair comme sombre. */
@@ -165,33 +177,24 @@
     background-image: radial-gradient(theme('colors.brand.300') 1px, transparent 1px);
     background-size: 22px 22px;
   }
+}
 
-  /* Fade in on scroll utility */
-  .fade-up {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
+/* ─── Apparition au défilement (components/ui/Reveal.tsx) ───
+   Seuls les blocs marqués `pending` par le script sont masqués : sans JS, tout est visible. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal-from] {
+    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   }
-
-  .fade-up.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* Delay helpers */
-  .delay-100 { transition-delay: 0.1s; }
-  .delay-200 { transition-delay: 0.2s; }
-  .delay-300 { transition-delay: 0.3s; }
-  .delay-400 { transition-delay: 0.4s; }
-  .delay-500 { transition-delay: 0.5s; }
-
-  /* Subtle gradient text */
-  .gradient-text {
-    background: linear-gradient(135deg, theme('colors.brand.500'), theme('colors.brand.700'));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+  [data-reveal='pending'] { opacity: 0; }
+  [data-reveal='pending'][data-reveal-from='up'] { transform: translateY(24px); }
+  [data-reveal='pending'][data-reveal-from='left'] { transform: translateX(-32px); }
+  [data-reveal='pending'][data-reveal-from='right'] { transform: translateX(32px); }
+  [data-reveal='pending'][data-reveal-from='scale'] { transform: scale(0.96); }
+  [data-stagger] > :nth-child(2) { transition-delay: 80ms; }
+  [data-stagger] > :nth-child(3) { transition-delay: 160ms; }
+  [data-stagger] > :nth-child(4) { transition-delay: 240ms; }
+  [data-stagger] > :nth-child(5) { transition-delay: 320ms; }
+  [data-stagger] > :nth-child(n + 6) { transition-delay: 400ms; }
 }
 
 /* Custom scrollbar */

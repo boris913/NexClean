@@ -28,7 +28,7 @@ export default async function PageAccesProfil({ params }: { params: Promise<{ je
       <Section tone="muted" spacing="sm" container="narrow" className="min-h-[70vh] text-center">
         <h1 className="font-display text-h2 text-ink-900 mb-3">Lien invalide ou expiré</h1>
         <p className="text-ink-600 mb-6">Ce lien n’est plus valable. Demandez un nouveau lien à votre référent NEXCLEAN.</p>
-        <Button href={getWhatsAppLink('Bonjour NEXCLEAN, le lien de profil que vous m’avez envoyé a expiré.')} variant="whatsapp" whatsappIcon>
+        <Button href={getWhatsAppLink('Bonjour NEXCLEAN, le lien de profil que vous m’avez envoyé a expiré.')} whatsappIcon>
           Nous écrire sur WhatsApp
         </Button>
       </Section>
@@ -47,7 +47,7 @@ export default async function PageAccesProfil({ params }: { params: Promise<{ je
         Lien réservé à {ctx.clientNom}, valable jusqu’au {date(ctx.expireLe!)}.
       </p>
       <SectionProfils ctx={ctx} titre={attestation ? 'Prise de poste' : 'Profil'} />
-      <Button href={getWhatsAppLink(`Bonjour NEXCLEAN, je vous contacte au sujet de ma demande n° ${ctx.numero}.`)} variant="whatsapp" whatsappIcon fullWidth>
+      <Button href={getWhatsAppLink(`Bonjour NEXCLEAN, je vous contacte au sujet de ma demande n° ${ctx.numero}.`)} whatsappIcon fullWidth>
         Écrire à NEXCLEAN sur WhatsApp
       </Button>
     </Section>

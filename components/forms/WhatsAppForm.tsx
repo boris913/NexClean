@@ -310,7 +310,7 @@ export default function WhatsAppForm({ subject, fields, submitLabel = 'Envoyer m
       </div>
 
       <div className="sm:col-span-2 space-y-3">
-        <Button type="submit" variant="whatsapp" size="lg" fullWidth loading={loading} loadingLabel="Envoi en cours…" whatsappIcon>
+        <Button type="submit" size="lg" fullWidth loading={loading} loadingLabel="Envoi en cours…" whatsappIcon>
           {submitLabel}
         </Button>
         <p className="text-center text-xs text-muted">{note || 'Vous serez redirigé vers WhatsApp pour envoyer votre demande.'}</p>

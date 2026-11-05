@@ -28,7 +28,7 @@ const iconeClasses = 'w-4 h-4 flex-shrink-0 text-brand-300';
 
 export default function Footer({ villes }: { villes: string }) {
   return (
-    <footer className="surface-dark bg-forest-deep text-brand-100 pb-20 lg:pb-0">
+    <footer className="surface-dark bg-navy-deep text-brand-100 pb-20 lg:pb-0">
       <Container className="py-12 sm:py-16">
         <div className="flex flex-col gap-6 border-b border-white/10 pb-10 md:flex-row md:items-center md:justify-between">
           <div>

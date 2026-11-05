@@ -1,6 +1,5 @@
 import HeroSection from '@/components/sections/HeroSection';
 import PiliersSection from '@/components/sections/PiliersSection';
-import ParcoursSection from '@/components/sections/ParcoursSection';
 import FocusRecrutementSection from '@/components/sections/FocusRecrutementSection';
 import FocusPropreteSection from '@/components/sections/FocusPropreteSection';
 import SuiviSection from '@/components/sections/SuiviSection';
@@ -12,6 +11,7 @@ import CTASection from '@/components/sections/CTASection';
 import JsonLd from '@/components/ui/JsonLd';
 import { SITE_URL, OG_IMAGE, titreParDefaut, descriptionParDefaut, FAQ_SCHEMA } from '@/lib/seo';
 import { lireCouverture } from '@/lib/geo/couverture';
+import { lireCommissionPublique } from '@/lib/commission-publique';
 import { CTA_FINAL, FAQ_EN_TETE, ZONES_EN_TETE } from '@/content/home-data';
 import type { Metadata } from 'next';
 
@@ -42,15 +42,14 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Home() {
-  const { libelle } = await lireCouverture();
+  const [{ libelle }, commission] = await Promise.all([lireCouverture(), lireCommissionPublique()]);
   return (
     <>
-      <HeroSection villes={libelle} />
+      <HeroSection villes={libelle} commission={commission} />
       <PiliersSection />
-      <ParcoursSection />
+      <SuiviSection />
       <FocusRecrutementSection />
       <FocusPropreteSection />
-      <SuiviSection />
       <EmploiSection />
       <TestimonialsSection />
       <CoverageSection eyebrow={ZONES_EN_TETE.surtitre} intro={ZONES_EN_TETE.sousTitre} />
