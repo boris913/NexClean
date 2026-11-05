@@ -38,14 +38,19 @@ export default function FocusRecrutementSection() {
             {CTA_FINAL.whatsapp.label}
           </a>
         </div>
-        <ul className="grid content-start gap-4 sm:grid-cols-2">
-          {FOCUS_RECRUTEMENT.points.map((point) => (
-            <li key={point.titre} className="rounded-card bg-white/10 p-5">
-              <h3 className="font-display text-h3 text-white">{point.titre}</h3>
-              <p className="mt-2 text-small text-brand-100">{point.texte}</p>
+        <ol className="divide-y divide-white/15 border-y border-white/15 lg:mt-14">
+          {FOCUS_RECRUTEMENT.points.map((point, i) => (
+            <li key={point.titre} className="grid grid-cols-[3rem_1fr] gap-x-2 py-5">
+              <span aria-hidden="true" className="font-mono text-h3 tabular-nums text-cta">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <div>
+                <h3 className="text-h3 text-white">{point.titre}</h3>
+                <p className="mt-1 text-small text-brand-100">{point.texte}</p>
+              </div>
             </li>
           ))}
-        </ul>
+        </ol>
       </div>
     </Section>
   );

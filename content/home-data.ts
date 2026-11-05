@@ -234,6 +234,13 @@ export const TEMOIGNAGES_EN_TETE: EnTeteSection = {
   sousTitre: 'Seuls les avis vérifiés et autorisés par nos clients sont publiés.',
 };
 
+/**
+ * Chiffres de preuve (audit design Q6), affichés en mono au-dessus de l'encart avis.
+ * UNIQUEMENT des chiffres réels et vérifiables, fournis par la direction (ex. dossiers traités,
+ * placements confirmés, délai moyen de réponse). Tableau vide = bandeau masqué. Ne jamais inventer.
+ */
+export const CHIFFRES: { valeur: string; libelle: string }[] = [];
+
 /** Affiché seul tant qu'aucun avis n'est vérifié (docs/contenu.md, accueil). */
 export const AVIS_ENCART = {
   titre: 'Vous avez fait appel à NEXCLEAN ?',

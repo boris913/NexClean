@@ -24,7 +24,7 @@ interface ClientProcessProps {
 export default function ClientProcess({ eyebrow = 'Processus & paiement', title = 'De la demande au suivi' }: ClientProcessProps) {
   return (
     <Section id="processus-client" tone="muted" labelledBy="processus-client-titre" className="scroll-mt-20">
-      <SectionHeader id="processus-client-titre" align="center" eyebrow={eyebrow} title={title} />
+      <SectionHeader id="processus-client-titre" eyebrow={eyebrow} title={title} />
 
       <ol className="mb-10 flex flex-wrap justify-center gap-2 sm:mb-14">
         {STEPS.map((step, i) => (
