@@ -2,6 +2,8 @@
 // prise de poste (7 jours, révocable), mêmes protections que la page de suivi. Non indexé.
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import Button from '@/components/ui/Button';
+import Section from '@/components/ui/Section';
 import { ipDepuisEnTetes } from '@/lib/audit';
 import { getWhatsAppLink } from '@/lib/constants';
 import { FUSEAU } from '@/lib/domain/referentiels';
@@ -23,31 +25,31 @@ export default async function PageAccesProfil({ params }: { params: Promise<{ je
 
   if (!ctx) {
     return (
-      <section className="max-w-lg mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-display font-semibold mb-3">Lien invalide ou expiré</h1>
+      <Section tone="muted" spacing="sm" container="narrow" className="min-h-[70vh] text-center">
+        <h1 className="font-display text-h2 text-ink-900 mb-3">Lien invalide ou expiré</h1>
         <p className="text-ink-600 mb-6">Ce lien n’est plus valable. Demandez un nouveau lien à votre référent NEXCLEAN.</p>
-        <a href={getWhatsAppLink('Bonjour NEXCLEAN, le lien de profil que vous m’avez envoyé a expiré.')} className="inline-flex min-h-11 items-center px-5 rounded-full bg-cta font-semibold">
+        <Button href={getWhatsAppLink('Bonjour NEXCLEAN, le lien de profil que vous m’avez envoyé a expiré.')} variant="whatsapp" whatsappIcon>
           Nous écrire sur WhatsApp
-        </a>
-      </section>
+        </Button>
+      </Section>
     );
   }
 
   await journaliserConsultationAcces(ctx, ipDepuisEnTetes(await headers()));
   const attestation = ctx.objet === 'attestation';
   return (
-    <section className="max-w-lg mx-auto px-4 py-10">
-      <p className="text-sm text-ink-500 mb-1">
+    <Section tone="muted" spacing="sm" container="narrow" className="min-h-[70vh]">
+      <p className="text-sm text-muted mb-2">
         Demande n° <span className="font-mono font-semibold text-ink-800">{ctx.numero}</span>
       </p>
-      <h1 className="text-2xl font-display font-semibold mb-1">{attestation ? 'Attestation de prise de poste' : 'Profil proposé par NEXCLEAN'}</h1>
+      <h1 className="font-display text-h2 text-ink-900 mb-3">{attestation ? 'Attestation de prise de poste' : 'Profil proposé par NEXCLEAN'}</h1>
       <p className="text-ink-600 mb-6">
         Lien réservé à {ctx.clientNom}, valable jusqu’au {date(ctx.expireLe!)}.
       </p>
       <SectionProfils ctx={ctx} titre={attestation ? 'Prise de poste' : 'Profil'} />
-      <a href={getWhatsAppLink(`Bonjour NEXCLEAN, je vous contacte au sujet de ma demande n° ${ctx.numero}.`)} className="inline-flex w-full justify-center min-h-11 items-center px-5 rounded-full bg-cta font-semibold">
+      <Button href={getWhatsAppLink(`Bonjour NEXCLEAN, je vous contacte au sujet de ma demande n° ${ctx.numero}.`)} variant="whatsapp" whatsappIcon fullWidth>
         Écrire à NEXCLEAN sur WhatsApp
-      </a>
-    </section>
+      </Button>
+    </Section>
   );
 }

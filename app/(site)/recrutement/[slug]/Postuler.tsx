@@ -5,9 +5,9 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2, Upload } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Eye, EyeOff, Upload } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import WhatsAppIcon from '@/components/ui/WhatsAppIcon';
+import { cardClasses } from '@/components/ui/Card';
 import { inputClass, labelClass } from '@/components/forms/WhatsAppForm';
 import { getWhatsAppLink } from '@/lib/constants';
 import { trackEvent } from '@/lib/analytics';
@@ -44,6 +44,8 @@ interface Props {
 }
 
 const idChamp = (cle: string) => `post-${cle}`;
+/** `text-red-700` reste : sélecteur des tests e2e (`p.text-red-700`, e2e/candidature.spec.ts). */
+const erreurChamp = 'text-xs text-red-700 mt-1';
 
 function Champ({ cle, libelle, requis, erreurs, aide, children }: { cle: string; libelle: string; requis?: boolean; erreurs: Record<string, string>; aide?: string; children: React.ReactNode }) {
   return (
@@ -52,9 +54,9 @@ function Champ({ cle, libelle, requis, erreurs, aide, children }: { cle: string;
         {libelle} {requis && <span className="text-accent" aria-hidden>*</span>}
       </label>
       {children}
-      {aide && !erreurs[cle] && <p className="text-xs text-slate-500 mt-1">{aide}</p>}
+      {aide && !erreurs[cle] && <p className="text-xs text-muted mt-1">{aide}</p>}
       {erreurs[cle] && (
-        <p id={`${idChamp(cle)}-err`} className="text-xs text-red-700 mt-1">
+        <p id={`${idChamp(cle)}-err`} className={erreurChamp}>
           {erreurs[cle]}
         </p>
       )}
@@ -141,17 +143,17 @@ export default function Postuler({ offre, metier, connecte, dejaPostule, listes 
     }
   }
 
-  const carte = 'bg-white rounded-2xl border border-slate-100 shadow-card p-5 sm:p-6';
+  const carte = cardClasses({ padding: 'sm' });
 
   if (etat.type === 'deja_postule')
     return (
       <div className={`${carte} text-center`} role="status">
         <CheckCircle2 className="w-10 h-10 text-success mx-auto mb-3" strokeWidth={1.5} />
         <p className="font-semibold text-ink-900">Vous avez déjà postulé à cette offre.</p>
-        <p className="text-sm text-slate-600 mt-1">Suivez votre candidature depuis votre espace candidat.</p>
-        <Link href="/candidat/espace" className="mt-4 inline-flex items-center justify-center min-h-12 px-6 rounded-full bg-primary text-white font-semibold">
+        <p className="text-sm text-ink-600 mt-1">Suivez votre candidature depuis votre espace candidat.</p>
+        <Button href="/candidat/espace" className="mt-4 self-center">
           Mon espace candidat
-        </Link>
+        </Button>
       </div>
     );
 
@@ -159,29 +161,29 @@ export default function Postuler({ offre, metier, connecte, dejaPostule, listes 
     return (
       <div className={`${carte} text-center`} role="status">
         <CheckCircle2 className="w-12 h-12 text-success mx-auto mb-3" strokeWidth={1.5} />
-        <h3 className="font-display font-bold text-2xl text-ink-900">Candidature envoyée</h3>
+        <h3 className="font-display text-h3 text-ink-900">Candidature envoyée</h3>
         {etat.mode === 'compte_leger' ? (
           <>
-            <p className="text-slate-600 mt-2">
+            <p className="text-ink-600 mt-2">
               Merci {b.prenom}. Votre compte candidat est créé : un conseiller NEXCLEAN étudie votre candidature et vous contacte si votre profil correspond.
             </p>
-            <p className="text-slate-600 mt-2">
+            <p className="text-ink-600 mt-2">
               <strong className="text-ink-900">Complétez votre profil</strong> (zones de travail, contrats, parcours) pour être proposé(e) à d’autres offres.
             </p>
           </>
         ) : (
-          <p className="text-slate-600 mt-2">Un conseiller NEXCLEAN étudie votre candidature et vous contacte si votre profil correspond.</p>
+          <p className="text-ink-600 mt-2">Un conseiller NEXCLEAN étudie votre candidature et vous contacte si votre profil correspond.</p>
         )}
-        {etat.erreurCv && <p className="text-sm text-red-700 mt-3">Votre CV n’a pas pu être enregistré ({etat.erreurCv}). Vous pourrez l’ajouter depuis votre espace.</p>}
+        {etat.erreurCv && <p className="text-sm text-danger mt-3">Votre CV n’a pas pu être enregistré ({etat.erreurCv}). Vous pourrez l’ajouter depuis votre espace.</p>}
         <div className="mt-6 space-y-3">
           {etat.mode === 'compte_leger' && (
-            <Link href="/candidat/espace/profil" className="flex w-full items-center justify-center min-h-12 px-5 rounded-full bg-primary text-white font-semibold">
+            <Button href="/candidat/espace/profil" fullWidth>
               Compléter mon profil
-            </Link>
+            </Button>
           )}
-          <Link href="/candidat/espace" className="flex w-full items-center justify-center min-h-12 px-5 rounded-full border border-slate-200 font-semibold text-slate-800">
+          <Button href="/candidat/espace" variant="outline" fullWidth>
             Mon espace candidat
-          </Link>
+          </Button>
         </div>
       </div>
     );
@@ -189,24 +191,23 @@ export default function Postuler({ offre, metier, connecte, dejaPostule, listes 
   if (etat.type === 'repli')
     return (
       <div className={`${carte} text-center`} role="status">
-        <AlertCircle className="w-10 h-10 text-accent mx-auto mb-3" strokeWidth={1.5} />
-        <p className="font-semibold text-slate-900 mb-2">{MESSAGE_RESEAU}</p>
-        <p className="text-sm text-slate-500 max-w-md mx-auto mb-6">Votre candidature n’a pas pu être enregistrée. Envoyez-la sur WhatsApp, ou réessayez dans quelques minutes.</p>
+        <AlertCircle className="w-10 h-10 text-warning mx-auto mb-3" strokeWidth={1.5} />
+        <p className="font-semibold text-ink-900 mb-2">{MESSAGE_RESEAU}</p>
+        <p className="text-sm text-muted max-w-md mx-auto mb-6">Votre candidature n’a pas pu être enregistrée. Envoyez-la sur WhatsApp, ou réessayez dans quelques minutes.</p>
         <div className="flex flex-col gap-3 items-center">
-          <Button href={getWhatsAppLink(etat.message)} variant="whatsapp" size="lg">
-            <WhatsAppIcon className="w-5 h-5" />
+          <Button href={getWhatsAppLink(etat.message)} variant="whatsapp" size="lg" whatsappIcon>
             Continuer sur WhatsApp
           </Button>
-          <button type="button" onClick={() => setEtat({ type: 'saisie' })} className="text-sm text-primary underline min-h-11">
+          <Button variant="ghost" size="sm" onClick={() => setEtat({ type: 'saisie' })}>
             Réessayer
-          </button>
+          </Button>
         </div>
       </div>
     );
 
   const envoi = etat.type === 'envoi';
   const erreurEchec = echec && (
-    <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+    <div role="alert" className="rounded-2xl border border-danger-border bg-danger-soft px-4 py-3 text-sm text-danger">
       {echec.message}
       {echec.dejaInscrit && (
         <>
@@ -236,9 +237,9 @@ export default function Postuler({ offre, metier, connecte, dejaPostule, listes 
     </Champ>
   );
   const bouton = (libelle: string) => (
-    <button type="submit" disabled={envoi} className="flex w-full items-center justify-center gap-2 min-h-12 px-6 rounded-full bg-primary text-white font-semibold disabled:opacity-60">
-      {envoi && <Loader2 className="w-4 h-4 animate-spin" />} {envoi ? 'Envoi en cours…' : libelle}
-    </button>
+    <Button type="submit" fullWidth loading={envoi} loadingLabel="Envoi en cours…">
+      {libelle}
+    </Button>
   );
 
   // ─── Candidat connecté ──────────────────────────────────────
@@ -246,7 +247,7 @@ export default function Postuler({ offre, metier, connecte, dejaPostule, listes 
     return (
       <form onSubmit={envoyer} noValidate className={`${carte} space-y-4`}>
         {piege}
-        <p className="text-slate-700">
+        <p className="text-ink-700">
           Vous êtes connecté(e) en tant que <strong>{connecte.prenom}</strong> : votre profil candidat accompagne votre candidature.
         </p>
         {motivation}
@@ -259,7 +260,7 @@ export default function Postuler({ offre, metier, connecte, dejaPostule, listes 
   return (
     <form onSubmit={envoyer} noValidate className={`${carte} space-y-4`}>
       {piege}
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-ink-600">
         Déjà inscrit(e) ?{' '}
         <Link href={retour} className="text-primary underline font-semibold">
           Se connecter pour postuler en un clic
@@ -354,9 +355,9 @@ export default function Postuler({ offre, metier, connecte, dejaPostule, listes 
         </Champ>
       )}
       <Champ cle="cv" libelle="CV (facultatif)" erreurs={erreurs} aide="PDF, DOCX, JPEG ou PNG, 5 Mo maximum. Une photo nette de votre CV papier convient.">
-        <label className="flex items-center gap-3 cursor-pointer rounded-lg border-2 border-dashed border-slate-200 hover:border-primary bg-slate-50 px-4 min-h-12 focus-within:ring-2 focus-within:ring-primary/30">
+        <label className="flex items-center gap-3 cursor-pointer rounded-2xl border-2 border-dashed border-ink-200 hover:border-primary bg-ink-50 px-4 min-h-12 focus-within:ring-2 focus-within:ring-primary">
           <Upload className="w-5 h-5 text-primary shrink-0" />
-          <span className="text-sm text-slate-600 truncate">{cv?.name || 'Choisir un fichier…'}</span>
+          <span className="text-sm text-ink-600 truncate">{cv?.name || 'Choisir un fichier…'}</span>
           <input
             {...a11y('cv', erreurs)}
             type="file"
@@ -377,12 +378,12 @@ export default function Postuler({ offre, metier, connecte, dejaPostule, listes 
       <Champ cle="motDePasse" libelle="Mot de passe de votre espace candidat" requis erreurs={erreurs} aide="Au moins 8 caractères, ou un code de 6 chiffres.">
         <div className="relative">
           <input {...a11y('motDePasse', erreurs)} type={voirMdp ? 'text' : 'password'} autoComplete="new-password" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} className={`${inputClass} pr-12`} />
-          <button type="button" aria-label={voirMdp ? 'Masquer le mot de passe' : 'Afficher le mot de passe'} onClick={() => setVoirMdp((v) => !v)} className="absolute right-0 top-0 h-full w-12 inline-flex items-center justify-center text-slate-500">
+          <button type="button" aria-label={voirMdp ? 'Masquer le mot de passe' : 'Afficher le mot de passe'} onClick={() => setVoirMdp((v) => !v)} className="absolute right-0 top-0 h-full w-12 inline-flex items-center justify-center text-muted">
             {voirMdp ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>
         </div>
       </Champ>
-      <label className="flex items-center gap-3 min-h-11 text-sm text-slate-700">
+      <label className="flex items-center gap-3 min-h-11 text-sm text-ink-700">
         <input type="checkbox" checked={resterConnecte} onChange={(e) => setResterConnecte(e.target.checked)} className="h-5 w-5 accent-primary" />
         Rester connecté(e) sur ce téléphone
       </label>
@@ -395,15 +396,15 @@ export default function Postuler({ offre, metier, connecte, dejaPostule, listes 
           ] as const
         ).map(([cle, texte]) => (
           <div key={cle}>
-            <label className="flex items-start gap-3 text-sm text-slate-700">
+            <label className="flex items-start gap-3 text-sm text-ink-700">
               <input {...a11y(cle, erreurs)} type="checkbox" checked={b[cle]} onChange={(e) => maj({ [cle]: e.target.checked })} className="h-5 w-5 mt-0.5 accent-primary shrink-0" />
               <span>{texte}</span>
             </label>
-            {erreurs[cle] && <p className="text-xs text-red-700 mt-1 ml-8">{erreurs[cle]}</p>}
+            {erreurs[cle] && <p className={`${erreurChamp} ml-8`}>{erreurs[cle]}</p>}
           </div>
         ))}
       </div>
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-muted">
         {MENTION_GRATUITE} Votre candidature crée votre espace candidat : vous pourrez compléter votre profil, ou supprimer votre compte, à tout moment. Voir la{' '}
         <Link href="/confidentialite" className="underline">
           politique de confidentialité

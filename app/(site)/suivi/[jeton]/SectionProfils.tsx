@@ -1,6 +1,7 @@
 // Section « Profils proposés » (specs/MVP2-03 RG-07..11, RG-15, RG-16), rendue côté serveur pour
 // la page de suivi et les liens temporaires. Rien n'est lu avant la vérification des 4 chiffres.
 import { FileText, MapPin } from 'lucide-react';
+import { cardClasses } from '@/components/ui/Card';
 import { blocageEnCours, estVerifie, placementsClient, profilsTransmis, type Contexte } from '@/lib/propositions/client';
 import { ConfirmationPlacement, FormulaireVerification, RetourProfil } from './Interactions';
 
@@ -17,8 +18,8 @@ export default async function SectionProfils({ ctx, titre = 'Profils proposés' 
   if (!(await estVerifie(ctx))) {
     const bloque = await blocageEnCours(ctx.cle);
     return (
-      <section aria-labelledby={titreId} className="rounded-2xl border border-ink-100 bg-white p-5 shadow-card mb-8">
-        <h2 id={titreId} className="text-lg font-display font-semibold mb-2">
+      <section aria-labelledby={titreId} className={cardClasses({ padding: 'sm', className: 'mb-8' })}>
+        <h2 id={titreId} className="font-display text-h3 text-ink-900 mb-2">
           {titre}
         </h2>
         <p className="text-sm text-ink-600 mb-4">Pour protéger les données des candidats, confirmez votre identité avant d’afficher {ctx.type === 'acces' ? 'ce document' : 'les profils'}.</p>
@@ -32,7 +33,7 @@ export default async function SectionProfils({ ctx, titre = 'Profils proposés' 
 
   return (
     <section aria-labelledby={titreId} className="mb-8 space-y-4">
-      <h2 id={titreId} className="text-lg font-display font-semibold">
+      <h2 id={titreId} className="font-display text-h3 text-ink-900">
         {titre}
       </h2>
 
@@ -52,7 +53,7 @@ export default async function SectionProfils({ ctx, titre = 'Profils proposés' 
       {placements
         .filter((p) => p.statut === 'confirme')
         .map((p) => (
-          <p key={p.placementId} className="rounded-xl border border-ink-100 bg-white px-4 py-3 text-sm text-ink-700">
+          <p key={p.placementId} className="rounded-2xl border border-ink-100 bg-white px-4 py-3 text-sm text-ink-700">
             Prise de poste de <strong>{p.nom}</strong> confirmée{p.datePriseDePoste ? ` le ${dateLongue(p.datePriseDePoste)}` : ''}.{' '}
             <a href={`${ctx.chemin}/attestation/${p.placementId}`} target="_blank" rel="noopener noreferrer" className="text-primary underline">
               Attestation (PDF)
@@ -63,10 +64,10 @@ export default async function SectionProfils({ ctx, titre = 'Profils proposés' 
       {!profils.length && !placements.length && <p className="text-sm text-ink-600">{ctx.objet === 'attestation' ? 'Aucune attestation à afficher.' : 'Aucun profil à afficher pour le moment.'}</p>}
 
       {profils.map((p) => (
-        <article key={p.propositionId} className="rounded-2xl border border-ink-100 bg-white p-5 shadow-card">
+        <article key={p.propositionId} className={cardClasses({ padding: 'sm' })}>
           <div className="flex items-start justify-between gap-3 mb-2">
             <div>
-              <h3 className="text-base font-semibold">{p.nom}</h3>
+              <h3 className="font-display text-h3 text-ink-900">{p.nom}</h3>
               <p className="text-sm text-ink-600">{p.poste}</p>
             </div>
             {p.statut && <span className="shrink-0 rounded-full bg-ink-100 px-2.5 py-1 text-xs font-medium text-ink-700">{p.statut}</span>}
@@ -74,13 +75,13 @@ export default async function SectionProfils({ ctx, titre = 'Profils proposés' 
           <dl className="space-y-2 text-sm mb-4">
             {p.metiers.length > 0 && (
               <div>
-                <dt className="text-ink-500">Métiers</dt>
+                <dt className="text-muted">Métiers</dt>
                 <dd>{p.metiers.join(', ')}</dd>
               </div>
             )}
             {p.experiences.length > 0 && (
               <div>
-                <dt className="text-ink-500">Expérience</dt>
+                <dt className="text-muted">Expérience</dt>
                 <dd>
                   <ul className="list-disc pl-5">
                     {p.experiences.map((e, i) => (
@@ -95,13 +96,13 @@ export default async function SectionProfils({ ctx, titre = 'Profils proposés' 
             )}
             {p.competences.length > 0 && (
               <div>
-                <dt className="text-ink-500">Compétences</dt>
+                <dt className="text-muted">Compétences</dt>
                 <dd>{p.competences.join(', ')}</dd>
               </div>
             )}
             {p.disponibilite && (
               <div>
-                <dt className="text-ink-500">Disponibilité</dt>
+                <dt className="text-muted">Disponibilité</dt>
                 <dd>{p.disponibilite}</dd>
               </div>
             )}
@@ -121,7 +122,7 @@ export default async function SectionProfils({ ctx, titre = 'Profils proposés' 
           <RetourProfil source={source} jeton={ctx.jeton} propositionId={p.propositionId} prenom={p.nom} retour={p.retour} />
         </article>
       ))}
-      <p className="text-xs text-ink-500">Pour organiser un entretien, votre référent NEXCLEAN fait le lien avec le candidat.</p>
+      <p className="text-xs text-muted">Pour organiser un entretien, votre référent NEXCLEAN fait le lien avec le candidat.</p>
     </section>
   );
 }

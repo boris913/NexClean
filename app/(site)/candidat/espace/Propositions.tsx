@@ -4,6 +4,9 @@
 import { useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Bell, Check, Loader2, X } from 'lucide-react';
+import Button, { buttonClasses } from '@/components/ui/Button';
+import { cardClasses } from '@/components/ui/Card';
+import { inputClass } from '@/components/forms/WhatsAppForm';
 import { marquerNotificationsLues, repondre } from '../actions';
 
 type Retour = { ok: boolean; texte: string } | null;
@@ -17,7 +20,7 @@ export interface PropositionAffichee {
 }
 
 const MessageRetour = ({ r }: { r: Retour }) => (
-  <p aria-live="polite" role={r && !r.ok ? 'alert' : 'status'} className={`text-sm ${r?.ok ? 'text-green-800' : 'text-red-700'}`}>
+  <p aria-live="polite" role={r && !r.ok ? 'alert' : 'status'} className={`text-sm ${r?.ok ? 'text-success' : 'text-danger'}`}>
     {r?.texte}
   </p>
 );
@@ -45,37 +48,37 @@ export function CarteProposition({ p }: { p: PropositionAffichee }) {
   };
 
   return (
-    <article aria-labelledby={`${id}-titre`} className="rounded-2xl border border-primary/30 bg-white p-4 space-y-3">
+    <article aria-labelledby={`${id}-titre`} className={cardClasses({ variant: 'pillar', pillar: 'emploi', padding: 'sm', className: 'space-y-3' })}>
       <div>
-        <h3 id={`${id}-titre`} className="font-semibold text-ink-900">
+        <h3 id={`${id}-titre`} className="font-display text-h3 text-ink-900">
           {p.poste}
         </h3>
-        <p className="text-sm text-slate-700">
+        <p className="text-sm text-ink-700">
           Employeur : <strong>{p.client}</strong>
         </p>
-        <p className="text-xs text-slate-500">Reçue le {p.recueLe}</p>
+        <p className="text-xs text-muted">Reçue le {p.recueLe}</p>
       </div>
       {p.details.length > 0 && (
         <dl className="grid grid-cols-1 gap-x-4 gap-y-1 text-sm sm:grid-cols-2">
           {p.details.map((d) => (
             <div key={d.libelle} className="flex gap-1">
-              <dt className="text-slate-500 shrink-0">{d.libelle} :</dt>
+              <dt className="text-muted shrink-0">{d.libelle} :</dt>
               <dd className="text-ink-900 min-w-0 break-words">{d.valeur}</dd>
             </div>
           ))}
         </dl>
       )}
 
-      <p id={`${id}-accord`} className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+      <p id={`${id}-accord`} className="rounded-2xl bg-ink-50 p-3 text-sm text-ink-700">
         En acceptant, vous autorisez NEXCLEAN à transmettre à <strong>{p.client}</strong> votre profil résumé et votre CV <strong>tel quel</strong>, y compris les coordonnées qu’il contient (téléphone, adresse…), pour le poste « {p.poste} ». Cet accord ne vaut que pour cet employeur et ce poste.
       </p>
 
       {!refus ? (
         <>
-          <label className="flex items-start gap-3 text-sm text-slate-700 min-h-11 cursor-pointer">
+          <label className="flex items-start gap-3 text-sm text-ink-700 min-h-11 cursor-pointer">
             <input type="checkbox" checked={numero} onChange={(e) => setNumero(e.target.checked)} className="mt-1 h-5 w-5 shrink-0 accent-primary" />
             <span>
-              J’accepte que mon numéro soit communiqué à l’employeur <span className="text-slate-500">(facultatif — sinon, votre conseiller organise l’entretien)</span>
+              J’accepte que mon numéro soit communiqué à l’employeur <span className="text-muted">(facultatif — sinon, votre conseiller organise l’entretien)</span>
             </span>
           </label>
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -84,38 +87,39 @@ export function CarteProposition({ p }: { p: PropositionAffichee }) {
               disabled={!!envoi}
               aria-describedby={`${id}-accord`}
               onClick={() => envoyer('accepte')}
-              className="flex flex-1 items-center justify-center gap-2 min-h-12 px-5 rounded-full bg-primary font-semibold text-white disabled:opacity-60"
+              className={buttonClasses({ className: 'flex-1' })}
             >
               {envoi === 'accepte' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} J’accepte d’être présenté(e)
             </button>
-            <button
-              type="button"
+            <Button
+              variant="outline"
+              icon={X}
+              className="flex-1"
               disabled={!!envoi}
               onClick={() => {
                 setRefus(true);
                 setR(null);
               }}
-              className="flex flex-1 items-center justify-center gap-2 min-h-12 px-5 rounded-full border border-slate-200 font-semibold text-slate-800 disabled:opacity-60"
             >
-              <X className="w-4 h-4" /> Je refuse
-            </button>
+              Je refuse
+            </Button>
           </div>
         </>
       ) : (
-        <div className="space-y-2 rounded-xl border border-red-100 bg-red-50/40 p-3">
+        <div className="space-y-2 rounded-2xl border border-danger-border bg-danger-soft p-3">
           <p className="text-sm font-semibold text-ink-900">Confirmer le refus ?</p>
-          <p className="text-sm text-slate-700">Votre refus est définitif pour cette proposition : votre profil ne sera pas transmis à {p.client} pour ce poste.</p>
-          <label htmlFor={`${id}-motif`} className="block text-sm text-slate-700">
-            Motif <span className="text-slate-500">(facultatif)</span>
+          <p className="text-sm text-ink-700">Votre refus est définitif pour cette proposition : votre profil ne sera pas transmis à {p.client} pour ce poste.</p>
+          <label htmlFor={`${id}-motif`} className="block text-sm text-ink-700">
+            Motif <span className="text-muted">(facultatif)</span>
           </label>
-          <textarea id={`${id}-motif`} value={motif} maxLength={500} rows={2} onChange={(e) => setMotif(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white p-3 text-base" placeholder="Ex. trop loin de chez moi" />
+          <textarea id={`${id}-motif`} value={motif} maxLength={500} rows={2} onChange={(e) => setMotif(e.target.value)} className={inputClass} placeholder="Ex. trop loin de chez moi" />
           <div className="flex flex-col gap-2 sm:flex-row">
-            <button type="button" disabled={!!envoi} onClick={() => envoyer('refuse')} className="flex flex-1 items-center justify-center gap-2 min-h-12 px-5 rounded-full bg-red-700 font-semibold text-white disabled:opacity-60">
-              {envoi === 'refuse' && <Loader2 className="w-4 h-4 animate-spin" />} Confirmer le refus
-            </button>
-            <button type="button" disabled={!!envoi} onClick={() => setRefus(false)} className="flex flex-1 items-center justify-center min-h-12 px-5 rounded-full border border-slate-200 font-semibold text-slate-800 disabled:opacity-60">
+            <Button variant="secondary" className="flex-1 !bg-danger hover:!bg-danger" disabled={!!envoi} loading={envoi === 'refuse'} onClick={() => envoyer('refuse')}>
+              Confirmer le refus
+            </Button>
+            <Button variant="outline" className="flex-1" disabled={!!envoi} onClick={() => setRefus(false)}>
               Annuler
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -150,9 +154,9 @@ export function Notifications({ notifications }: { notifications: NotificationAf
   };
 
   return (
-    <section aria-labelledby="titre-notifications" className="bg-white rounded-2xl border border-slate-100 shadow-card p-5 space-y-3">
+    <section aria-labelledby="titre-notifications" className={cardClasses({ padding: 'sm', className: 'space-y-3' })}>
       <div className="flex items-center justify-between gap-3">
-        <h2 id="titre-notifications" className="font-semibold text-ink-900 flex items-center gap-2">
+        <h2 id="titre-notifications" className="font-display text-h3 text-ink-900 flex items-center gap-2">
           <Bell className="w-4 h-4" /> Notifications
           {nonLues.length > 0 && <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-white">{nonLues.length}<span className="sr-only"> non lue{nonLues.length > 1 ? 's' : ''}</span></span>}
         </h2>
@@ -165,11 +169,11 @@ export function Notifications({ notifications }: { notifications: NotificationAf
       {nonLues.length > 0 ? (
         <ul className="space-y-2">
           {nonLues.map((n) => (
-            <li key={n.id} className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+            <li key={n.id} className="rounded-2xl border border-primary/20 bg-primary/5 p-3">
               <p className="font-semibold text-sm text-ink-900">{n.titre}</p>
-              <p className="text-sm text-slate-700">{n.texte}</p>
+              <p className="text-sm text-ink-700">{n.texte}</p>
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs text-slate-500">{n.le}</span>
+                <span className="text-xs text-muted">{n.le}</span>
                 <button type="button" disabled={!!envoi} onClick={() => marquer(n.id)} className="inline-flex items-center gap-1 min-h-11 text-sm text-primary underline disabled:opacity-60">
                   {envoi === n.id && <Loader2 className="w-3 h-3 animate-spin" />} Marquer comme lu
                 </button>
@@ -178,17 +182,17 @@ export function Notifications({ notifications }: { notifications: NotificationAf
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-slate-500">Aucune nouvelle notification.</p>
+        <p className="text-sm text-muted">Aucune nouvelle notification.</p>
       )}
       {lues.length > 0 && (
         <details className="text-sm">
-          <summary className="min-h-11 flex items-center cursor-pointer text-slate-600">Notifications précédentes ({lues.length})</summary>
-          <ul className="divide-y divide-slate-100">
+          <summary className="min-h-11 flex items-center cursor-pointer text-ink-600">Notifications précédentes ({lues.length})</summary>
+          <ul className="divide-y divide-ink-100">
             {lues.map((n) => (
               <li key={n.id} className="py-2">
                 <p className="font-medium text-ink-900">{n.titre}</p>
-                <p className="text-slate-600">{n.texte}</p>
-                <span className="text-xs text-slate-500">{n.le}</span>
+                <p className="text-ink-600">{n.texte}</p>
+                <span className="text-xs text-muted">{n.le}</span>
               </li>
             ))}
           </ul>
