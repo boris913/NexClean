@@ -1,28 +1,10 @@
 import Link from 'next/link';
-import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Linkedin } from 'lucide-react';
-import { CONTACT, COMPANY, SOCIAL_MEDIA, BUSINESS_HOURS, TEL_LINK, getWhatsAppLink } from '@/lib/constants';
-import { services, getServiceHref } from '@/content/services-data';
-import WhatsAppIcon from '@/components/ui/WhatsAppIcon';
+import { Clock, Facebook, Instagram, Linkedin, Mail, Phone } from 'lucide-react';
+import Container from '@/components/ui/Container';
 import Logo from '@/components/ui/Logo';
-
-const quickLinks = [
-  { name: 'Particuliers', href: '/particuliers' },
-  { name: 'Professionnels', href: '/professionnels' },
-  { name: 'Réalisations', href: '/realisations' },
-  { name: 'Boutique', href: '/boutique' },
-  { name: 'Tarifs', href: '/tarifs' },
-  { name: 'À propos', href: '/a-propos' },
-  { name: 'Recrutement', href: '/recrutement' },
-  { name: 'Espace candidat', href: '/candidat/connexion' },
-  { name: 'Blog', href: '/blog' },
-  { name: 'Contact / Devis', href: '/contact' },
-];
-
-const legalLinks = [
-  { name: 'Mentions légales', href: '/mentions-legales' },
-  { name: 'Confidentialité', href: '/confidentialite' },
-  { name: 'CGV', href: '/cgv' },
-];
+import WhatsAppIcon from '@/components/ui/WhatsAppIcon';
+import { BRAND, BUSINESS_HOURS, COMPANY, CONTACT, SOCIAL_MEDIA, TEL_LINK, getWhatsAppLink } from '@/lib/constants';
+import { CTA_DEMANDE, FOOTER_COLONNES, FOOTER_LEGAL } from '@/components/navigation/nav-data';
 
 function TikTokIcon({ className }: { className?: string }) {
   return (
@@ -39,94 +21,80 @@ const socialLinks = [
   { name: 'LinkedIn', href: SOCIAL_MEDIA.linkedin, Icon: Linkedin },
 ].filter((s) => s.href);
 
+const titreColonne = 'mb-3 text-eyebrow uppercase text-brand-300';
+const lienClasses =
+  'inline-flex min-h-tap sm:min-h-8 items-center text-sm text-brand-100 transition-colors hover:text-white hover:underline';
+const iconeClasses = 'w-4 h-4 flex-shrink-0 text-brand-300';
+
 export default function Footer({ villes }: { villes: string }) {
   return (
-    <footer className="relative overflow-hidden bg-brand-950 text-brand-100/80 pb-20 lg:pb-0">
-      <div aria-hidden="true" className="pointer-events-none absolute -top-40 -right-40 w-[480px] h-[480px] rounded-full bg-brand-500/20 blur-3xl" />
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
-          {/* Brand */}
+    <footer className="surface-dark bg-forest-deep text-brand-100 pb-20 lg:pb-0">
+      <Container className="py-12 sm:py-16">
+        <div className="flex flex-col gap-6 border-b border-white/10 pb-10 md:flex-row md:items-center md:justify-between">
           <div>
-            <Logo variant="blanc" height={44} className="mb-5 h-11 w-auto" />
-            <p className="text-sm leading-relaxed text-brand-100/70 mb-6">
-              Nettoyage professionnel, entretien des espaces verts et produits d&apos;entretien à {villes}, Cameroun.
-            </p>
-            <div className="flex gap-3">
+            <Logo variant="blanc" height={44} className="h-11 w-auto" />
+            <p className="mt-4 font-semibold text-white">{BRAND.signature}</p>
+            <p className="mt-1 text-small">Propreté, recrutement de personnel et espaces verts à {villes}, Cameroun.</p>
+          </div>
+          {socialLinks.length > 0 && (
+            <ul className="flex gap-2">
               {socialLinks.map(({ name, href, Icon }) => (
-                <a
-                  key={name}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center text-brand-100/70 hover:text-brand-300 hover:bg-brand-500 transition-all"
-                  aria-label={name}
-                >
-                  <Icon className="w-4 h-4" />
-                </a>
-              ))}
-              <a
-                href={getWhatsAppLink()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center text-brand-100/70 hover:text-brand-300 hover:bg-[#25D366] transition-all"
-                aria-label="WhatsApp"
-              >
-                <WhatsAppIcon className="w-4 h-4" />
-              </a>
-            </div>
-          </div>
-
-          {/* Services */}
-          <div>
-            <h4 className="text-sm font-semibold text-white mb-4">Nos services</h4>
-            <ul className="space-y-2.5">
-              {services.map((s) => (
-                <li key={s.slug}>
-                  <Link href={getServiceHref(s)} className="text-sm text-brand-100/70 hover:text-brand-300 transition-colors">
-                    {s.name}
-                  </Link>
+                <li key={name}>
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={name}
+                    className="inline-flex min-h-tap min-w-tap items-center justify-center rounded-xl bg-white/10 transition-colors hover:bg-white/20 hover:text-white"
+                  >
+                    <Icon className="w-4 h-4" aria-hidden="true" />
+                  </a>
                 </li>
               ))}
             </ul>
-          </div>
+          )}
+        </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-sm font-semibold text-white mb-4">Navigation</h4>
-            <ul className="space-y-2.5">
-              {quickLinks.map((link) => (
-                <li key={link.name}>
-                  <Link href={link.href} className="text-sm text-brand-100/70 hover:text-brand-300 transition-colors">
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div className="grid grid-cols-1 gap-10 pt-10 sm:grid-cols-2 lg:grid-cols-4">
+          {FOOTER_COLONNES.map((colonne) => (
+            <nav key={colonne.titre} aria-label={colonne.titre}>
+              <h2 className={titreColonne}>{colonne.titre}</h2>
+              <ul>
+                {colonne.liens.map((lien) => (
+                  <li key={lien.href}>
+                    <Link href={lien.href} className={lienClasses}>
+                      {lien.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
 
-          {/* Contact */}
           <div>
-            <h4 className="text-sm font-semibold text-white mb-4">Contact</h4>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <Phone className="w-4 h-4 text-brand-400 mt-0.5 flex-shrink-0" />
-                <a href={TEL_LINK} className="text-sm text-brand-100/70 hover:text-brand-300 transition-colors">
+            <h2 className={titreColonne}>Contact</h2>
+            <ul>
+              <li className="flex items-center gap-2.5">
+                <Phone className={iconeClasses} aria-hidden="true" />
+                <a href={TEL_LINK} className={lienClasses}>
                   {CONTACT.phoneDisplay}
                 </a>
               </li>
-              <li className="flex items-start gap-3">
-                <Mail className="w-4 h-4 text-brand-400 mt-0.5 flex-shrink-0" />
-                <a href={`mailto:${CONTACT.email}`} className="text-sm text-brand-100/70 hover:text-brand-300 transition-colors break-all">
+              <li className="flex items-center gap-2.5">
+                <WhatsAppIcon className={iconeClasses} />
+                <a href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer" className={lienClasses}>
+                  WhatsApp
+                </a>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Mail className={iconeClasses} aria-hidden="true" />
+                <a href={`mailto:${CONTACT.email}`} className={`${lienClasses} break-all`}>
                   {CONTACT.email}
                 </a>
               </li>
-              <li className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-brand-400 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-brand-100/70">{CONTACT.address}</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Clock className="w-4 h-4 text-brand-400 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-brand-100/70">
+              <li className="flex items-start gap-2.5 py-1.5">
+                <Clock className={`${iconeClasses} mt-0.5`} aria-hidden="true" />
+                <span className="text-sm">
                   {BUSINESS_HOURS.weekdays}
                   <br />
                   {BUSINESS_HOURS.saturday}
@@ -134,23 +102,31 @@ export default function Footer({ villes }: { villes: string }) {
                   {BUSINESS_HOURS.sunday}
                 </span>
               </li>
+              <li>
+                <Link href={CTA_DEMANDE.href} className={`${lienClasses} font-semibold !text-white`}>
+                  {CTA_DEMANDE.label}
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
-      </div>
+      </Container>
 
-      {/* Bottom bar */}
-      <div className="relative border-t border-white/10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-brand-100/60">
-          <p>© {new Date().getFullYear()} {COMPANY.legalName}. Tous droits réservés.</p>
-          <div className="flex flex-wrap justify-center gap-5">
-            {legalLinks.map((l) => (
-              <Link key={l.href} href={l.href} className="hover:text-brand-300 transition-colors">
-                {l.name}
-              </Link>
+      <div className="border-t border-white/10">
+        <Container className="flex flex-col items-center justify-between gap-2 py-3 text-xs sm:flex-row">
+          <p>
+            © {new Date().getFullYear()} {COMPANY.legalName}
+          </p>
+          <ul className="flex flex-wrap justify-center gap-x-5">
+            {FOOTER_LEGAL.map((lien) => (
+              <li key={lien.href}>
+                <Link href={lien.href} className="inline-flex min-h-tap items-center hover:text-white hover:underline">
+                  {lien.label}
+                </Link>
+              </li>
             ))}
-          </div>
-        </div>
+          </ul>
+        </Container>
       </div>
     </footer>
   );
