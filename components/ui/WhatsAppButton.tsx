@@ -22,7 +22,7 @@ export default function WhatsAppButton() {
       href={getWhatsAppLink(getPageWhatsAppMessage(pathname))}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="Contacter NexClean sur WhatsApp"
+      aria-label="Contacter NEXCLEAN sur WhatsApp"
       className="
         hidden lg:flex
         fixed bottom-6 right-6 z-50

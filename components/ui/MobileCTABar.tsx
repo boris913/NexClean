@@ -1,42 +1,38 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Phone, FileText } from 'lucide-react';
-import WhatsAppIcon from '@/components/ui/WhatsAppIcon';
-import { TEL_LINK, getWhatsAppLink, getPageWhatsAppMessage } from '@/lib/constants';
+import { MessageCircle, Phone } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import { BRAND, TEL_LINK, getPageWhatsAppMessage, getWhatsAppLink } from '@/lib/constants';
+import { CTA_DEMANDE } from '@/components/navigation/nav-data';
 
-/** Barre d'action toujours visible sur mobile : WhatsApp / Devis / Appel. */
+/** Sur ces espaces, un devis n'a pas de sens : le CTA principal devient « Nous écrire » (docs/contenu.md §2). */
+const ESPACES_SANS_DEMANDE = ['/candidat', '/suivi', '/profil'];
+
+/** Barre d'action toujours visible sous lg : WhatsApp · Faire une demande (ou Nous écrire) · Appeler. */
 export default function MobileCTABar() {
   const pathname = usePathname() || '/';
+  const whatsapp = getWhatsAppLink(getPageWhatsAppMessage(pathname));
+  const sansDemande = ESPACES_SANS_DEMANDE.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
   return (
-    <div className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-white/90 backdrop-blur-xl border-t border-ink-200 shadow-[0_-8px_24px_-12px_rgba(19,26,18,0.2)] pb-[env(safe-area-inset-bottom)]">
-      <div className="grid grid-cols-[1fr_auto_auto] gap-2 px-3 py-2.5">
-        <a
-          href={getWhatsAppLink(getPageWhatsAppMessage(pathname))}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 h-12 rounded-full bg-whatsapp text-whatsapp-ink text-sm font-bold hover:bg-whatsapp-hover motion-safe:active:scale-[0.97] transition-transform"
-        >
-          <WhatsAppIcon className="w-5 h-5" />
-          WhatsApp / Devis
-        </a>
-        <Link
-          href="/contact"
-          aria-label="Formulaire de demande de devis"
-          className="flex items-center justify-center gap-1.5 h-12 px-4 rounded-full bg-cta text-ink-900 text-sm font-bold active:scale-[0.97] transition-transform"
-        >
-          <FileText className="w-4 h-4" />
-          Devis
-        </Link>
-        <a
-          href={TEL_LINK}
-          aria-label="Appeler NEXCLEAN SARL"
-          className="flex items-center justify-center h-12 w-12 rounded-full border border-ink-200 text-ink-800 active:scale-[0.97] transition-transform"
-        >
-          <Phone className="w-5 h-5" />
-        </a>
+    <div className="lg:hidden fixed bottom-0 inset-x-0 z-50 border-t border-ink-200 bg-white/95 backdrop-blur-md shadow-card pb-[env(safe-area-inset-bottom)]">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] gap-2 px-3 py-2.5">
+        <Button href={whatsapp} variant="whatsapp" size="sm" whatsappIcon className="!px-3">
+          WhatsApp
+        </Button>
+        {sansDemande ? (
+          <Button href={whatsapp} size="sm" icon={MessageCircle} className="!px-2 whitespace-nowrap">
+            Nous écrire
+          </Button>
+        ) : (
+          <Button href={CTA_DEMANDE.href} size="sm" className="!px-2 whitespace-nowrap">
+            {CTA_DEMANDE.label}
+          </Button>
+        )}
+        <Button href={TEL_LINK} variant="outline" size="sm" icon={Phone} aria-label={`Appeler ${BRAND.name}`} className="w-11 !px-0">
+          {null}
+        </Button>
       </div>
     </div>
   );
