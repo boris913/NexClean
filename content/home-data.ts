@@ -154,7 +154,7 @@ export const PARCOURS: Etape[] = [
   },
   {
     titre: 'Nous établissons le devis',
-    texte: 'Un référent précise votre besoin avec vous, puis vous envoie un devis à accepter en ligne.',
+    texte: 'Un référent précise votre besoin avec vous, puis vous envoie un devis.',
     icon: 'FileText',
   },
   {
@@ -164,7 +164,7 @@ export const PARCOURS: Etape[] = [
   },
   {
     titre: 'Vous suivez en ligne',
-    texte: 'Statut, documents, factures et reçus sur votre page de suivi personnelle.',
+    texte: 'Statut et documents sur votre page de suivi personnelle ; pour un recrutement, devis, factures et reçus aussi.',
     icon: 'MonitorSmartphone',
   },
 ];
@@ -207,9 +207,9 @@ export const SUIVI_EN_LIGNE = {
     'Chaque demande reçoit un numéro de dossier et un lien de suivi personnel, envoyé par WhatsApp. Pas de compte à créer, pas de mot de passe à retenir.',
   points: [
     'Statut de votre dossier, étape par étape',
-    'Devis à accepter en ligne',
-    'Factures et reçus à télécharger',
-    'Profils proposés, pour un recrutement',
+    'Pour un recrutement : devis à accepter en ligne',
+    'Pour un recrutement : factures et reçus à télécharger',
+    'Pour un recrutement : profils proposés',
   ],
   mention: 'Les 4 derniers chiffres de votre numéro WhatsApp protègent l’accès à vos documents.',
   icon: 'MonitorSmartphone',

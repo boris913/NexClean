@@ -89,12 +89,12 @@ export const WHY_US = [
   },
   {
     title: 'Des devis clairs',
-    description: 'Montants en FCFA, conditions de paiement écrites, devis à accepter en ligne.',
+    description: 'Montants en FCFA, conditions de paiement écrites ; pour un recrutement, devis à accepter en ligne.',
     icon: 'FileText',
   },
   {
     title: 'Un suivi en ligne',
-    description: 'Statut, documents, factures et reçus réunis sur une page de suivi, sans compte à créer.',
+    description: 'Statut et documents réunis sur une page de suivi, sans compte à créer ; devis, factures et reçus pour un recrutement.',
     icon: 'ClipboardCheck',
   },
   {
@@ -138,7 +138,7 @@ export const FAQ_SUIVI: FaqItem[] = [
   {
     question: 'Comment suivre ma demande en ligne ?',
     answer:
-      "Après l'envoi de votre demande, vous recevez un numéro de dossier et un lien de suivi personnel, sans compte ni mot de passe. Cette page affiche le statut de votre dossier, le devis à accepter, vos factures et reçus et, pour un recrutement, les profils proposés. Les 4 derniers chiffres de votre numéro WhatsApp vous sont demandés avant d'afficher les documents. Ne partagez pas ce lien.",
+      "Après l'envoi de votre demande, vous recevez un numéro de dossier et un lien de suivi personnel, sans compte ni mot de passe. Cette page affiche le statut de votre dossier et, pour un recrutement, le devis à accepter, vos factures et reçus et les profils proposés. Les 4 derniers chiffres de votre numéro WhatsApp vous sont demandés avant d'afficher les documents. Ne partagez pas ce lien.",
   },
 ];
 
