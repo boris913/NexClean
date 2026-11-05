@@ -58,7 +58,7 @@ export function resolveButtonVariant(variant: ButtonVariant | LegacyButtonVarian
 }
 
 const base =
-  'group/btn relative inline-flex items-center justify-center font-semibold rounded-full select-none ' +
+  'group/btn relative inline-flex items-center justify-center font-semibold rounded-lg select-none ' +
   'transition-[background-color,border-color,color,box-shadow,transform] duration-300 ease-out-expo ' +
   'motion-safe:active:scale-[0.97] ' +
   'disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50';

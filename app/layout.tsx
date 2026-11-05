@@ -12,20 +12,20 @@ import {
   OG_IMAGE,
 } from '@/lib/seo';
 
-// Polices intégrées au dépôt (fichiers variables, sous-ensemble latin, licence OFL 1.1 dans
-// app/fonts/) : le build ne dépend plus du téléchargement depuis Google Fonts, qui échouait
-// par intermittence en CI.
-const fontBody = localFont({
-  src: './fonts/plus-jakarta-sans-latin-wght-normal.woff2',
-  variable: '--font-body',
-  weight: '200 800',
+// Polices intégrées au dépôt (sous-ensemble latin, licence OFL 1.1 dans app/fonts/) : le build ne
+// dépend pas de Google Fonts. Une seule famille (IBM Plex Sans, variable) pour les titres et le texte,
+// et sa déclinaison mono pour les chiffres, montants et numéros de dossier.
+const fontSans = localFont({
+  src: './fonts/ibm-plex-sans-latin-wght-normal.woff2',
+  variable: '--font-sans',
+  weight: '100 700',
   display: 'swap',
 });
 
-const fontDisplay = localFont({
-  src: './fonts/outfit-latin-wght-normal.woff2',
-  variable: '--font-display',
-  weight: '100 900',
+const fontMono = localFont({
+  src: './fonts/ibm-plex-mono-latin-500-normal.woff2',
+  variable: '--font-mono',
+  weight: '500',
   display: 'swap',
 });
 
@@ -101,7 +101,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${fontBody.variable} ${fontDisplay.variable}`}>
+    <html lang="fr" className={`${fontSans.variable} ${fontMono.variable}`}>
       <head>
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="dns-prefetch" href="https://wa.me" />

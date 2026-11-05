@@ -136,20 +136,25 @@ const config: Config = {
         accent: { DEFAULT: '#B54708', soft: '#FEF0E6', bright: '#F08A24' },
       },
       fontFamily: {
-        sans: ['var(--font-body)', 'system-ui', 'sans-serif'],
-        display: ['var(--font-display)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        // `font-display` conservé pour les titres : même famille, graisse portée par l'échelle.
+        display: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       // Échelle typographique unique (fluide : pas besoin de préfixes sm:/lg:).
       // Titres : à combiner avec `font-display` (déjà appliqué aux h1-h4 par globals.css).
       fontSize: {
-        display: ['clamp(2.5rem, 1.6rem + 3.6vw, 4.5rem)', { lineHeight: '1.02', letterSpacing: '-0.035em', fontWeight: '800' }],
-        h1: ['clamp(2.25rem, 1.65rem + 2.4vw, 3.75rem)', { lineHeight: '1.05', letterSpacing: '-0.03em', fontWeight: '800' }],
-        h2: ['clamp(1.875rem, 1.45rem + 1.7vw, 3rem)', { lineHeight: '1.1', letterSpacing: '-0.025em', fontWeight: '700' }],
-        h3: ['clamp(1.25rem, 1.15rem + 0.45vw, 1.5rem)', { lineHeight: '1.25', letterSpacing: '-0.015em', fontWeight: '700' }],
+        display: ['clamp(2.5rem, 1.75rem + 3vw, 4.25rem)', { lineHeight: '1.08', letterSpacing: '-0.02em', fontWeight: '600' }],
+        h1: ['clamp(2.25rem, 1.75rem + 2vw, 3.5rem)', { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '600' }],
+        h2: ['clamp(1.75rem, 1.45rem + 1.2vw, 2.5rem)', { lineHeight: '1.15', letterSpacing: '-0.015em', fontWeight: '600' }],
+        h3: ['clamp(1.25rem, 1.15rem + 0.45vw, 1.5rem)', { lineHeight: '1.3', letterSpacing: '-0.01em', fontWeight: '600' }],
         lead: ['clamp(1.0625rem, 1rem + 0.35vw, 1.25rem)', { lineHeight: '1.6' }],
         body: ['1rem', { lineHeight: '1.65' }],
         small: ['0.875rem', { lineHeight: '1.5' }],
-        eyebrow: ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.14em', fontWeight: '700' }],
+        // Surtitre en mono (à combiner avec `font-mono uppercase`).
+        eyebrow: ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.08em', fontWeight: '500' }],
+        // Chiffres clés, montants (à combiner avec `font-mono tabular-nums`).
+        figure: ['clamp(2rem, 1.6rem + 1.6vw, 3rem)', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '500' }],
       },
       // Largeur de conteneur unique (+ variante étroite) : remplace les max-w-* épars.
       maxWidth: {
@@ -164,8 +169,9 @@ const config: Config = {
         tap: '2.75rem',
       },
       borderRadius: {
-        card: '1.5rem',
-        '4xl': '2rem',
+        // Rayons sobres (institutionnel) : cartes 12 px, grands blocs 16 px.
+        card: '0.75rem',
+        '4xl': '1rem',
       },
       boxShadow: {
         card: '0 1px 2px 0 rgba(10,22,38,0.04), 0 8px 24px -4px rgba(10,22,38,0.08)',
