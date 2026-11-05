@@ -116,3 +116,14 @@ Le poste a 7,9 Go de RAM, dont environ 0,8 Go libre au repos. Trois `next dev` e
 - À partir de là, on exécute **une seule tâche lourde à la fois** (build, tests, serveur + navigateur). Les lots déjà codés ont été fusionnés avant d'être vérifiés, une seule fois, sur la branche commune.
 - **Conséquence** : la vérification visuelle des lots 1 et 3 n'a pas de rapport d'agent. Elle est reprise par la QA.
 - **Description des CGV** : l'agent annonçait « recrutement & placement », alors que le texte des CGV n'en parle pas. Elle est ramenée au contenu réel, tant que cette section n'est pas rédigée.
+
+## D-17 — Suites de la QA (`docs/qa.md` : 0 bloquant, 6 majeurs, 17 mineurs)
+- **M1, corrigé** : le code (`lib/devis/client.ts`, `lib/encaissements/suivi.ts`) ne fournit devis, factures et reçus en ligne que pour les dossiers de recrutement. Les textes de l'accueil, de la FAQ et des arguments le précisent désormais.
+- **M5, corrigé** : la marque s'écrit « NEXCLEAN » dans les textes visibles (contenus, blog, alt, metadata, JSON-LD `Brand`, raccourci du manifest devenu neutre). Restent en « NexClean » : les témoignages, qui sont des citations, et le préfixe `Bonjour NexClean,` des formulaires, figé par un test.
+- **Mineur, corrigé** : la `themeColor` passe au vert profond `#2C4B1A`.
+- **Renvoyé à l'utilisateur, sans modification** :
+  - **M2** : la garantie de remplacement et le non-contournement s'affichent dans les devis (`lib/parametres.ts:46-47`). C'est de la logique métier et du contractuel.
+  - **M3** : les promesses commerciales du blog (« satisfaction garantie », « garantie de résultat »…). C'est éditorial et commercial.
+  - **M4** : l'article « Maison NEXCLEAN Paris ».
+  - **M6** : il manque le `datePosted` des offres. Aucune date réelle n'est connue, on n'en invente pas.
+- **Laissés en l'état, sans enjeu** : le mot-clé « entreprise de nettoyage » (meta keywords ignoré par Google), les cibles tactiles sous 44 px dans le footer et le fil d'Ariane, l'absence de variante `danger` du bouton, le processus de `/a-propos` centré sur la propreté, et l'espace vide à droite du hero clair à partir de 1024 px. Voir `docs/qa.md`.
