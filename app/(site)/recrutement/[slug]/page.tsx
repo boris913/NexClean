@@ -13,10 +13,15 @@ import {
   AlertCircle,
   ArrowRight,
 } from 'lucide-react';
-import PageHero from '@/components/ui/PageHero';
 import Button from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
+import Container from '@/components/ui/Container';
+import JsonLd from '@/components/ui/JsonLd';
+import PageHero from '@/components/ui/PageHero';
+import Section from '@/components/ui/Section';
+import SectionHeader from '@/components/ui/SectionHeader';
 import { getJobBySlug, openJobs } from '@/content/jobs-data';
-import { pageMetadata } from '@/lib/seo';
+import { jobPostingSchema, pageMetadata } from '@/lib/seo';
 import { listesLieux, type ListesLieux } from '@/lib/geo/service';
 import { candidatConnecte } from '@/lib/candidats/session';
 import { aDejaPostule } from '@/lib/candidats/candidatures';
@@ -41,7 +46,7 @@ export async function generateMetadata({
   const job = getJobBySlug(slug);
   if (!job) return {};
   const meta = pageMetadata({
-    title: `${job.title} — Recrutement`,
+    title: `${job.title} — Offre d'emploi`,
     description: job.description.slice(0, 160),
     path: `/recrutement/${slug}`,
   });
@@ -49,6 +54,8 @@ export async function generateMetadata({
     ? { ...meta, robots: { index: false, follow: false } }
     : meta;
 }
+
+const titreBloc = 'font-display text-h3 text-ink-900 mb-4';
 
 export default async function JobDetailPage({
   params,
@@ -61,11 +68,14 @@ export default async function JobDetailPage({
 
   const otherOpenJobs = openJobs.filter((j) => j.slug !== job.slug).slice(0, 3);
   const profileItems = job.profile ?? job.requirements;
+  const schema = jobPostingSchema(job);
 
   return (
     <>
+      {schema && <JsonLd data={schema} />}
       <PageHero
         label={job.status === 'open' ? 'Offre ouverte' : 'Offre fermée'}
+        pillar="emploi"
         title={job.title}
         subtitle={job.description}
         breadcrumb={[
@@ -74,89 +84,82 @@ export default async function JobDetailPage({
         ]}
       >
         {job.status === 'open' ? (
-          <Button href="#candidature" variant="primary" size="lg">
+          <Button href="#candidature" size="lg">
             Postuler à cette offre
           </Button>
         ) : (
-          <Button href="/candidat/inscription" variant="primary" size="lg">
+          <Button href="/candidat/inscription" size="lg">
             {LIBELLE_OFFRE_POURVUE}
           </Button>
         )}
-        <Button href="/recrutement" variant="secondary" size="lg">
+        <Button href="/recrutement" variant="outline" size="lg">
           Toutes les offres
         </Button>
       </PageHero>
 
       {/* Barre meta */}
-      <section className="bg-white border-b border-slate-100">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-600">
+      <div className="bg-white border-b border-ink-100">
+        <Container className="py-4">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-600">
             <span className="inline-flex items-center gap-1.5">
-              <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+              <MapPin className="w-4 h-4 text-pillar-emploi flex-shrink-0" aria-hidden="true" />
               {job.location}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Briefcase className="w-4 h-4 text-primary flex-shrink-0" />
+              <Briefcase className="w-4 h-4 text-pillar-emploi flex-shrink-0" aria-hidden="true" />
               {job.contract}
             </span>
             {job.sector && (
               <span className="inline-flex items-center gap-1.5">
-                <Briefcase className="w-4 h-4 text-primary flex-shrink-0" />
+                <Briefcase className="w-4 h-4 text-pillar-emploi flex-shrink-0" aria-hidden="true" />
                 {job.sector}
               </span>
             )}
             {job.positions && job.positions > 1 && (
               <span className="inline-flex items-center gap-1.5">
-                <Users className="w-4 h-4 text-primary flex-shrink-0" />
+                <Users className="w-4 h-4 text-pillar-emploi flex-shrink-0" aria-hidden="true" />
                 {job.positions} postes à pourvoir
               </span>
             )}
             {job.salary?.base && (
               <span className="inline-flex items-center gap-1.5 font-semibold text-ink-900">
-                <Banknote className="w-4 h-4 text-primary flex-shrink-0" />
+                <Banknote className="w-4 h-4 text-pillar-emploi flex-shrink-0" aria-hidden="true" />
                 {job.salary.base}
               </span>
             )}
           </div>
-        </div>
-      </section>
+        </Container>
+      </div>
 
       {/* Bandeau offre fermée */}
       {job.status === 'closed' && (
-        <section className="bg-amber-50 border-b border-amber-100">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-amber-900">
+        <div className="bg-warning-soft border-b border-warning-border">
+          <Container className="py-4 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" aria-hidden="true" />
+            <p className="text-sm text-ink-800">
               Cette offre est pourvue.{' '}
               <Link href="/candidat/inscription" className="font-semibold underline">
                 Inscrivez-vous gratuitement
               </Link>{' '}
               pour être contacté(e) dès qu’une offre correspond à votre profil.
             </p>
-          </div>
-        </section>
+          </Container>
+        </div>
       )}
 
       {/* Contenu principal + salaire */}
-      <section className="py-12 sm:py-16 bg-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-[1fr_320px] gap-10">
+      <Section spacing="sm">
+        <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
           <div className="space-y-10">
-            {job.intro && (
-              <p className="text-slate-700 leading-relaxed text-lg">{job.intro}</p>
-            )}
+            {job.intro && <p className="text-lead text-ink-700">{job.intro}</p>}
 
             {job.missions && job.missions.length > 0 && (
               <div>
-                <h2 className="font-display font-bold text-2xl text-ink-900 mb-4">
-                  Vos missions
-                </h2>
+                <h2 className={titreBloc}>Vos missions</h2>
                 <ul className="space-y-2.5">
                   {job.missions.map((m, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-slate-700">
-                      <CheckCircle2
-                        className="w-4 h-4 text-success flex-shrink-0 mt-1"
-                        strokeWidth={2.5}
-                      />
+                    <li key={i} className="flex items-start gap-2.5 text-ink-700">
+                      <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0 mt-1" strokeWidth={2.5} aria-hidden="true" />
                       <span>{m}</span>
                     </li>
                   ))}
@@ -166,16 +169,11 @@ export default async function JobDetailPage({
 
             {profileItems.length > 0 && (
               <div>
-                <h2 className="font-display font-bold text-2xl text-ink-900 mb-4">
-                  Profil recherché
-                </h2>
+                <h2 className={titreBloc}>Profil recherché</h2>
                 <ul className="space-y-2.5">
                   {profileItems.map((p, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-slate-700">
-                      <CheckCircle2
-                        className="w-4 h-4 text-primary flex-shrink-0 mt-1"
-                        strokeWidth={2.5}
-                      />
+                    <li key={i} className="flex items-start gap-2.5 text-ink-700">
+                      <CheckCircle2 className="w-4 h-4 text-pillar-emploi flex-shrink-0 mt-1" strokeWidth={2.5} aria-hidden="true" />
                       <span>{p}</span>
                     </li>
                   ))}
@@ -185,13 +183,11 @@ export default async function JobDetailPage({
 
             {job.schedule && job.schedule.length > 0 && (
               <div>
-                <h2 className="font-display font-bold text-2xl text-ink-900 mb-4">
-                  Horaires
-                </h2>
-                <ul className="space-y-2 text-slate-700">
+                <h2 className={titreBloc}>Horaires</h2>
+                <ul className="space-y-2 text-ink-700">
                   {job.schedule.map((s, i) => (
                     <li key={i} className="flex items-start gap-2.5">
-                      <Clock className="w-4 h-4 text-primary flex-shrink-0 mt-1" />
+                      <Clock className="w-4 h-4 text-pillar-emploi flex-shrink-0 mt-1" aria-hidden="true" />
                       <span>{s}</span>
                     </li>
                   ))}
@@ -202,95 +198,71 @@ export default async function JobDetailPage({
 
           {/* Sidebar rémunération */}
           {job.salary && (
-            <aside className="lg:sticky lg:top-24 self-start">
-              <div className="rounded-2xl border border-brand-100 bg-brand-50 p-6">
+            <aside className="lg:sticky lg:top-24 self-start w-full">
+              <Card variant="pillar" pillar="emploi" padding="sm">
                 <div className="flex items-center gap-2 mb-4">
-                  <Banknote className="w-5 h-5 text-primary" />
-                  <h2 className="font-semibold text-ink-900">Rémunération</h2>
+                  <Banknote className="w-5 h-5 text-pillar-emploi" aria-hidden="true" />
+                  <h2 className="font-display text-h3 text-ink-900">Rémunération</h2>
                 </div>
                 {job.salary.base && (
                   <div className="mb-4">
-                    <p className="text-xs text-slate-500">
-                      {job.salary.fixed ? 'Salaire fixe' : 'Salaire de base'}
-                    </p>
+                    <p className="text-xs text-muted">{job.salary.fixed ? 'Salaire fixe' : 'Salaire de base'}</p>
                     <p className="text-lg font-bold text-ink-900">{job.salary.base}</p>
                   </div>
                 )}
                 {job.salary.bonus && (
                   <div className="mb-4">
-                    <p className="text-xs text-slate-500">Prime sur objectifs</p>
+                    <p className="text-xs text-muted">Prime sur objectifs</p>
                     <p className="text-sm font-semibold text-success">{job.salary.bonus}</p>
                   </div>
                 )}
                 {job.salary.target && (
-                  <div className="pt-4 border-t border-brand-200">
-                    <p className="text-xs text-slate-500">Rémunération cible</p>
+                  <div className="pt-4 border-t border-ink-100">
+                    <p className="text-xs text-muted">Rémunération cible</p>
                     <p className="text-xl font-extrabold text-primary">{job.salary.target}</p>
                   </div>
                 )}
-                {job.salary.note && (
-                  <p className="text-xs text-slate-500 mt-4 leading-relaxed">
-                    {job.salary.note}
-                  </p>
-                )}
-              </div>
+                {job.salary.note && <p className="text-xs text-muted mt-4 leading-relaxed">{job.salary.note}</p>}
+              </Card>
             </aside>
           )}
         </div>
-      </section>
+      </Section>
 
       {/* Candidature (offres ouvertes) ; offre pourvue : inscription au vivier */}
       {job.status === 'open' ? (
-        <section id="candidature" className="py-16 sm:py-20 bg-slate-50 scroll-mt-24">
-          <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8">
-              <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink-900 mb-2">Postuler à cette offre</h2>
-              <p className="text-slate-500">Quelques minutes suffisent. Vos données ne sont jamais publiées.</p>
-            </div>
-            <Postuler offre={{ slug: job.slug, titre: job.title }} metier={job.category === 'Candidature spontanée' ? '' : job.category} {...await contexteCandidature(job.slug)} />
-          </div>
-        </section>
+        <Section id="candidature" tone="muted" container="narrow" labelledBy="postuler-titre" className="scroll-mt-24">
+          <SectionHeader id="postuler-titre" align="center" title="Postuler à cette offre" intro="Quelques minutes suffisent. Vos données ne sont jamais publiées." className="!mb-8" />
+          <Postuler offre={{ slug: job.slug, titre: job.title }} metier={job.category === 'Candidature spontanée' ? '' : job.category} {...await contexteCandidature(job.slug)} />
+        </Section>
       ) : (
-        <section id="candidature" className="py-12 sm:py-16 bg-slate-50 scroll-mt-24">
-          <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="font-display font-bold text-2xl sm:text-3xl text-ink-900 mb-2">Offre pourvue</h2>
-            <p className="text-slate-600 mb-6">Créez votre profil candidat : un conseiller vous contacte dès qu’une offre vous correspond. C’est gratuit.</p>
-            <Button href="/candidat/inscription" variant="primary" size="lg">
-              {LIBELLE_OFFRE_POURVUE}
-            </Button>
-          </div>
-        </section>
+        <Section id="candidature" tone="muted" spacing="sm" container="narrow" labelledBy="pourvue-titre" className="scroll-mt-24 text-center">
+          <SectionHeader id="pourvue-titre" align="center" title="Offre pourvue" intro="Créez votre profil candidat : un conseiller vous contacte dès qu’une offre vous correspond. C’est gratuit." className="!mb-6" />
+          <Button href="/candidat/inscription" size="lg">
+            {LIBELLE_OFFRE_POURVUE}
+          </Button>
+        </Section>
       )}
 
       {/* Autres offres ouvertes */}
       {otherOpenJobs.length > 0 && (
-        <section className="py-12 sm:py-16 bg-white border-t border-slate-100">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="font-display font-bold text-2xl text-ink-900 mb-6">
-              Autres offres
-            </h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {otherOpenJobs.map((j) => (
-                <Link
-                  key={j.slug}
-                  href={`/recrutement/${j.slug}`}
-                  className="group block rounded-2xl border border-slate-100 bg-white p-5 hover:shadow-card-hover hover:border-brand-200 hover:-translate-y-0.5 transition-all"
-                >
-                  <h3 className="font-semibold text-slate-900 mb-1 group-hover:text-primary transition-colors">
-                    {j.title}
-                  </h3>
-                  <p className="text-xs text-slate-500 mb-3 inline-flex items-center gap-1">
-                    <MapPin className="w-3 h-3" /> {j.location}
-                  </p>
-                  <span className="inline-flex items-center gap-1 text-sm font-medium text-primary">
-                    Voir l&apos;offre
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                  </span>
-                </Link>
-              ))}
-            </div>
+        <Section spacing="sm" labelledBy="autres-offres-titre" className="border-t border-ink-100">
+          <SectionHeader id="autres-offres-titre" title="Autres offres" className="!mb-6" />
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {otherOpenJobs.map((j) => (
+              <Card key={j.slug} href={`/recrutement/${j.slug}`} variant="interactive" padding="sm">
+                <h3 className="font-display text-h3 text-ink-900 mb-1 transition-colors group-hover:text-primary">{j.title}</h3>
+                <p className="text-xs text-muted mb-3 inline-flex items-center gap-1">
+                  <MapPin className="w-3 h-3" aria-hidden="true" /> {j.location}
+                </p>
+                <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary mt-auto">
+                  Voir l&apos;offre
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform motion-safe:group-hover:translate-x-0.5" aria-hidden="true" />
+                </span>
+              </Card>
+            ))}
           </div>
-        </section>
+        </Section>
       )}
     </>
   );
