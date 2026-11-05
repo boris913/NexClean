@@ -1,15 +1,15 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { MessageCircle, Phone } from 'lucide-react';
+import { Phone } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { BRAND, TEL_LINK, getPageWhatsAppMessage, getWhatsAppLink } from '@/lib/constants';
 import { CTA_DEMANDE } from '@/components/navigation/nav-data';
 
-/** Sur ces espaces, un devis n'a pas de sens : le CTA principal devient « Nous écrire » (docs/contenu.md §2). */
+/** Sur ces espaces, un devis n'a pas de sens : WhatsApp seul, libellé « Nous écrire » (décisions D-15). */
 const ESPACES_SANS_DEMANDE = ['/candidat', '/suivi', '/profil'];
 
-/** Barre d'action toujours visible sous lg : WhatsApp · Faire une demande (ou Nous écrire) · Appeler. */
+/** Barre d'action toujours visible sous lg : WhatsApp · Faire une demande · Appeler (ou Nous écrire · Appeler). */
 export default function MobileCTABar() {
   const pathname = usePathname() || '/';
   const whatsapp = getWhatsAppLink(getPageWhatsAppMessage(pathname));
@@ -17,15 +17,11 @@ export default function MobileCTABar() {
 
   return (
     <div className="lg:hidden fixed bottom-0 inset-x-0 z-50 border-t border-ink-200 bg-white/95 backdrop-blur-md shadow-card pb-[env(safe-area-inset-bottom)]">
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] gap-2 px-3 py-2.5">
+      <div className={`grid gap-2 px-3 py-2.5 ${sansDemande ? 'grid-cols-[minmax(0,1fr)_auto]' : 'grid-cols-[auto_minmax(0,1fr)_auto]'}`}>
         <Button href={whatsapp} variant="whatsapp" size="sm" whatsappIcon className="!px-3">
-          WhatsApp
+          {sansDemande ? 'Nous écrire' : 'WhatsApp'}
         </Button>
-        {sansDemande ? (
-          <Button href={whatsapp} size="sm" icon={MessageCircle} className="!px-2 whitespace-nowrap">
-            Nous écrire
-          </Button>
-        ) : (
+        {!sansDemande && (
           <Button href={CTA_DEMANDE.href} size="sm" className="!px-2 whitespace-nowrap">
             {CTA_DEMANDE.label}
           </Button>

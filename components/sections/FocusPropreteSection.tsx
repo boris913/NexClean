@@ -7,6 +7,7 @@ import Section from '@/components/ui/Section';
 import SectionHeader from '@/components/ui/SectionHeader';
 import { subscriptionPlans } from '@/components/sections/SubscriptionsSection';
 import { FOCUS_PROPRETE } from '@/content/home-data';
+import { PROMO } from '@/lib/constants';
 import { realisations } from '@/content/realisations-data';
 
 /** Focus propreté, condensé : une réalisation et les formules d'abonnement. */
@@ -21,6 +22,12 @@ export default function FocusPropreteSection() {
         title={FOCUS_PROPRETE.titre}
         intro={FOCUS_PROPRETE.sousTitre}
       />
+      {PROMO.active && (
+        <p className="mb-8 inline-flex flex-wrap items-center gap-2 rounded-2xl border border-pillar-proprete-border bg-pillar-proprete-soft px-4 py-2 text-small text-ink-700">
+          <span className="rounded-full bg-cta px-2.5 py-0.5 text-xs font-bold text-ink-900">{PROMO.discount}</span>
+          {PROMO.title} {PROMO.description}. {PROMO.condition}.
+        </p>
+      )}
       <div className="grid items-start gap-8 lg:grid-cols-2">
         {realisation && <RealisationCard item={realisation} />}
         <div>

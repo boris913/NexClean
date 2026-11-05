@@ -105,3 +105,8 @@ Toute information manquante (chiffres clés, témoignages réels sur le recrutem
 
 ## D-14 — Fin de Phase 2
 Contenu et Design System fusionnés dans `feat/refonte-positionnement` sans conflit. Typecheck et build réussis, 482/482 tests (dont 2 fichiers relancés seuls, cf. D-13). `react-icons` retiré, jamais importé. Le nouveau logo vit sur `feat/ux-backoffice` et ne recoupe cette branche que dans `lib/og-image.tsx`, sur des lignes distinctes.
+
+## D-15 — Arbitrages après l'intégration de l'accueil
+- **Promo `PROMO`** (-20 %, active) : l'accueil ne l'affichait plus. Elle revient dans le bloc Propreté, avec sa condition. Elle reste pilotée par `PROMO.active`.
+- **Barre mobile sur `/candidat`, `/suivi`, `/profil`** : un seul bouton WhatsApp, libellé « Nous écrire », plus Appeler. Écart assumé avec `docs/contenu.md` §2, qui donnait deux boutons vers le même lien.
+- **Adresse du footer** : retrait accepté. La valeur `CONTACT.address` (« Douala, Cameroun ») contredit la couverture Douala et Yaoundé affichée. Elle reste dans le JSON-LD.
