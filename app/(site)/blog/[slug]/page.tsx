@@ -1,7 +1,10 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
+import CTASection from '@/components/sections/CTASection';
+import { CTA_FINAL } from '@/content/home-data';
 import { getPostBySlug, getAllPostSlugs } from '@/lib/blog';
+import { SITE_URL, pageMetadata } from '@/lib/seo';
 import BlogPostClient from './BlogPostClient';
-import { Metadata } from 'next';
 
 export async function generateStaticParams() {
   const slugs = await getAllPostSlugs();
@@ -16,34 +19,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const post = await getPostBySlug(slug);
 
-  if (!post) {
-    return {
-      title: 'Article non trouvé | NexClean',
-    };
-  }
+  if (!post) return { title: 'Article non trouvé' };
 
-  const coverImage = post.coverImage
-    ? `https://nexclean.xyz${post.coverImage}`
-    : 'https://nexclean.xyz/og-image.png';
+  // Sans image de couverture, pageMetadata se replie sur OG_IMAGE.
+  const base = pageMetadata({
+    title: post.title,
+    description: post.description,
+    path: `/blog/${slug}`,
+    image: post.coverImage || undefined,
+  });
 
   return {
-    title: `${post.title} | Blog NexClean`,
-    description: post.description,
+    ...base,
     openGraph: {
-      title: post.title,
-      description: post.description,
-      url: `https://nexclean.xyz/blog/${slug}`,
-      images: [{ url: coverImage, width: 1200, height: 630, alt: post.title }],
+      ...base.openGraph,
       type: 'article',
       publishedTime: post.date,
       authors: [post.author],
       tags: post.tags,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: post.title,
-      description: post.description,
-      images: [coverImage],
+      ...(post.coverImage ? { images: [{ url: `${SITE_URL}${post.coverImage}`, alt: post.title }] } : {}),
     },
   };
 }
@@ -52,7 +46,19 @@ export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
   if (!post) notFound();
-  return <BlogPostClient post={post} />;
+  return (
+    <>
+      <BlogPostClient post={post} />
+      <CTASection
+        title={CTA_FINAL.titre}
+        subtitle={CTA_FINAL.texte}
+        formLabel={CTA_FINAL.cta.label}
+        formHref={CTA_FINAL.cta.href}
+        whatsappLabel={CTA_FINAL.whatsapp.label}
+        whatsappMessage={CTA_FINAL.whatsapp.message}
+      />
+    </>
+  );
 }
 
 export const revalidate = 3600;
