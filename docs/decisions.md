@@ -110,3 +110,9 @@ Contenu et Design System fusionnés dans `feat/refonte-positionnement` sans conf
 - **Promo `PROMO`** (-20 %, active) : l'accueil ne l'affichait plus. Elle revient dans le bloc Propreté, avec sa condition. Elle reste pilotée par `PROMO.active`.
 - **Barre mobile sur `/candidat`, `/suivi`, `/profil`** : un seul bouton WhatsApp, libellé « Nous écrire », plus Appeler. Écart assumé avec `docs/contenu.md` §2, qui donnait deux boutons vers le même lien.
 - **Adresse du footer** : retrait accepté. La valeur `CONTACT.address` (« Douala, Cameroun ») contredit la couverture Douala et Yaoundé affichée. Elle reste dans le JSON-LD.
+
+## D-16 — Plus de vérifications parallèles sur cette machine
+Le poste a 7,9 Go de RAM, dont environ 0,8 Go libre au repos. Trois `next dev` et trois navigateurs simultanés l'ont saturée, et la session a été interrompue : agents, serveurs et base jetable arrêtés, travail intact sur le disque. L'erreur vient de l'organisation parallèle prévue en D-10.
+- À partir de là, on exécute **une seule tâche lourde à la fois** (build, tests, serveur + navigateur). Les lots déjà codés ont été fusionnés avant d'être vérifiés, une seule fois, sur la branche commune.
+- **Conséquence** : la vérification visuelle des lots 1 et 3 n'a pas de rapport d'agent. Elle est reprise par la QA.
+- **Description des CGV** : l'agent annonçait « recrutement & placement », alors que le texte des CGV n'en parle pas. Elle est ramenée au contenu réel, tant que cette section n'est pas rédigée.
