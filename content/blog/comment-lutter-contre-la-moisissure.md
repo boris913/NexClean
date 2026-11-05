@@ -2,7 +2,7 @@
 title: "Comment lutter contre la moisissure en saison des pluies à Douala"
 description: "Conseils spécifiques au climat tropical pour protéger vos murs, meubles et textiles de l'humidité et des moisissures."
 date: "2026-03-30"
-author: "Équipe NexClean"
+author: "Équipe NEXCLEAN"
 tags: ["Moisissure", "Humidité", "Saison des pluies", "Conseils", "Douala"]
 coverImage: "/images/blog/comment-lutter-contre-la-moisissure.png"
 isPublished: true
@@ -16,7 +16,7 @@ isPublished: true
 
 À Douala, la saison des pluies apporte son lot de défis pour l’entretien de nos intérieurs. L’humidité ambiante, souvent supérieure à 80 %, crée un terrain de jeu idéal pour les moisissures. Taches noires sur les murs, odeurs de renfermé, textiles tachés… Ces nuisances ne sont pas seulement inesthétiques : elles peuvent aussi nuire à votre santé et à celle de votre famille.
 
-Chez **NexClean**, nous intervenons régulièrement pour traiter ces problèmes en profondeur. Voici nos conseils pour prévenir et éliminer la moisissure dans votre maison ou votre bureau.
+Chez **NEXCLEAN**, nous intervenons régulièrement pour traiter ces problèmes en profondeur. Voici nos conseils pour prévenir et éliminer la moisissure dans votre maison ou votre bureau.
 
 ---
 
@@ -91,7 +91,7 @@ Avant de nettoyer, protégez-vous : portez des gants, un masque (pour ne pas inh
 
 Si les moisissures persistent malgré vos efforts, ou si elles sont très étendues (plus d’1 m²), il est préférable de confier le travail à des spécialistes.
 
-**NexClean** intervient pour :
+**NEXCLEAN** intervient pour :
 
 - **Diagnostiquer** l’origine de l’humidité (infiltration, condensation, défaut d’aération)
 - **Traiter** les surfaces avec des produits professionnels biocides sans danger après séchage
@@ -127,7 +127,7 @@ Résultat : l’odeur a disparu, et les taches ne sont jamais réapparues.
 
 ## 8. Besoin d’un nettoyage professionnel anti-moisissure ?
 
-Ne laissez pas l’humidité dégrader votre confort et votre santé. **NexClean** vous propose un diagnostic gratuit à Douala et ses environs. Nos techniciens utilisent des équipements et produits adaptés pour un résultat durable.
+Ne laissez pas l’humidité dégrader votre confort et votre santé. **NEXCLEAN** vous propose un diagnostic gratuit à Douala et ses environs. Nos techniciens utilisent des équipements et produits adaptés pour un résultat durable.
 
 📞 **Contactez-nous dès maintenant pour un devis sans engagement**  
 6 96 37 04 79 | https://nexclean.xyz

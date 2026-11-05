@@ -16,9 +16,9 @@
   ],
   "shortcuts": [
     {
-      "name": "Devis WhatsApp",
-      "short_name": "Devis",
-      "url": "https://wa.me/237696370479?text=Bonjour%20NexClean%2C%20je%20souhaite%20un%20devis",
+      "name": "Écrire sur WhatsApp",
+      "short_name": "WhatsApp",
+      "url": "https://wa.me/237696370479?text=Bonjour%20NEXCLEAN%2C%20j%27ai%20une%20demande",
       "icons": [{ "src": "/images/brand/icon-192.png", "sizes": "192x192" }]
     },
     {

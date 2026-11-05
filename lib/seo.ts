@@ -295,7 +295,7 @@ export const productSchema = (p: Product) => {
     name: p.name,
     description: p.description,
     image: p.images.map((img) => `${SITE_URL}${img.src}`),
-    brand: { '@type': 'Brand', name: 'NexClean' },
+    brand: { '@type': 'Brand', name: 'NEXCLEAN' },
     url: `${SITE_URL}/boutique/${p.slug}`,
     ...(priced.length > 0 && {
       offers: priced.map((f) => ({

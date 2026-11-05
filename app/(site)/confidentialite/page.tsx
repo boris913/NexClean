@@ -38,7 +38,7 @@ export default function ConfidentialitePage() {
       </ul>
       <p>
         Ces données servent exclusivement à étudier votre candidature et à vous recontacter. Elles sont accessibles uniquement
-        aux personnes chargées du recrutement chez NexClean, ne sont jamais publiées et ne sont pas cédées à des tiers.
+        aux personnes chargées du recrutement chez NEXCLEAN, ne sont jamais publiées et ne sont pas cédées à des tiers.
         Elles sont conservées au maximum <strong>2 ans</strong> après le dernier contact, sauf demande de suppression de votre part.
       </p>
 

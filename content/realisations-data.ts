@@ -41,17 +41,17 @@ export const realisations: Realisation[] = [
     location: 'Douala',
     problem: 'Chambre poussiéreuse, toiles d\'araignée en hauteur et traces sur les murs.',
     intervention: 'Dépoussiérage des hauteurs et des rideaux, nettoyage des murs accessibles et lavage des sols.',
-    before: { src: '/images/blog/avant-intervention.jpeg', alt: 'Chambre avant intervention NexClean à Douala' },
-    during: { src: '/images/blog/pendant.jpeg', alt: 'Agent NexClean dépoussiérant les hauteurs d\'une chambre' },
+    before: { src: '/images/blog/avant-intervention.jpeg', alt: 'Chambre avant intervention NEXCLEAN à Douala' },
+    during: { src: '/images/blog/pendant.jpeg', alt: 'Agent NEXCLEAN dépoussiérant les hauteurs d\'une chambre' },
   },
 ];
 
 /** Photos d'équipe en intervention (réelles). */
 export const fieldPhotos = [
-  { src: '/images/team/equipe-nexclean1.jpeg', alt: 'Agent NexClean en intervention' },
-  { src: '/images/team/equipe-nexclean2.jpeg', alt: 'Équipe NexClean au travail' },
-  { src: '/images/team/equipe-nexclean3.jpeg', alt: 'Intervention NexClean' },
-  { src: '/images/team/equipe-nexclean4.jpeg', alt: 'Matériel NexClean en intervention' },
-  { src: '/images/team/equipe-nexclean6.jpeg', alt: 'Équipe NexClean en intervention' },
-  { src: '/images/team/equipe-nexclean8.jpeg', alt: 'Nettoyage par NexClean' },
+  { src: '/images/team/equipe-nexclean1.jpeg', alt: 'Agent NEXCLEAN en intervention' },
+  { src: '/images/team/equipe-nexclean2.jpeg', alt: 'Équipe NEXCLEAN au travail' },
+  { src: '/images/team/equipe-nexclean3.jpeg', alt: 'Intervention NEXCLEAN' },
+  { src: '/images/team/equipe-nexclean4.jpeg', alt: 'Matériel NEXCLEAN en intervention' },
+  { src: '/images/team/equipe-nexclean6.jpeg', alt: 'Équipe NEXCLEAN en intervention' },
+  { src: '/images/team/equipe-nexclean8.jpeg', alt: 'Nettoyage par NEXCLEAN' },
 ];

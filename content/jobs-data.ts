@@ -215,7 +215,7 @@ export const jobs: Job[] = [
     missions: [
       'Prospecter quotidiennement les entreprises, restaurants, hôtels, bureaux, commerces, résidences et autres établissements.',
       'Identifier les besoins des prospects en propreté, entretien et personnel.',
-      'Présenter clairement les prestations et les avantages de NexClean.',
+      'Présenter clairement les prestations et les avantages de NEXCLEAN.',
       'Distribuer les supports commerciaux et recueillir les contacts professionnels.',
       'Obtenir des rendez-vous pour les visites techniques et les devis.',
       "Relancer régulièrement les prospects jusqu'à l'obtention d'une réponse.",
@@ -283,7 +283,7 @@ export const jobs: Job[] = [
     location: 'Douala',
     contract: 'À préciser',
     status: 'closed',
-    description: 'Développer le portefeuille de clients professionnels et promouvoir les produits NexClean.',
+    description: 'Développer le portefeuille de clients professionnels et promouvoir les produits NEXCLEAN.',
     requirements: ['Aisance relationnelle', 'Expérience en prospection B2B appréciée'],
   },
 ];

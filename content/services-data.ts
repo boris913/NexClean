@@ -39,7 +39,7 @@ export const services: Service[] = [
     seo: {
       title: 'Nettoyage maison et appartement à Douala et Yaoundé',
       description:
-        'Nettoyage de maisons, appartements et studios à Douala et Yaoundé par NexClean : sols, sanitaires, cuisine, grand nettoyage et emménagement. Devis rapide sur WhatsApp.',
+        'Nettoyage de maisons, appartements et studios à Douala et Yaoundé par NEXCLEAN : sols, sanitaires, cuisine, grand nettoyage et emménagement. Devis rapide sur WhatsApp.',
       h1: 'Nettoyage maison & appartement à Douala et Yaoundé',
       intro:
         "Que ce soit pour un entretien ponctuel, un grand nettoyage ou avant/après un déménagement, nos équipes remettent votre logement au propre avec le matériel et les produits adaptés.",
@@ -77,7 +77,7 @@ export const services: Service[] = [
     seo: {
       title: 'Nettoyage fin de chantier à Douala et Yaoundé',
       description:
-        'Nettoyage après travaux et fin de chantier à Douala et Yaoundé : dépoussiérage, sols, vitres, traces de peinture. État des lieux et devis sur mesure par NexClean.',
+        'Nettoyage après travaux et fin de chantier à Douala et Yaoundé : dépoussiérage, sols, vitres, traces de peinture. État des lieux et devis sur mesure par NEXCLEAN.',
       h1: 'Nettoyage fin de chantier à Douala et Yaoundé',
       intro:
         "Après des travaux, la poussière et les résidus s'infiltrent partout. Nous préparons vos locaux pour une remise des clés ou un emménagement dans de bonnes conditions.",
@@ -113,7 +113,7 @@ export const services: Service[] = [
     seo: {
       title: 'Désinfection de locaux à Douala et Yaoundé',
       description:
-        'Désinfection de maisons, bureaux et commerces à Douala et Yaoundé : surfaces de contact, sanitaires, zones à fort passage. Devis rapide par NexClean.',
+        'Désinfection de maisons, bureaux et commerces à Douala et Yaoundé : surfaces de contact, sanitaires, zones à fort passage. Devis rapide par NEXCLEAN.',
       h1: 'Désinfection de locaux à Douala et Yaoundé',
       intro:
         'Nous traitons en priorité les surfaces les plus touchées et les zones sanitaires, en complément ou en dehors d\'un nettoyage classique.',

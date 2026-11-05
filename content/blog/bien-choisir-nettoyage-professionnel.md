@@ -2,7 +2,7 @@
 title: "Comment bien choisir son service de Nettoyage Professionnel à Douala et à Yaoundé ?"
 description: "Conseils pratiques pour sélectionner le prestataire idéal pour l'entretien de votre maison ou bureau."
 date: "2025-04-01"
-author: "Équipe NexClean"
+author: "Équipe NEXCLEAN"
 tags: ["Conseils", "Nettoyage", "Douala"]
 coverImage: "/images/blog/nettoyage-professionnel.png"
 isPublished: true
@@ -36,4 +36,4 @@ Renseignez-vous sur les assurances et les garanties en cas de dommages. Un profe
 
 Prenez le temps de comparer et de poser toutes vos questions. Un bon prestataire vous mettra en confiance et saura répondre à vos besoins spécifiques.
 
-**NexClean** répond à tous ces critères : équipe formée, matériel professionnel, produits certifiés, devis gratuit et satisfaction garantie. Contactez-nous pour en discuter !
+**NEXCLEAN** répond à tous ces critères : équipe formée, matériel professionnel, produits certifiés, devis gratuit et satisfaction garantie. Contactez-nous pour en discuter !

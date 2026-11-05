@@ -2,7 +2,7 @@
 title: "Pourquoi un devis de nettoyage sur site est plus fiable qu’un tarif au forfait"
 description: "Découvrez pourquoi une évaluation personnalisée sur place garantit un prix juste, un travail adapté et aucune mauvaise surprise."
 date: "2026-04-17"
-author: "Équipe NexClean"
+author: "Équipe NEXCLEAN"
 tags: ["Devis", "Nettoyage", "professionnel", "Conseils", "Douala", "Transparence"]
 coverImage: "/images/blog/devis-sur-site.png"
 isPublished: true
@@ -14,7 +14,7 @@ isPublished: true
 
 ---
 
-Vous avez besoin d’un nettoyage pour votre maison ou vos bureaux. Vous contactez plusieurs prestataires. Certains vous donnent un prix immédiat par téléphone ou via un formulaire. D’autres, comme **NexClean**, insistent pour se déplacer et établir un devis sur site.
+Vous avez besoin d’un nettoyage pour votre maison ou vos bureaux. Vous contactez plusieurs prestataires. Certains vous donnent un prix immédiat par téléphone ou via un formulaire. D’autres, comme **NEXCLEAN**, insistent pour se déplacer et établir un devis sur site.
 
 **Pourquoi cette différence ?** Et surtout, quelle option est la plus fiable pour vous ?
 
@@ -104,7 +104,7 @@ Deux maisons identiques en superficie. L’une est vide et bien entretenue. L’
 
 ---
 
-## 8. Chez NexClean, le devis sur site est notre signature
+## 8. Chez NEXCLEAN, le devis sur site est notre signature
 
 Nous refusons les devis « à l’aveugle ». Par respect pour vous et pour notre travail. Chaque intervention est unique, et nous la traitons comme telle.
 
@@ -129,7 +129,7 @@ Souvent, ces forfaits cachent des prestations minimales, voire des arnaques.
 
 ## 10. Prêt à obtenir un devis fiable et transparent ?
 
-Chez **NexClean**, nous croyons que la confiance se construit sur la transparence. Venez découvrir notre approche. Nous nous déplaçons gratuitement à Douala et ses environs pour évaluer vos besoins.
+Chez **NEXCLEAN**, nous croyons que la confiance se construit sur la transparence. Venez découvrir notre approche. Nous nous déplaçons gratuitement à Douala et ses environs pour évaluer vos besoins.
 
 📞 **Contactez-nous dès aujourd’hui**  
 6 96 37 04 79 | https://nexclean.xyz  
