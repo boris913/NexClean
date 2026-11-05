@@ -3,7 +3,9 @@
 // client l'a autorisé), retours des clients sur les profils.
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { AlertTriangle, ChevronRight, FileText, User } from 'lucide-react';
+import { AlertTriangle, FileText, User } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import { cardClasses } from '@/components/ui/Card';
 import { lireEspace } from '@/lib/candidats/service';
 import { lireCandidaturesCandidat } from '@/lib/candidats/candidatures';
 import { STATUTS_CANDIDATURE_CANDIDAT } from '@/lib/candidats/formulaire-candidature';
@@ -35,11 +37,14 @@ function versAffichage(p: PropositionCandidat): PropositionAffichee {
 }
 
 const TONS: Partial<Record<PropositionCandidat['statut'], string>> = {
-  proposee: 'bg-blue-50 text-blue-800',
-  entretien: 'bg-amber-50 text-amber-900',
-  retenue: 'bg-green-50 text-green-800',
-  placee: 'bg-green-100 text-green-900',
+  proposee: 'bg-info-soft text-info',
+  entretien: 'bg-warning-soft text-warning',
+  retenue: 'bg-success-soft text-success',
+  placee: 'bg-success-soft text-success',
 };
+
+const carte = cardClasses({ padding: 'sm', className: 'space-y-3' });
+const titreCarte = 'font-display text-h3 text-ink-900';
 
 export default async function PageEspace() {
   const session = await exigerCandidat();
@@ -56,8 +61,8 @@ export default async function PageEspace() {
       <div className="space-y-4">
         <Notifications notifications={notifications.map((n) => ({ id: n.id, titre: n.titre, texte: n.texte, le: date(n.creeLe), lu: !!n.luLe }))} />
         {profilIncomplet && (
-          <div role="status" className="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-            <AlertTriangle className="w-5 h-5 shrink-0" />
+          <div role="status" className="flex gap-3 rounded-2xl border border-warning-border bg-warning-soft p-4 text-sm text-ink-800">
+            <AlertTriangle className="w-5 h-5 shrink-0 text-warning" aria-hidden="true" />
             <p>
               <strong>Profil incomplet.</strong> Votre candidature est bien enregistrée. Complétez votre profil (zones de travail, types de contrat, niveau d’études) pour être proposé(e) à d’autres offres :{' '}
               <Link href="/candidat/espace/profil" className="underline font-semibold">
@@ -68,8 +73,8 @@ export default async function PageEspace() {
           </div>
         )}
         {e.rappelMiseAJour && (
-          <div role="status" className="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-            <AlertTriangle className="w-5 h-5 shrink-0" />
+          <div role="status" className="flex gap-3 rounded-2xl border border-warning-border bg-warning-soft p-4 text-sm text-ink-800">
+            <AlertTriangle className="w-5 h-5 shrink-0 text-warning" aria-hidden="true" />
             <p>
               Votre profil n’a pas été mis à jour depuis plus de 6 mois. Vérifiez qu’il est toujours exact :{' '}
               <Link href="/candidat/espace/profil" className="underline font-semibold">
@@ -80,27 +85,24 @@ export default async function PageEspace() {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-5 space-y-3">
+        <div className={carte}>
           <div className="flex items-center justify-between gap-3">
-            <h2 className="font-semibold text-ink-900">Mon profil</h2>
+            <h2 className={titreCarte}>Mon profil</h2>
             <span className="text-sm font-semibold text-primary">{pourcentage} %</span>
           </div>
-          <div className="h-2 rounded-full bg-slate-100" role="progressbar" aria-valuenow={pourcentage} aria-valuemin={0} aria-valuemax={100} aria-label="Complétude du profil">
+          <div className="h-2 rounded-full bg-ink-100" role="progressbar" aria-valuenow={pourcentage} aria-valuemin={0} aria-valuemax={100} aria-label="Complétude du profil">
             <div className="h-2 rounded-full bg-primary" style={{ width: `${pourcentage}%` }} />
           </div>
-          {manquants.length > 0 && <p className="text-sm text-slate-600">Pour être mieux repéré(e), ajoutez : {manquants.slice(0, 3).join(', ')}.</p>}
-          <p className="text-xs text-slate-500">Dernière mise à jour : {date(e.candidat.profilMisAJourLe)}</p>
-          <Link href="/candidat/espace/profil" className="flex items-center justify-between min-h-12 px-4 rounded-xl border border-slate-200 font-semibold text-ink-900">
-            <span className="flex items-center gap-2">
-              <User className="w-4 h-4" /> Modifier mon profil
-            </span>
-            <ChevronRight className="w-4 h-4" />
-          </Link>
+          {manquants.length > 0 && <p className="text-sm text-ink-600">Pour être mieux repéré(e), ajoutez : {manquants.slice(0, 3).join(', ')}.</p>}
+          <p className="text-xs text-muted">Dernière mise à jour : {date(e.candidat.profilMisAJourLe)}</p>
+          <Button href="/candidat/espace/profil" variant="outline" icon={User} fullWidth>
+            Modifier mon profil
+          </Button>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-5 space-y-3">
-          <h2 className="font-semibold text-ink-900">Ma recherche</h2>
-          <p className="text-sm text-slate-600">
+        <div className={carte}>
+          <h2 className={titreCarte}>Ma recherche</h2>
+          <p className="text-sm text-ink-600">
             {e.enRecherche
               ? 'Vous êtes visible pour les offres qui correspondent à votre profil.'
               : e.place
@@ -108,19 +110,19 @@ export default async function PageEspace() {
                 : 'Vous n’êtes pas proposé(e) pour des offres en ce moment.'}
           </p>
           <BasculeRecherche enRecherche={e.enRecherche} />
-          <p className="text-xs text-slate-500">Métiers : {e.candidat.metiers.join(', ') || '—'}</p>
+          <p className="text-xs text-muted">Métiers : {e.candidat.metiers.join(', ') || '—'}</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-5 space-y-3">
-          <h2 className="font-semibold text-ink-900 flex items-center gap-2">
+        <div className={carte}>
+          <h2 className={`${titreCarte} flex items-center gap-2`}>
             <FileText className="w-4 h-4" /> Mes documents
           </h2>
           <Documents documents={e.documents.map((d) => ({ id: d.id, categorie: d.categorie, nom: d.nomOrigine, taille: d.taille }))} />
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-5 space-y-3">
-          <h2 className="font-semibold text-ink-900">Propositions et candidatures</h2>
-          <p className="text-sm text-slate-600">
+        <div className={carte}>
+          <h2 className={titreCarte}>Propositions et candidatures</h2>
+          <p className="text-sm text-ink-600">
             Quand un conseiller souhaite présenter votre profil à un employeur, la proposition apparaît ici : vous acceptez ou refusez d’être présenté(e). Rien n’est transmis sans votre accord.
           </p>
           {propositions.enAttente.length > 0 ? (
@@ -133,22 +135,22 @@ export default async function PageEspace() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-slate-500">Aucune proposition en attente de votre réponse.</p>
+            <p className="text-sm text-muted">Aucune proposition en attente de votre réponse.</p>
           )}
           {propositions.historique.length > 0 && (
             <div>
               <h3 className="text-sm font-semibold text-ink-900 mb-1">Mes propositions</h3>
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-ink-100">
                 {propositions.historique.map((p) => (
                   <li key={p.id} className="flex items-start justify-between gap-3 py-2 text-sm">
                     <span className="min-w-0">
                       <span className="block font-medium text-ink-900">{p.poste}</span>
-                      <span className="block text-xs text-slate-600">{p.client}</span>
-                      {p.reponseLe && <span className="block text-xs text-slate-500">Votre réponse le {date(p.reponseLe)}</span>}
-                      {p.entretienLieu && <span className="block text-xs text-slate-600">Lieu de l’entretien : {p.entretienLieu}</span>}
-                      {p.priseDePosteLe && <span className="block text-xs text-slate-600">Prise de poste le {dateJour(p.priseDePosteLe)}</span>}
+                      <span className="block text-xs text-ink-600">{p.client}</span>
+                      {p.reponseLe && <span className="block text-xs text-muted">Votre réponse le {date(p.reponseLe)}</span>}
+                      {p.entretienLieu && <span className="block text-xs text-ink-600">Lieu de l’entretien : {p.entretienLieu}</span>}
+                      {p.priseDePosteLe && <span className="block text-xs text-ink-600">Prise de poste le {dateJour(p.priseDePosteLe)}</span>}
                     </span>
-                    <span className={`shrink-0 max-w-[50%] text-right rounded-2xl px-2.5 py-1 text-xs font-semibold ${TONS[p.statut] ?? 'bg-slate-100 text-slate-700'}`}>{p.libelleStatut}</span>
+                    <span className={`shrink-0 max-w-[50%] text-right rounded-2xl px-2.5 py-1 text-xs font-semibold ${TONS[p.statut] ?? 'bg-ink-100 text-ink-700'}`}>{p.libelleStatut}</span>
                   </li>
                 ))}
               </ul>
@@ -156,21 +158,21 @@ export default async function PageEspace() {
           )}
           <h3 className="text-sm font-semibold text-ink-900">Mes candidatures</h3>
           {candidatures.length > 0 ? (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-ink-100">
               {candidatures.map((k) => (
                 <li key={k.id} className="flex items-center justify-between gap-3 py-2 text-sm">
                   <span className="min-w-0">
                     <Link href={`/recrutement/${k.offreSlug}`} className="font-medium text-ink-900 underline">
                       {k.offreTitre}
                     </Link>
-                    <span className="block text-xs text-slate-500">Envoyée le {date(k.creeLe)}</span>
+                    <span className="block text-xs text-muted">Envoyée le {date(k.creeLe)}</span>
                   </span>
-                  <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">{STATUTS_CANDIDATURE_CANDIDAT[k.statut]}</span>
+                  <span className="shrink-0 rounded-full bg-ink-100 px-2.5 py-1 text-xs font-semibold text-ink-700">{STATUTS_CANDIDATURE_CANDIDAT[k.statut]}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted">
               Aucune candidature.{' '}
               <Link href="/recrutement" className="text-primary underline">
                 Voir les offres
@@ -181,7 +183,7 @@ export default async function PageEspace() {
 
         <div className="flex flex-col gap-3 pt-2">
           <BoutonDeconnexion />
-          <Link href="/candidat/espace/supprimer" className="text-center text-sm text-slate-500 underline">
+          <Link href="/candidat/espace/supprimer" className="text-center text-sm text-muted underline">
             Supprimer mon compte et mes données
           </Link>
         </div>

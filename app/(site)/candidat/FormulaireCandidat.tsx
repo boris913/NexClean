@@ -4,8 +4,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, Eye, EyeOff, FileText, Loader2, Plus, Trash2, X } from 'lucide-react';
-import WhatsAppIcon from '@/components/ui/WhatsAppIcon';
+import { CheckCircle2, Eye, EyeOff, FileText, Plus, Trash2, X } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import Card, { cardClasses } from '@/components/ui/Card';
 import { inputClass, labelClass } from '@/components/forms/WhatsAppForm';
 import { getWhatsAppLink } from '@/lib/constants';
 import { trackEvent } from '@/lib/analytics';
@@ -38,6 +39,8 @@ const CLE_BROUILLON = 'nexclean:inscription-candidat:v1';
 const TAILLE_MAX = 5 * 1024 * 1024;
 const EXTENSIONS = /\.(pdf|docx|jpe?g|png)$/i;
 const idChamp = (cle: string) => `cand-${cle.replace(/\./g, '-')}`;
+/** `text-red-700` reste : sélecteur des tests e2e (`p.text-red-700`, e2e/candidat.spec.ts). */
+const erreurChamp = 'text-xs text-red-700 mt-1';
 function Champ({ cle, libelle, requis, erreurs, aide, children }: { cle: string; libelle: string; requis?: boolean; erreurs: Record<string, string>; aide?: string; children: React.ReactNode }) {
   const err = erreurs[cle];
   return (
@@ -46,9 +49,9 @@ function Champ({ cle, libelle, requis, erreurs, aide, children }: { cle: string;
         {libelle} {requis && <span className="text-accent" aria-hidden>*</span>}
       </label>
       {children}
-      {aide && !err && <p className="text-xs text-slate-500 mt-1">{aide}</p>}
+      {aide && !err && <p className="text-xs text-muted mt-1">{aide}</p>}
       {err && (
-        <p id={`${idChamp(cle)}-err`} className="text-xs text-red-700 mt-1">
+        <p id={`${idChamp(cle)}-err`} className={erreurChamp}>
           {err}
         </p>
       )}
@@ -69,7 +72,7 @@ function Cases<T extends string | number>({ nom, options, valeurs, onChange }: {
       {options.map((o) => {
         const coche = valeurs.includes(o.valeur);
         return (
-          <label key={String(o.valeur)} className={`flex items-center gap-2 min-h-11 px-3 rounded-lg border text-sm ${coche ? 'border-primary bg-primary/5' : 'border-slate-200'}`}>
+          <label key={String(o.valeur)} className={`flex items-center gap-2 min-h-11 px-3 rounded-2xl border text-sm ${coche ? 'border-primary bg-primary/5' : 'border-ink-200'}`}>
             <input type="checkbox" name={nom} checked={coche} onChange={() => onChange(coche ? valeurs.filter((v) => v !== o.valeur) : [...valeurs, o.valeur])} className="h-5 w-5 accent-primary shrink-0" />
             <span>{o.libelle}</span>
           </label>
@@ -120,9 +123,9 @@ function Etiquettes({ cle, valeurs, max, suggestions, placeholder, onChange, err
             }}
             className={inputClass}
           />
-          <button type="button" onClick={ajouter} className="shrink-0 inline-flex items-center gap-1 min-h-12 px-4 rounded-lg border border-slate-200 font-semibold text-sm">
-            <Plus className="w-4 h-4" /> Ajouter
-          </button>
+          <Button variant="outline" icon={Plus} onClick={ajouter} className="shrink-0">
+            Ajouter
+          </Button>
         </div>
       )}
       {suggestions && (
@@ -317,27 +320,27 @@ export default function FormulaireCandidat(props: Props) {
   if (termine) {
     const texteWa = `Bonjour NEXCLEAN, je viens de m’inscrire comme candidat(e) : ${b.prenom} ${b.nom}, ${b.telephone}. Métier(s) recherché(s) : ${b.metiers.join(', ')}.`;
     return (
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-6 text-center" role="status">
+      <div className={cardClasses({ className: 'text-center' })} role="status">
         <CheckCircle2 className="w-12 h-12 text-success mx-auto mb-3" strokeWidth={1.5} />
-        <h2 className="font-display font-bold text-2xl text-ink-900">Inscription réussie</h2>
-        <p className="text-slate-600 mt-2">Bienvenue {b.prenom}. Un conseiller NEXCLEAN étudie votre profil et vous contacte quand une offre vous correspond.</p>
+        <h2 className="font-display text-h3 text-ink-900">Inscription réussie</h2>
+        <p className="text-ink-600 mt-2">Bienvenue {b.prenom}. Un conseiller NEXCLEAN étudie votre profil et vous contacte quand une offre vous correspond.</p>
         {termine.length > 0 && (
           <ul className="text-sm text-left mt-4 space-y-1">
             {termine.map((t) => (
-              <li key={t.nom} className={t.ok ? 'text-slate-700' : 'text-red-700'}>
+              <li key={t.nom} className={t.ok ? 'text-ink-700' : 'text-danger'}>
                 {t.ok ? '✓' : '✗'} {t.nom} : {t.message}
               </li>
             ))}
           </ul>
         )}
-        {termine.some((t) => !t.ok) && <p className="text-sm text-slate-600 mt-2">Vous pourrez ajouter ces documents depuis votre espace.</p>}
+        {termine.some((t) => !t.ok) && <p className="text-sm text-ink-600 mt-2">Vous pourrez ajouter ces documents depuis votre espace.</p>}
         <div className="mt-6 space-y-3">
-          <a href={getWhatsAppLink(texteWa)} target="_blank" rel="noopener noreferrer" className="flex w-full items-center justify-center gap-2 min-h-12 px-5 rounded-full bg-[#25D366] text-white font-semibold">
-            <WhatsAppIcon className="w-5 h-5" /> Recevoir la confirmation sur WhatsApp
-          </a>
-          <Link href="/candidat/espace" className="flex w-full items-center justify-center min-h-12 px-5 rounded-full border border-slate-200 font-semibold text-slate-800">
+          <Button href={getWhatsAppLink(texteWa)} variant="whatsapp" whatsappIcon fullWidth>
+            Recevoir la confirmation sur WhatsApp
+          </Button>
+          <Button href="/candidat/espace" variant="outline" fullWidth>
             Accéder à mon espace
-          </Link>
+          </Button>
         </div>
       </div>
     );
@@ -347,16 +350,13 @@ export default function FormulaireCandidat(props: Props) {
   // le formulaire reste monté pour ne pas perdre l'écran de confirmation ci-dessus.
   if (props.mode === 'inscription' && props.dejaConnecte && !envoi)
     return (
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-6 text-center" role="status">
-        <p className="text-slate-700">Vous êtes déjà connecté(e) à votre espace candidat.</p>
-        <Link href="/candidat/espace" className="mt-4 inline-flex items-center justify-center min-h-12 px-6 rounded-full bg-primary text-white font-semibold">
+      <div className={cardClasses({ className: 'text-center' })} role="status">
+        <p className="text-ink-700">Vous êtes déjà connecté(e) à votre espace candidat.</p>
+        <Button href="/candidat/espace" className="mt-4 self-center">
           Accéder à mon espace
-        </Link>
+        </Button>
       </div>
     );
-
-  const boutonSecondaire = 'inline-flex items-center justify-center gap-2 min-h-12 px-5 rounded-full border border-slate-200 bg-white font-semibold text-slate-800';
-  const boutonPrincipal = 'inline-flex items-center justify-center gap-2 min-h-12 px-6 rounded-full bg-primary text-white font-semibold disabled:opacity-60';
 
   return (
     <form onSubmit={envoyer} noValidate className="scroll-mt-28" ref={haut}>
@@ -364,8 +364,8 @@ export default function FormulaireCandidat(props: Props) {
         {etapes.map((nom, i) => (
           <li key={nom} aria-current={etape === i + 1 ? 'step' : undefined}>
             <button type="button" disabled={inscription && i + 1 > etape} onClick={() => allerA(i + 1)} className="block w-full text-left disabled:cursor-default">
-              <span className={`block h-1.5 rounded-full ${i + 1 <= etape ? 'bg-primary' : 'bg-slate-200'}`} />
-              <span className={`block text-[11px] leading-tight mt-1 ${i + 1 === etape ? 'font-semibold text-ink-900' : 'text-slate-500'}`}>{i + 1 === etape ? nom : i + 1}</span>
+              <span className={`block h-1.5 rounded-full ${i + 1 <= etape ? 'bg-primary' : 'bg-ink-200'}`} />
+              <span className={`block text-xs leading-tight mt-1 ${i + 1 === etape ? 'font-semibold text-ink-900' : 'text-muted'}`}>{i + 1 === etape ? nom : i + 1}</span>
             </button>
           </li>
         ))}
@@ -378,10 +378,10 @@ export default function FormulaireCandidat(props: Props) {
         </label>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-5 sm:p-6 space-y-4">
+      <Card padding="sm" className="space-y-4">
         {etape === 1 && (
           <>
-            <h2 className="font-semibold text-lg text-ink-900">Identité</h2>
+            <h2 className="font-display text-h3 text-ink-900">Identité</h2>
             <div className="grid sm:grid-cols-2 gap-4">
               <Champ cle="prenom" libelle="Prénom" requis erreurs={erreurs}>
                 <input {...a11y('prenom', erreurs)} value={b.prenom} maxLength={80} autoComplete="given-name" onChange={(e) => maj({ prenom: e.target.value })} className={inputClass} />
@@ -391,9 +391,9 @@ export default function FormulaireCandidat(props: Props) {
               </Champ>
             </div>
             <Champ cle="telephone" libelle="Téléphone" requis erreurs={erreurs} aide={inscription ? 'Il vous servira à vous connecter.' : 'Pour changer de numéro, contactez NEXCLEAN : la procédure est faite avec un conseiller.'}>
-              <input {...a11y('telephone', erreurs)} type="tel" inputMode="tel" autoComplete="tel" placeholder="6 90 00 00 00" value={b.telephone} disabled={!inscription} onChange={(e) => maj({ telephone: e.target.value })} className={`${inputClass} disabled:bg-slate-100 disabled:text-slate-500`} />
+              <input {...a11y('telephone', erreurs)} type="tel" inputMode="tel" autoComplete="tel" placeholder="6 90 00 00 00" value={b.telephone} disabled={!inscription} onChange={(e) => maj({ telephone: e.target.value })} className={`${inputClass} disabled:bg-ink-100 disabled:text-muted`} />
             </Champ>
-            <label className="flex items-center gap-3 min-h-11 text-sm text-slate-700">
+            <label className="flex items-center gap-3 min-h-11 text-sm text-ink-700">
               <input type="checkbox" checked={b.whatsappIdentique} onChange={(e) => maj({ whatsappIdentique: e.target.checked, whatsapp: e.target.checked ? '' : b.whatsapp })} className="h-5 w-5 accent-primary" />
               Mon numéro WhatsApp est le même
             </label>
@@ -410,7 +410,7 @@ export default function FormulaireCandidat(props: Props) {
 
         {etape === 2 && (
           <>
-            <h2 className="font-semibold text-lg text-ink-900">Localisation</h2>
+            <h2 className="font-display text-h3 text-ink-900">Localisation</h2>
             <Champ cle="villeId" libelle="Ville" requis erreurs={erreurs}>
               <select
                 {...a11y('villeId', erreurs)}
@@ -471,7 +471,7 @@ export default function FormulaireCandidat(props: Props) {
               <legend className={labelClass}>
                 Où acceptez-vous de travailler ? <span className="text-accent">*</span>
               </legend>
-              <label className={`flex items-center gap-2 min-h-11 px-3 mb-2 rounded-lg border text-sm ${b.zonesTouteVille ? 'border-primary bg-primary/5' : 'border-slate-200'}`}>
+              <label className={`flex items-center gap-2 min-h-11 px-3 mb-2 rounded-2xl border text-sm ${b.zonesTouteVille ? 'border-primary bg-primary/5' : 'border-ink-200'}`}>
                 <input id={idChamp('zones')} type="checkbox" checked={b.zonesTouteVille} onChange={(e) => maj({ zonesTouteVille: e.target.checked })} className="h-5 w-5 accent-primary" />
                 Toute la ville
               </label>
@@ -483,14 +483,14 @@ export default function FormulaireCandidat(props: Props) {
                   onChange={(v) => maj({ zonesArrondissementIds: v })}
                 />
               )}
-              {erreurs.zones && <p className="text-xs text-red-700 mt-1">{erreurs.zones}</p>}
+              {erreurs.zones && <p className={erreurChamp}>{erreurs.zones}</p>}
             </fieldset>
           </>
         )}
 
         {etape === 3 && (
           <>
-            <h2 className="font-semibold text-lg text-ink-900">Recherche</h2>
+            <h2 className="font-display text-h3 text-ink-900">Recherche</h2>
             <Champ cle="metiers" libelle={`Métiers recherchés (1 à ${MAX_METIERS})`} requis erreurs={erreurs} aide="Choisissez dans la liste ou écrivez le vôtre, puis « Ajouter ».">
               <Etiquettes cle="metiers" valeurs={b.metiers} max={MAX_METIERS} suggestions={metiers} placeholder="Ex. : agent d’entretien" onChange={(v) => maj({ metiers: v })} erreurs={erreurs} />
             </Champ>
@@ -499,7 +499,7 @@ export default function FormulaireCandidat(props: Props) {
                 Types de contrat <span className="text-accent">*</span>
               </legend>
               <Cases nom="typesContrat" options={CONTRATS.map((c) => ({ valeur: c as string, libelle: c }))} valeurs={b.typesContrat} onChange={(v) => maj({ typesContrat: v })} />
-              {erreurs.typesContrat && <p id={idChamp('typesContrat')} className="text-xs text-red-700 mt-1">{erreurs.typesContrat}</p>}
+              {erreurs.typesContrat && <p id={idChamp('typesContrat')} className={erreurChamp}>{erreurs.typesContrat}</p>}
             </fieldset>
             <fieldset>
               <legend className={labelClass}>Secteurs souhaités</legend>
@@ -518,7 +518,7 @@ export default function FormulaireCandidat(props: Props) {
 
         {etape === 4 && (
           <>
-            <h2 className="font-semibold text-lg text-ink-900">Parcours</h2>
+            <h2 className="font-display text-h3 text-ink-900">Parcours</h2>
             <Champ cle="niveauEtudes" libelle="Niveau d’études" requis erreurs={erreurs}>
               <select {...a11y('niveauEtudes', erreurs)} value={b.niveauEtudes} onChange={(e) => maj({ niveauEtudes: e.target.value })} className={inputClass}>
                 <option value="">Choisir…</option>
@@ -535,7 +535,7 @@ export default function FormulaireCandidat(props: Props) {
             <div className="space-y-3">
               <p className={labelClass}>Expériences ({b.experiences.length}/{MAX_EXPERIENCES})</p>
               {b.experiences.map((x, i) => (
-                <fieldset key={i} className="border border-slate-200 rounded-xl p-4 space-y-3">
+                <fieldset key={i} className="border border-ink-200 rounded-2xl p-4 space-y-3">
                   <legend className="px-1 text-sm font-semibold text-ink-900">Expérience {i + 1}</legend>
                   <Champ cle={`experiences.${i}.poste`} libelle="Poste occupé" requis erreurs={erreurs}>
                     <input {...a11y(`experiences.${i}.poste`, erreurs)} value={x.poste} maxLength={120} onChange={(e) => majExperience(i, { poste: e.target.value })} className={inputClass} />
@@ -554,15 +554,15 @@ export default function FormulaireCandidat(props: Props) {
                   <Champ cle={`experiences.${i}.missions`} libelle="Missions" erreurs={erreurs}>
                     <textarea {...a11y(`experiences.${i}.missions`, erreurs)} rows={2} maxLength={1000} value={x.missions} onChange={(e) => majExperience(i, { missions: e.target.value })} className={inputClass} />
                   </Champ>
-                  <button type="button" onClick={() => maj({ experiences: b.experiences.filter((_, j) => j !== i) })} className="inline-flex items-center gap-1 min-h-11 text-sm text-red-700">
+                  <button type="button" onClick={() => maj({ experiences: b.experiences.filter((_, j) => j !== i) })} className="inline-flex items-center gap-1 min-h-tap text-sm font-medium text-danger">
                     <Trash2 className="w-4 h-4" /> Retirer cette expérience
                   </button>
                 </fieldset>
               ))}
               {b.experiences.length < MAX_EXPERIENCES && (
-                <button type="button" onClick={() => maj({ experiences: [...b.experiences, experienceVide()] })} className={boutonSecondaire}>
-                  <Plus className="w-4 h-4" /> Ajouter une expérience
-                </button>
+                <Button variant="outline" icon={Plus} onClick={() => maj({ experiences: [...b.experiences, experienceVide()] })}>
+                  Ajouter une expérience
+                </Button>
               )}
             </div>
             <Champ cle="competences" libelle="Compétences" erreurs={erreurs} aide="Ex. : repassage, caisse, permis B, anglais.">
@@ -573,20 +573,20 @@ export default function FormulaireCandidat(props: Props) {
 
         {etape === 5 && (
           <>
-            <h2 className="font-semibold text-lg text-ink-900">Disponibilité</h2>
+            <h2 className="font-display text-h3 text-ink-900">Disponibilité</h2>
             <fieldset>
               <legend className={labelClass}>
                 Quand pouvez-vous commencer ? <span className="text-accent">*</span>
               </legend>
               <div className="space-y-2">
                 {(Object.keys(DISPONIBILITES) as Disponibilite[]).map((d, i) => (
-                  <label key={d} className={`flex items-center gap-2 min-h-11 px-3 rounded-lg border text-sm ${b.disponibilite === d ? 'border-primary bg-primary/5' : 'border-slate-200'}`}>
+                  <label key={d} className={`flex items-center gap-2 min-h-11 px-3 rounded-2xl border text-sm ${b.disponibilite === d ? 'border-primary bg-primary/5' : 'border-ink-200'}`}>
                     <input id={i === 0 ? idChamp('disponibilite') : undefined} type="radio" name="disponibilite" checked={b.disponibilite === d} onChange={() => maj({ disponibilite: d })} className="h-5 w-5 accent-primary" />
                     {DISPONIBILITES[d]}
                   </label>
                 ))}
               </div>
-              {erreurs.disponibilite && <p className="text-xs text-red-700 mt-1">{erreurs.disponibilite}</p>}
+              {erreurs.disponibilite && <p className={erreurChamp}>{erreurs.disponibilite}</p>}
             </fieldset>
             {b.disponibilite === 'a_partir_du' && (
               <Champ cle="disponibleLe" libelle="À partir du" requis erreurs={erreurs}>
@@ -607,13 +607,13 @@ export default function FormulaireCandidat(props: Props) {
 
         {etape === 6 && inscription && (
           <>
-            <h2 className="font-semibold text-lg text-ink-900">Documents</h2>
-            <p className="text-sm text-slate-600">Facultatif : vous pourrez aussi les ajouter plus tard depuis votre espace. PDF, Word (DOCX), photo JPEG ou PNG, 5 Mo maximum par fichier.</p>
+            <h2 className="font-display text-h3 text-ink-900">Documents</h2>
+            <p className="text-sm text-ink-600">Facultatif : vous pourrez aussi les ajouter plus tard depuis votre espace. PDF, Word (DOCX), photo JPEG ou PNG, 5 Mo maximum par fichier.</p>
             <Champ cle="cv" libelle="CV" erreurs={erreurs} aide="Une photo nette de votre CV papier convient.">
-              <input id={idChamp('cv')} type="file" accept=".pdf,.docx,.jpg,.jpeg,.png,image/*" onChange={(e) => setCv(e.target.files?.[0] ?? null)} className="block w-full text-sm file:mr-3 file:min-h-11 file:px-4 file:rounded-lg file:border-0 file:bg-primary/10 file:text-ink-900" />
+              <input id={idChamp('cv')} type="file" accept=".pdf,.docx,.jpg,.jpeg,.png,image/*" onChange={(e) => setCv(e.target.files?.[0] ?? null)} className="block w-full text-sm file:mr-3 file:min-h-11 file:px-4 file:rounded-2xl file:border-0 file:bg-primary/10 file:text-ink-900" />
             </Champ>
             {cv && (
-              <p className="flex items-center gap-2 text-sm text-slate-700">
+              <p className="flex items-center gap-2 text-sm text-ink-700">
                 <FileText className="w-4 h-4" /> {cv.name} ({Math.ceil(cv.size / 1024)} Ko)
               </p>
             )}
@@ -629,18 +629,18 @@ export default function FormulaireCandidat(props: Props) {
                     setJustificatifs((j) => [...j, ...ajout].slice(0, MAX_JUSTIFICATIFS));
                     e.target.value = '';
                   }}
-                  className="block w-full text-sm file:mr-3 file:min-h-11 file:px-4 file:rounded-lg file:border-0 file:bg-primary/10 file:text-ink-900"
+                  className="block w-full text-sm file:mr-3 file:min-h-11 file:px-4 file:rounded-2xl file:border-0 file:bg-primary/10 file:text-ink-900"
                 />
               ) : null}
             </Champ>
             {justificatifs.length > 0 && (
               <ul className="space-y-1">
                 {justificatifs.map((f, i) => (
-                  <li key={`${f.name}-${i}`} className="flex items-center justify-between gap-2 text-sm text-slate-700">
+                  <li key={`${f.name}-${i}`} className="flex items-center justify-between gap-2 text-sm text-ink-700">
                     <span className="flex items-center gap-2 min-w-0">
                       <FileText className="w-4 h-4 shrink-0" /> <span className="truncate">{f.name}</span>
                     </span>
-                    <button type="button" aria-label={`Retirer ${f.name}`} onClick={() => setJustificatifs((j) => j.filter((_, k) => k !== i))} className="w-11 h-11 inline-flex items-center justify-center text-red-700">
+                    <button type="button" aria-label={`Retirer ${f.name}`} onClick={() => setJustificatifs((j) => j.filter((_, k) => k !== i))} className="w-11 h-11 inline-flex items-center justify-center text-danger">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </li>
@@ -652,11 +652,11 @@ export default function FormulaireCandidat(props: Props) {
 
         {etape === 7 && inscription && (
           <>
-            <h2 className="font-semibold text-lg text-ink-900">Compte</h2>
+            <h2 className="font-display text-h3 text-ink-900">Compte</h2>
             <Champ cle="motDePasse" libelle="Mot de passe" requis erreurs={erreurs} aide="Au moins 8 caractères, ou un code de 6 chiffres.">
               <div className="relative">
                 <input {...a11y('motDePasse', erreurs)} type={voirMdp ? 'text' : 'password'} autoComplete="new-password" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} className={`${inputClass} pr-12`} />
-                <button type="button" aria-label={voirMdp ? 'Masquer le mot de passe' : 'Afficher le mot de passe'} onClick={() => setVoirMdp((v) => !v)} className="absolute right-0 top-0 h-full w-12 inline-flex items-center justify-center text-slate-500">
+                <button type="button" aria-label={voirMdp ? 'Masquer le mot de passe' : 'Afficher le mot de passe'} onClick={() => setVoirMdp((v) => !v)} className="absolute right-0 top-0 h-full w-12 inline-flex items-center justify-center text-muted">
                   {voirMdp ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
@@ -664,7 +664,7 @@ export default function FormulaireCandidat(props: Props) {
             <Champ cle="confirmation" libelle="Confirmez le mot de passe" requis erreurs={erreurs}>
               <input {...a11y('confirmation', erreurs)} type={voirMdp ? 'text' : 'password'} autoComplete="new-password" value={confirmation} onChange={(e) => setConfirmation(e.target.value)} className={inputClass} />
             </Champ>
-            <label className="flex items-center gap-3 min-h-11 text-sm text-slate-700">
+            <label className="flex items-center gap-3 min-h-11 text-sm text-ink-700">
               <input type="checkbox" checked={resterConnecte} onChange={(e) => setResterConnecte(e.target.checked)} className="h-5 w-5 accent-primary" />
               Rester connecté(e) sur ce téléphone
             </label>
@@ -677,15 +677,15 @@ export default function FormulaireCandidat(props: Props) {
                 ] as const
               ).map(([cle, texte]) => (
                 <div key={cle}>
-                  <label className="flex items-start gap-3 text-sm text-slate-700">
+                  <label className="flex items-start gap-3 text-sm text-ink-700">
                     <input {...a11y(cle, erreurs)} type="checkbox" checked={b[cle]} onChange={(e) => maj({ [cle]: e.target.checked })} className="h-5 w-5 mt-0.5 accent-primary shrink-0" />
                     <span>{texte}</span>
                   </label>
-                  {erreurs[cle] && <p className="text-xs text-red-700 mt-1 ml-8">{erreurs[cle]}</p>}
+                  {erreurs[cle] && <p className={`${erreurChamp} ml-8`}>{erreurs[cle]}</p>}
                 </div>
               ))}
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted">
               {MENTION_GRATUITE} Vous pouvez modifier votre profil ou supprimer votre compte à tout moment depuis votre espace. Voir la{' '}
               <Link href="/confidentialite" className="underline">
                 politique de confidentialité
@@ -696,7 +696,7 @@ export default function FormulaireCandidat(props: Props) {
         )}
 
         {echec && (
-          <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          <div role="alert" className="rounded-2xl border border-danger-border bg-danger-soft px-4 py-3 text-sm text-danger">
             {echec}
             {dejaInscrit && (
               <>
@@ -713,31 +713,30 @@ export default function FormulaireCandidat(props: Props) {
           </div>
         )}
         {message && (
-          <div role="status" className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+          <div role="status" className="rounded-2xl border border-success-border bg-success-soft px-4 py-3 text-sm text-success">
             {message}
           </div>
         )}
-      </div>
+      </Card>
 
       <div className="flex gap-3 mt-5">
         {etape > 1 && (
-          <button type="button" onClick={() => allerA(etape - 1)} className={boutonSecondaire}>
+          <Button variant="outline" onClick={() => allerA(etape - 1)}>
             Retour
-          </button>
+          </Button>
         )}
         {etape < derniere && (
-          <button type="button" onClick={suivant} className={`${boutonPrincipal} flex-1`}>
+          <Button className="flex-1" onClick={suivant}>
             Continuer
-          </button>
+          </Button>
         )}
         {(etape === derniere || !inscription) && (
-          <button type="submit" disabled={envoi} className={`${etape === derniere ? boutonPrincipal : boutonSecondaire} ${etape === derniere ? 'flex-1' : ''}`}>
-            {envoi && <Loader2 className="w-4 h-4 animate-spin" />}
+          <Button type="submit" variant={etape === derniere ? 'primary' : 'outline'} className={etape === derniere ? 'flex-1' : undefined} loading={envoi} loadingLabel="Envoi en cours…">
             {inscription ? 'Créer mon compte' : 'Enregistrer'}
-          </button>
+          </Button>
         )}
       </div>
-      {inscription && <p className="text-xs text-slate-500 mt-3 text-center">{MENTION_GRATUITE}</p>}
+      {inscription && <p className="text-xs text-muted mt-3 text-center">{MENTION_GRATUITE}</p>}
     </form>
   );
 }

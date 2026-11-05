@@ -1,6 +1,7 @@
 // MVP2-01 RG-15..18 : demande de suppression du compte et des données.
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { cardClasses } from '@/components/ui/Card';
 import { JOURS_AVANT_SUPPRESSION } from '@/lib/candidats/domaine';
 import { candidatConnecte } from '@/lib/candidats/session';
 import Coque from '../../Coque';
@@ -15,7 +16,7 @@ export default async function PageSupprimer() {
   const connecte = !!(await candidatConnecte());
   return (
     <Coque
-      titre="Supprimer mon compte et mes données"
+      titre="Supprimer mon compte"
       intro={
         <p className="text-sm">
           <Link href="/candidat/espace" className="text-primary underline">
@@ -24,7 +25,7 @@ export default async function PageSupprimer() {
         </p>
       }
     >
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-5 sm:p-6 space-y-4 text-sm text-slate-700">
+      <div className={cardClasses({ padding: 'sm', className: 'space-y-4 text-sm text-ink-700' })}>
         <div>
           <p className="font-semibold text-ink-900">Ce qui se passe</p>
           <ul className="list-disc pl-5 space-y-1 mt-1">
