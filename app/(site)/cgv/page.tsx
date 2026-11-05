@@ -6,7 +6,7 @@ import { pageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Conditions générales de vente',
-  description: 'Conditions générales de vente des prestations, abonnements et produits NexClean.',
+  description: 'Conditions générales de vente des prestations, abonnements et produits NEXCLEAN.',
   path: '/cgv',
 });
 

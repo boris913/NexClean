@@ -5,7 +5,7 @@ import { pageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Politique de confidentialité',
-  description: 'Comment NexClean collecte, utilise et protège vos données personnelles, y compris les données de candidature.',
+  description: 'Comment NEXCLEAN collecte, utilise et protège vos données personnelles, y compris les données de candidature.',
   path: '/confidentialite',
 });
 
