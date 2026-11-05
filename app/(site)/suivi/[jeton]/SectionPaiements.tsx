@@ -3,6 +3,7 @@
 // voir lib/encaissements/suivi.ts. Un paiement annulé reste listé, barré, avec la mention
 // « annulé » ; il n'entre pas dans les montants payés.
 import { FileText } from 'lucide-react';
+import { cardClasses } from '@/components/ui/Card';
 import { formaterMontant } from '@/lib/devis/domaine';
 import { paiementsPourSuivi, type LignePaiementClient } from '@/lib/encaissements/suivi';
 import type { Contexte } from '@/lib/propositions/client';
@@ -37,8 +38,8 @@ export async function SectionPaiements({ ctx }: { ctx: Contexte }) {
   const p = await paiementsPourSuivi(ctx);
   if (!p) return null;
   return (
-    <section aria-labelledby="section-paiements" className="mb-8 rounded-2xl border border-ink-100 bg-white p-5 shadow-card space-y-4">
-      <h2 id="section-paiements" className="text-lg font-display font-semibold">
+    <section aria-labelledby="section-paiements" className={cardClasses({ padding: 'sm', className: 'mb-8 space-y-4' })}>
+      <h2 id="section-paiements" className="font-display text-h3 text-ink-900">
         Paiements
       </h2>
 
@@ -51,11 +52,11 @@ export async function SectionPaiements({ ctx }: { ctx: Contexte }) {
       </dl>
 
       {p.tropPercu > 0 ? (
-        <p className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-ink-800">
+        <p className="rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-ink-800">
           Trop-perçu de <strong>{formaterMontant(p.tropPercu)}</strong> en cours de régularisation (remboursement ou crédit sur un prochain dossier, selon votre choix).
         </p>
       ) : (
-        <div className={`flex justify-between gap-3 rounded-lg px-3 py-2 text-sm ${p.resteAPayer > 0 ? 'bg-cta/30' : 'bg-brand-50'}`}>
+        <div className={`flex justify-between gap-3 rounded-2xl px-3 py-2 text-sm ${p.resteAPayer > 0 ? 'bg-cta/30' : 'bg-brand-50'}`}>
           <span className="font-medium">Reste à payer</span>
           <span className="tabular-nums font-semibold">{formaterMontant(p.resteAPayer)}</span>
         </div>
@@ -67,13 +68,13 @@ export async function SectionPaiements({ ctx }: { ctx: Contexte }) {
             <li key={l.id} className="py-2">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className={`break-words ${l.genre === 'paiement' && l.annule ? 'line-through text-ink-500' : ''}`}>{libelleLigne(l)}</p>
-                  <p className="text-xs text-ink-500">
+                  <p className={`break-words ${l.genre === 'paiement' && l.annule ? 'line-through text-muted' : ''}`}>{libelleLigne(l)}</p>
+                  <p className="text-xs text-muted">
                     {jour(l.date)}
                     {l.genre === 'paiement' && l.annule && <span className="ml-2 rounded-full bg-ink-100 px-2 py-0.5 font-medium text-ink-700 no-underline">annulé</span>}
                   </p>
                 </div>
-                <span className={`shrink-0 tabular-nums ${l.genre === 'paiement' && l.annule ? 'line-through text-ink-500' : 'font-medium'}`}>
+                <span className={`shrink-0 tabular-nums ${l.genre === 'paiement' && l.annule ? 'line-through text-muted' : 'font-medium'}`}>
                   {l.genre === 'remboursement' || l.genre === 'credit_verse' ? '- ' : ''}
                   {formaterMontant(l.montant)}
                 </span>
@@ -81,7 +82,7 @@ export async function SectionPaiements({ ctx }: { ctx: Contexte }) {
               {l.genre === 'paiement' && l.recuNumero && (
                 <a href={`${ctx.chemin}/documents/recus/${l.id}`} target="_blank" rel="noopener noreferrer" className={lien}>
                   <FileText className="w-4 h-4 shrink-0" aria-hidden /> Reçu {l.recuNumero}
-                  {l.annule && <span className="font-normal text-ink-500"> (annulé)</span>}
+                  {l.annule && <span className="font-normal text-muted"> (annulé)</span>}
                 </a>
               )}
             </li>
@@ -90,7 +91,7 @@ export async function SectionPaiements({ ctx }: { ctx: Contexte }) {
       ) : (
         <p className="text-sm text-ink-600">Aucun paiement enregistré pour le moment.</p>
       )}
-      <p className="text-xs text-ink-500">Les reçus s’ouvrent dans un nouvel onglet (PDF). Les factures sont dans la rubrique « Documents ».</p>
+      <p className="text-xs text-muted">Les reçus s’ouvrent dans un nouvel onglet (PDF). Les factures sont dans la rubrique « Documents ».</p>
     </section>
   );
 }
