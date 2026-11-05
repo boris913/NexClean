@@ -241,7 +241,7 @@ Cadre, rayon et traitement homogènes pour les photos existantes : `traitement?:
 7. **Couleurs de pilier** limitées aux pictos, filets, badges et fonds doux.
 8. **Pas de boutons stylés à la main** : `Button` ou `buttonClasses()`.
 9. **Pas de grilles de cartes identiques** : liste à filets numérotée en mono (§3).
-10. **Chiffres de preuve** (`CHIFFRES`, `content/home-data.ts`) : uniquement des chiffres réels et vérifiables ; tableau vide = bandeau masqué.
+10. **Chiffres de preuve** (`CHIFFRES`, `content/home-data.ts`) : valeurs provisoires fictives au lancement (marquées `PROVISOIRE`), à remplacer par des chiffres réels ; tableau vide = bandeau masqué.
 
 ## 7. Migration « ancien pattern → nouveau »
 

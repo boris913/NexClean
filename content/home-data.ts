@@ -236,10 +236,17 @@ export const TEMOIGNAGES_EN_TETE: EnTeteSection = {
 
 /**
  * Chiffres de preuve (audit design Q6), affichés en mono au-dessus de l'encart avis.
- * UNIQUEMENT des chiffres réels et vérifiables, fournis par la direction (ex. dossiers traités,
- * placements confirmés, délai moyen de réponse). Tableau vide = bandeau masqué. Ne jamais inventer.
+ * ⚠️ PROVISOIRE (décision du 2026-11-05) : valeurs fictives de lancement, sauf « villes couvertes ».
+ * À remplacer par les chiffres réels de la direction dès qu'ils sont disponibles
+ * (requête Back-Office : dossiers traités, placements confirmés, délai moyen de première réponse).
+ * Tableau vide = bandeau masqué.
  */
-export const CHIFFRES: { valeur: string; libelle: string }[] = [];
+export const CHIFFRES: { valeur: string; libelle: string }[] = [
+  { valeur: '250+', libelle: 'dossiers traités' }, // PROVISOIRE
+  { valeur: '120', libelle: 'placements confirmés' }, // PROVISOIRE
+  { valeur: '24 h', libelle: 'délai moyen de première réponse' }, // PROVISOIRE
+  { valeur: '2', libelle: 'villes couvertes : Douala et Yaoundé' },
+];
 
 /** Affiché seul tant qu'aucun avis n'est vérifié (docs/contenu.md, accueil). */
 export const AVIS_ENCART = {

@@ -196,9 +196,9 @@ Périmètre validé : **tout le plan**, Back-Office compris. Chaque lot a été 
 - Simulateur : 7 × 5 000 = 35 000 FCFA ; lien `?personnes=7&poste=Gardien`.
 
 ### Reste à faire
-1. **Tests e2e et d'intégration** à lancer avec la base démarrée (Docker Desktop était arrêté) : `npm run test`, `npm run test:e2e`.
+1. **Tests e2e et d’intégration** : vérifiés par la CI (`.github/workflows/ci.yml`) à l’ouverture de la PR.
 2. **Préremplissage du formulaire** depuis le simulateur : code en place, mais non vérifié de bout en bout (la page `/recrutement/demander-du-personnel` exige la base).
-3. **Chiffres de preuve** : renseigner `CHIFFRES` dans `content/home-data.ts` avec des chiffres réels (dossiers traités, placements confirmés, délai moyen de réponse…).
+3. **Chiffres de preuve** : `CHIFFRES` (`content/home-data.ts`) contient des valeurs **provisoires fictives** (décision du 2026-11-05), marquées `PROVISOIRE` ; à remplacer par les chiffres réels.
 4. **Revue visuelle du Back-Office connecté** (tableau de bord, dossiers) : seul l'écran de connexion a été capturé, faute de base.
 5. **Nouvelles photos** (équipe en intervention, avant/après complets) : le composant `PhotoTraitee` est prêt à les accueillir.
 6. Pages non retouchées en profondeur (blog, boutique, espace candidat, suivi réel) : elles héritent de la palette et des polices ; à revoir page par page si besoin.
