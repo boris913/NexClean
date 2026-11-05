@@ -3,13 +3,12 @@
 // fonction, case des conditions) et « Refuser » (motif facultatif, confirmation).
 import { useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import Button from '@/components/ui/Button';
 import { inputClass, labelClass } from '@/components/forms/WhatsAppForm';
 import { accepterDevis, refuserDevis } from './actions';
 
-const bouton = 'inline-flex w-full items-center justify-center gap-2 min-h-11 px-5 rounded-full font-semibold disabled:opacity-60';
-const erreurClass = 'rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800';
-const succesClass = 'rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-ink-800';
+const erreurClass = 'rounded-2xl border border-danger-border bg-danger-soft px-4 py-3 text-sm text-danger';
+const succesClass = 'rounded-2xl border border-success-border bg-success-soft px-4 py-3 text-sm text-ink-800';
 
 type Etat = { type: 'erreur' | 'succes'; texte: string } | null;
 const ERREUR_RESEAU = 'Connexion au serveur impossible. Réessayez dans un instant.';
@@ -24,7 +23,7 @@ function Message({ etat }: { etat: Etat }) {
 
 function Erreur({ id, texte }: { id: string; texte?: string }) {
   return texte ? (
-    <p id={id} className="mt-1 text-xs text-red-700">
+    <p id={id} className="mt-1 text-xs text-danger">
       {texte}
     </p>
   ) : null;
@@ -78,12 +77,12 @@ export function ReponseDevis({ jeton, devisId, libelle, montantAcompte }: { jeto
     return (
       <div className="space-y-2">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <button type="button" onClick={() => setMode('accepter')} className={`${bouton} bg-cta text-ink-900`}>
+          <Button fullWidth onClick={() => setMode('accepter')}>
             J’accepte le devis
-          </button>
-          <button type="button" onClick={() => setMode('refuser')} className={`${bouton} border border-ink-200 bg-white text-ink-800`}>
+          </Button>
+          <Button variant="outline" fullWidth onClick={() => setMode('refuser')}>
             Refuser
-          </button>
+          </Button>
         </div>
         <Message etat={etat} />
       </div>
@@ -94,7 +93,7 @@ export function ReponseDevis({ jeton, devisId, libelle, montantAcompte }: { jeto
     return (
       <form
         noValidate
-        className="space-y-3 rounded-xl border border-ink-200 bg-ink-50 p-4"
+        className="space-y-3 rounded-2xl border border-ink-200 bg-ink-50 p-4"
         aria-labelledby={`${id}-titre-refus`}
         onSubmit={(e) => {
           e.preventDefault();
@@ -113,12 +112,12 @@ export function ReponseDevis({ jeton, devisId, libelle, montantAcompte }: { jeto
         </div>
         <Message etat={etat} />
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <button type="submit" disabled={envoi} className={`${bouton} bg-ink-800 text-white`}>
-            {envoi && <Loader2 className="w-4 h-4 animate-spin" aria-hidden />} Confirmer le refus
-          </button>
-          <button type="button" disabled={envoi} onClick={() => setMode('choix')} className={`${bouton} border border-ink-200 bg-white text-ink-800`}>
+          <Button type="submit" variant="secondary" fullWidth loading={envoi}>
+            Confirmer le refus
+          </Button>
+          <Button variant="outline" fullWidth disabled={envoi} onClick={() => setMode('choix')}>
             Annuler
-          </button>
+          </Button>
         </div>
       </form>
     );
@@ -127,7 +126,7 @@ export function ReponseDevis({ jeton, devisId, libelle, montantAcompte }: { jeto
   return (
     <form
       noValidate
-      className="space-y-3 rounded-xl border border-brand-200 bg-brand-50 p-4"
+      className="space-y-3 rounded-2xl border border-brand-200 bg-brand-50 p-4"
       aria-labelledby={`${id}-titre-acceptation`}
       onSubmit={(e) => {
         e.preventDefault();
@@ -166,15 +165,15 @@ export function ReponseDevis({ jeton, devisId, libelle, montantAcompte }: { jeto
         <Erreur id={`${id}-conditions-err`} texte={erreurs.conditions} />
       </div>
       {montantAcompte && <p className="text-xs text-ink-600">Une facture d’acompte de {montantAcompte} sera émise à l’acceptation.</p>}
-      <p className="text-xs text-ink-500">Votre acceptation est enregistrée avec la date, l’heure, votre adresse IP et la version du devis.</p>
+      <p className="text-xs text-muted">Votre acceptation est enregistrée avec la date, l’heure, votre adresse IP et la version du devis.</p>
       <Message etat={etat} />
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <button type="submit" disabled={envoi} className={`${bouton} bg-cta text-ink-900`}>
-          {envoi && <Loader2 className="w-4 h-4 animate-spin" aria-hidden />} Je confirme mon acceptation
-        </button>
-        <button type="button" disabled={envoi} onClick={() => setMode('choix')} className={`${bouton} border border-ink-200 bg-white text-ink-800`}>
+        <Button type="submit" fullWidth loading={envoi}>
+          Je confirme mon acceptation
+        </Button>
+        <Button variant="outline" fullWidth disabled={envoi} onClick={() => setMode('choix')}>
           Annuler
-        </button>
+        </Button>
       </div>
     </form>
   );

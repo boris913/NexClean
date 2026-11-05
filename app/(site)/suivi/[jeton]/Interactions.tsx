@@ -3,13 +3,12 @@
 // confirmation de prise de poste (RG-16). Partagés par la page de suivi et les liens temporaires.
 import { useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import Button, { buttonClasses } from '@/components/ui/Button';
 import { inputClass, labelClass } from '@/components/forms/WhatsAppForm';
 import { confirmerPriseDePoste, repondreProfil, verifierChiffres, type Source } from './actions';
 
-const bouton = 'inline-flex w-full items-center justify-center gap-2 min-h-11 px-5 rounded-full font-semibold disabled:opacity-60';
-const erreurClass = 'rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800';
-const succesClass = 'rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-ink-800';
+const erreurClass = 'rounded-2xl border border-danger-border bg-danger-soft px-4 py-3 text-sm text-danger';
+const succesClass = 'rounded-2xl border border-success-border bg-success-soft px-4 py-3 text-sm text-ink-800';
 
 type Etat = { type: 'erreur' | 'succes'; texte: string } | null;
 
@@ -66,14 +65,14 @@ export function FormulaireVerification({ source, jeton, bloque, libelle = 'Affic
           onChange={(e) => setChiffres(e.target.value.replace(/\D/g, '').slice(0, 4))}
           className={`${inputClass} font-mono tracking-[0.5em] text-center text-lg`}
         />
-        <p id={`${id}-aide`} className="mt-1 text-xs text-ink-500">
+        <p id={`${id}-aide`} className="mt-1 text-xs text-muted">
           Le numéro WhatsApp communiqué à NEXCLEAN pour cette demande.
         </p>
       </div>
       <Message etat={etat} />
-      <button type="submit" disabled={envoi} className={`${bouton} bg-cta text-ink-900`}>
-        {envoi && <Loader2 className="w-4 h-4 animate-spin" aria-hidden />} {libelle}
-      </button>
+      <Button type="submit" fullWidth loading={envoi}>
+        {libelle}
+      </Button>
     </form>
   );
 }
@@ -110,10 +109,10 @@ export function RetourProfil({ source, jeton, propositionId, prenom, retour }: {
         </p>
       )}
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <button type="button" disabled={envoi} onClick={() => envoyer('rencontrer')} className={`${bouton} bg-cta text-ink-900`} aria-label={`Je souhaite rencontrer ${prenom}`}>
+        <Button fullWidth disabled={envoi} onClick={() => envoyer('rencontrer')} aria-label={`Je souhaite rencontrer ${prenom}`}>
           Je souhaite le / la rencontrer
-        </button>
-        <button type="button" disabled={envoi} onClick={() => setMotifOuvert((o) => !o)} aria-expanded={motifOuvert} aria-controls={`${id}-motif-bloc`} className={`${bouton} border border-ink-200 bg-white text-ink-800`}>
+        </Button>
+        <button type="button" disabled={envoi} onClick={() => setMotifOuvert((o) => !o)} aria-expanded={motifOuvert} aria-controls={`${id}-motif-bloc`} className={buttonClasses({ variant: 'outline', fullWidth: true })}>
           Ne correspond pas
         </button>
       </div>
@@ -123,9 +122,9 @@ export function RetourProfil({ source, jeton, propositionId, prenom, retour }: {
             Motif (facultatif)
           </label>
           <textarea id={`${id}-motif`} rows={2} maxLength={500} value={motif} onChange={(e) => setMotif(e.target.value)} className={inputClass} />
-          <button type="button" disabled={envoi} onClick={() => envoyer('ne_correspond_pas')} className={`${bouton} bg-ink-800 text-white`}>
-            {envoi && <Loader2 className="w-4 h-4 animate-spin" aria-hidden />} Envoyer ma réponse
-          </button>
+          <Button variant="secondary" fullWidth loading={envoi} onClick={() => envoyer('ne_correspond_pas')}>
+            Envoyer ma réponse
+          </Button>
         </div>
       )}
       <Message etat={etat} />
@@ -181,7 +180,7 @@ export function ConfirmationPlacement({ source, jeton, placementId, prenom, date
         </label>
         <input id={`${id}-nom`} autoComplete="name" maxLength={120} value={nom} onChange={(e) => setNom(e.target.value)} aria-invalid={!!erreurs.nom || undefined} aria-describedby={erreurs.nom ? `${id}-nom-err` : undefined} className={inputClass} />
         {erreurs.nom && (
-          <p id={`${id}-nom-err`} className="mt-1 text-xs text-red-700">
+          <p id={`${id}-nom-err`} className="mt-1 text-xs text-danger">
             {erreurs.nom}
           </p>
         )}
@@ -192,7 +191,7 @@ export function ConfirmationPlacement({ source, jeton, placementId, prenom, date
         </label>
         <input id={`${id}-fonction`} autoComplete="organization-title" maxLength={120} value={fonction} onChange={(e) => setFonction(e.target.value)} aria-invalid={!!erreurs.fonction || undefined} aria-describedby={erreurs.fonction ? `${id}-fonction-err` : undefined} className={inputClass} />
         {erreurs.fonction && (
-          <p id={`${id}-fonction-err`} className="mt-1 text-xs text-red-700">
+          <p id={`${id}-fonction-err`} className="mt-1 text-xs text-danger">
             {erreurs.fonction}
           </p>
         )}
@@ -208,16 +207,16 @@ export function ConfirmationPlacement({ source, jeton, placementId, prenom, date
           </label>
           <input id={`${id}-date`} type="date" value={date} onChange={(e) => setDate(e.target.value)} aria-invalid={!!erreurs.date || undefined} aria-describedby={erreurs.date ? `${id}-date-err` : undefined} className={inputClass} />
           {erreurs.date && (
-            <p id={`${id}-date-err`} className="mt-1 text-xs text-red-700">
+            <p id={`${id}-date-err`} className="mt-1 text-xs text-danger">
               {erreurs.date}
             </p>
           )}
         </div>
       )}
       <Message etat={etat} />
-      <button type="submit" disabled={envoi} className={`${bouton} bg-cta text-ink-900 text-left`}>
-        {envoi && <Loader2 className="w-4 h-4 animate-spin" aria-hidden />} Je confirme la prise de poste de {prenom} le {dateLongue(dateEffective)}
-      </button>
+      <Button type="submit" fullWidth loading={envoi} className="text-left">
+        Je confirme la prise de poste de {prenom} le {dateLongue(dateEffective)}
+      </Button>
     </form>
   );
 }

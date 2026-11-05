@@ -17,14 +17,11 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const couverture = await lireCouverture();
   return (
     <>
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:bg-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow"
-      >
+      <a href="#main-content" className="skip-link">
         Aller au contenu
       </a>
       <Header />
-      <main id="main-content" className="pt-20 overflow-x-clip">
+      <main id="main-content" tabIndex={-1} className="pt-20 overflow-x-clip outline-none">
         <MotionProvider>{children}</MotionProvider>
       </main>
       <Footer villes={couverture.libelle} />

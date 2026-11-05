@@ -6,7 +6,7 @@ import { pageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Conditions générales de vente',
-  description: 'Conditions générales de vente des prestations, abonnements et produits NexClean.',
+  description: 'Conditions générales de vente des prestations, abonnements et produits NEXCLEAN.',
   path: '/cgv',
 });
 
@@ -36,7 +36,7 @@ export default function CGVPage() {
 
       <h2>4. Vente de produits</h2>
       <p>
-        Les commandes sont passées via WhatsApp et confirmées par NexClean (disponibilité, prix, livraison). {PAYMENT_TERMS.produits}{' '}
+        Les commandes sont passées via WhatsApp et confirmées par NEXCLEAN (disponibilité, prix, livraison). {PAYMENT_TERMS.produits}{' '}
         {SHOP_INFO.delivery}
       </p>
 
@@ -52,7 +52,7 @@ export default function CGVPage() {
       <h2>7. Réclamations</h2>
       <p>
         Toute réclamation concernant une prestation doit être signalée rapidement après l&apos;intervention, idéalement avec
-        photos, au {CONTACT.phoneDisplay} ou à <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>. NexClean s&apos;engage
+        photos, au {CONTACT.phoneDisplay} ou à <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>. NEXCLEAN s&apos;engage
         à étudier chaque réclamation et à proposer une solution adaptée.
       </p>
     </LegalPage>

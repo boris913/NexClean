@@ -2,7 +2,7 @@
 title: "5 taches tenaces que seuls les professionnels peuvent éliminer"
 description: "Résine, rouille, moisissure incrustée, odeurs persistantes… Découvrez les taches les plus coriaces et pourquoi un professionnel est indispensable."
 date: "2026-04-22"
-author: "Équipe NexClean"
+author: "Équipe NEXCLEAN"
 tags: ["Taches", "tenaces", "Nettoyage", "professionnel", "Conseils", "Douala", "Résine", "Rouille", "Moisissure"]
 coverImage: "/images/blog/taches-tenaces.png"
 isPublished: true
@@ -16,7 +16,7 @@ isPublished: true
 
 Vous avez tout essayé : vinaigre blanc, bicarbonate, savon noir, voire des produits chimiques du commerce. Pourtant, certaines taches restent là, comme si elles s’accrochaient à vos surfaces par défi.
 
-Ces taches tenaces ne cèdent pas aux méthodes domestiques. Elles nécessitent des **produits spécifiques**, un **matériel professionnel** et des **techniques éprouvées**. Chez **NexClean**, nous les rencontrons régulièrement. Voici les 5 plus redoutables… et pourquoi seul un expert peut en venir à bout.
+Ces taches tenaces ne cèdent pas aux méthodes domestiques. Elles nécessitent des **produits spécifiques**, un **matériel professionnel** et des **techniques éprouvées**. Chez **NEXCLEAN**, nous les rencontrons régulièrement. Voici les 5 plus redoutables… et pourquoi seul un expert peut en venir à bout.
 
 ---
 
@@ -95,7 +95,7 @@ Les odeurs sont des molécules volatiles qui se fixent dans les fibres, les pein
 - **Produits enzymatiques** (pour les urines) qui digèrent les protéines.
 - **Traitement des gaines d’aération** souvent responsables de la circulation des odeurs.
 
-> 🔹 **Note** : L’ozonation est une technique dangereuse sans formation. Chez NexClean, nous la pratiquons en respectant les normes de sécurité.
+> 🔹 **Note** : L’ozonation est une technique dangereuse sans formation. Chez NEXCLEAN, nous la pratiquons en respectant les normes de sécurité.
 
 ---
 
@@ -142,7 +142,7 @@ Un professionnel vous fait gagner **sérénité, efficacité et sécurité**.
 
 ---
 
-## Confiez vos taches tenaces à NexClean
+## Confiez vos taches tenaces à NEXCLEAN
 
 Nous disposons de :
 - Une gamme complète de produits professionnels.

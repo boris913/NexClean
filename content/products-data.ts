@@ -37,10 +37,10 @@ export const products: Product[] = [
     name: "Savon Précieux à l'Huile d'Argan",
     tagline: 'Savon liquide multi-usage : vaisselle, lessive et sols',
     description:
-      "Le savon liquide NexClean, utilisé par nos équipes, est formulé pour la vaisselle, le linge et l'entretien des sols. Une petite quantité suffit grâce à sa formule concentrée.",
+      "Le savon liquide NEXCLEAN, utilisé par nos équipes, est formulé pour la vaisselle, le linge et l'entretien des sols. Une petite quantité suffit grâce à sa formule concentrée.",
     images: [
-      { src: '/images/blog/nexclean-savon.png', alt: "Flacons de savon liquide NexClean à l'huile d'argan, 1 L" },
-      { src: '/images/blog/nexclean-savon1.png', alt: 'Savon liquide NexClean' },
+      { src: '/images/blog/nexclean-savon.png', alt: "Flacons de savon liquide NEXCLEAN à l'huile d'argan, 1 L" },
+      { src: '/images/blog/nexclean-savon1.png', alt: 'Savon liquide NEXCLEAN' },
     ],
     formats: [{ label: 'Flacon 1 L', price: 1500 }],
     available: true,
@@ -72,7 +72,7 @@ export const SHOP_INFO = {
   /** Mention affichée à côté de chaque prix. */
   priceNote: 'Livraison non incluse',
   delivery:
-    'Prix hors livraison. Livraison à Douala : frais et délai confirmés sur WhatsApp selon votre quartier. Retrait possible sur rendez-vous.',
+    'Prix hors livraison. Zones, frais et délai de livraison confirmés sur WhatsApp selon votre ville et votre quartier. Retrait possible sur rendez-vous.',
   wholesale:
     'Entreprises, revendeurs et achats en gros : tarifs dédiés sur demande.',
 };

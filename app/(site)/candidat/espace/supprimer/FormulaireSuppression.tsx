@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
+import Button from '@/components/ui/Button';
 import { inputClass, labelClass } from '@/components/forms/WhatsAppForm';
 import { FUSEAU } from '@/lib/domain/referentiels';
 import { demanderSuppression } from '../../actions';
@@ -14,7 +14,7 @@ export default function FormulaireSuppression({ connecte }: { connecte: boolean 
 
   if (prevueLe)
     return (
-      <div role="status" className="rounded-xl border border-green-200 bg-green-50 p-4 text-green-900">
+      <div role="status" className="rounded-2xl border border-success-border bg-success-soft p-4 text-ink-800">
         <p className="font-semibold">Demande enregistrée.</p>
         <p className="mt-1">
           Votre compte est bloqué. Vos données seront supprimées le{' '}
@@ -26,7 +26,7 @@ export default function FormulaireSuppression({ connecte }: { connecte: boolean 
 
   if (!connecte)
     return (
-      <p className="pt-2 border-t border-slate-100">
+      <p className="pt-2 border-t border-ink-100">
         <Link href="/candidat/connexion" className="text-primary underline font-semibold">
           Connectez-vous
         </Link>{' '}
@@ -37,7 +37,7 @@ export default function FormulaireSuppression({ connecte }: { connecte: boolean 
   return (
     <form
       noValidate
-      className="space-y-3 pt-2 border-t border-slate-100"
+      className="space-y-3 pt-2 border-t border-ink-100"
       onSubmit={async (e) => {
         e.preventDefault();
         if (!motDePasse) return setErreur('Indiquez votre mot de passe pour confirmer.');
@@ -60,13 +60,14 @@ export default function FormulaireSuppression({ connecte }: { connecte: boolean 
         <input id="su-mdp" type="password" autoComplete="current-password" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} className={inputClass} />
       </div>
       {erreur && (
-        <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <p role="alert" className="rounded-2xl border border-danger-border bg-danger-soft px-4 py-3 text-sm text-danger">
           {erreur}
         </p>
       )}
-      <button type="submit" disabled={envoi} className="flex w-full items-center justify-center gap-2 min-h-12 px-6 rounded-full bg-red-700 text-white font-semibold disabled:opacity-60">
-        {envoi && <Loader2 className="w-4 h-4 animate-spin" />} Supprimer mon compte et mes données
-      </button>
+      {/* Bouton destructif : Button n'a pas de variante « danger » (à ajouter dans components/ui). */}
+      <Button type="submit" variant="secondary" fullWidth loading={envoi} className="!bg-danger hover:!bg-danger">
+        Supprimer mon compte et mes données
+      </Button>
     </form>
   );
 }

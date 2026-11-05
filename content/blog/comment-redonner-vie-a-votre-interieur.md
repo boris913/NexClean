@@ -2,7 +2,7 @@
 title: "Nettoyage après travaux : comment redonner vie à votre intérieur"
 description: "Guide complet pour éliminer poussière fine, résidus de peinture et gravats sans abîmer vos surfaces. Astuces professionnelles et exemples avant/après."
 date: "2026-03-24"
-author: "Équipe NexClean"
+author: "Équipe NEXCLEAN"
 tags: ["Nettoyage après travaux", "Conseils", "Rénovation", "Douala"]
 coverImage: "/images/blog/nettoyage-apres-travaux.png"
 isPublished: true
@@ -16,7 +16,7 @@ isPublished: true
 
 Les travaux de rénovation, qu’il s’agisse d’une simple peinture ou d’une transformation complète, laissent toujours derrière eux un désordre difficile à gérer. Poussière ultrafine incrustée partout, éclats de peinture sur les sols, résidus de colle ou de plâtre… Un simple coup de balai ne suffit pas. Un nettoyage mal réalisé peut même endommager vos surfaces neuves.
 
-Chez **NexClean**, nous intervenons régulièrement après chantier à Douala et dans ses environs. Voici nos conseils professionnels pour un nettoyage post-travaux réussi, étape par étape.
+Chez **NEXCLEAN**, nous intervenons régulièrement après chantier à Douala et dans ses environs. Voici nos conseils professionnels pour un nettoyage post-travaux réussi, étape par étape.
 
 ---
 
@@ -35,7 +35,7 @@ Un ménage classique se contente de nettoyer le visible. Un **nettoyage post-tra
 
 ## 2. Le matériel indispensable (et pourquoi l’aspirateur classique ne suffit pas)
 
-Avant de commencer, il faut s’équiper correctement. Voici ce que nous utilisons chez NexClean :
+Avant de commencer, il faut s’équiper correctement. Voici ce que nous utilisons chez NEXCLEAN :
 
 | Outil | Utilité |
 |-------|---------|
@@ -123,7 +123,7 @@ Une fois toutes les surfaces propres, nous procédons à une inspection minutieu
 
 ## 5. Pourquoi confier cette tâche à des professionnels ?
 
-Un nettoyage après travaux demande **du temps, du matériel spécifique et des techniques précises**. En faisant appel à **NexClean**, vous bénéficiez :
+Un nettoyage après travaux demande **du temps, du matériel spécifique et des techniques précises**. En faisant appel à **NEXCLEAN**, vous bénéficiez :
 
 - d’une équipe formée aux différents types de surfaces et de résidus ;
 - d’un matériel professionnel (aspirateurs HEPA, autolaveuses, produits adaptés) ;
@@ -153,7 +153,7 @@ Sur cette intervention, les propriétaires avaient effectué des travaux de pein
 
 Si vous venez de terminer des travaux (ou si vous prévoyez d’en entreprendre), n’attendez pas que la poussière s’incruste. Un nettoyage professionnel vous fait gagner du temps, préserve la qualité de vos matériaux et vous permet de profiter immédiatement de votre espace rénové.
 
-📞 **Contactez NexClean pour un devis gratuit et personnalisé**  
+📞 **Contactez NEXCLEAN pour un devis gratuit et personnalisé**  
 Nous nous déplaçons à Douala et dans les environs pour évaluer vos besoins et vous proposer une intervention sur mesure.
 
 ---

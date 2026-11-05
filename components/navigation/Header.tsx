@@ -1,228 +1,276 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Phone, ChevronDown, ArrowRight } from 'lucide-react';
+import { ChevronDown, Menu, Phone, X } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import { CONTACT, TEL_LINK } from '@/lib/constants';
+import Container, { containerClasses } from '@/components/ui/Container';
 import Logo from '@/components/ui/Logo';
+import { cx } from '@/components/ui/cx';
+import { BRAND, TEL_LINK } from '@/lib/constants';
+import { CTA_DEMANDE, LIENS_NAV, MENUS_NAV, estLienActif, type MenuNav } from '@/components/navigation/nav-data';
 
-interface NavLink {
-  name: string;
-  href: string;
-  children?: { name: string; href: string; description?: string }[];
+const LARGEUR_LG = '(min-width: 1024px)';
+
+const itemClasses = (actif: boolean) =>
+  cx(
+    'inline-flex min-h-tap items-center gap-1 whitespace-nowrap rounded-full px-2 xl:px-3 text-sm font-medium transition-colors',
+    actif ? 'bg-brand-50 text-primary' : 'text-ink-700 hover:bg-brand-50 hover:text-primary',
+  );
+
+const lienMobileClasses =
+  'flex min-h-tap items-center rounded-lg px-3 text-base font-medium text-ink-900 hover:bg-brand-50 hover:text-primary';
+
+/**
+ * Sous-menu desktop : bouton de divulgation + liste de liens.
+ * Entrée/Espace ouvre, flèches haut/bas parcourent les liens, Échap ferme et rend le focus au bouton,
+ * et le menu se ferme quand le focus en sort.
+ */
+function SousMenu({
+  menu,
+  ouvert,
+  actif,
+  onChange,
+}: {
+  menu: MenuNav;
+  ouvert: boolean;
+  actif: boolean;
+  onChange: (ouvert: boolean) => void;
+}) {
+  const bouton = useRef<HTMLButtonElement>(null);
+  const liste = useRef<HTMLUListElement>(null);
+  const focusEnAttente = useRef<'premier' | 'dernier' | null>(null);
+  const idListe = `sous-menu-${menu.id}`;
+
+  const liens = () => Array.from(liste.current?.querySelectorAll('a') ?? []);
+
+  // La liste n'est focalisable qu'une fois affichée.
+  useEffect(() => {
+    if (!ouvert || !focusEnAttente.current) return;
+    const tous = liens();
+    tous[focusEnAttente.current === 'premier' ? 0 : tous.length - 1]?.focus();
+    focusEnAttente.current = null;
+  }, [ouvert]);
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape' && ouvert) {
+      e.preventDefault();
+      onChange(false);
+      bouton.current?.focus();
+      return;
+    }
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    e.preventDefault();
+    if (!ouvert) {
+      focusEnAttente.current = e.key === 'ArrowDown' ? 'premier' : 'dernier';
+      onChange(true);
+      return;
+    }
+    const tous = liens();
+    const position = tous.indexOf(document.activeElement as HTMLAnchorElement);
+    const pas = e.key === 'ArrowDown' ? 1 : -1;
+    const suivant = position === -1 ? (pas === 1 ? 0 : tous.length - 1) : (position + pas + tous.length) % tous.length;
+    tous[suivant]?.focus();
+  };
+
+  const onBlur = (e: React.FocusEvent<HTMLDivElement>) => {
+    // relatedTarget vaut null lors d'un clic sur un élément non focalisable : le clic extérieur s'en charge.
+    if (ouvert && e.relatedTarget && !e.currentTarget.contains(e.relatedTarget as Node)) onChange(false);
+  };
+
+  return (
+    <div className="relative" onKeyDown={onKeyDown} onBlur={onBlur}>
+      <button
+        ref={bouton}
+        type="button"
+        onClick={() => onChange(!ouvert)}
+        aria-expanded={ouvert}
+        aria-controls={idListe}
+        className={itemClasses(actif)}
+      >
+        {menu.label}
+        <ChevronDown className={cx('w-3.5 h-3.5 transition-transform', ouvert && 'rotate-180')} aria-hidden="true" />
+      </button>
+      <ul
+        ref={liste}
+        id={idListe}
+        hidden={!ouvert}
+        className="absolute left-0 top-full mt-2 w-64 rounded-2xl border border-ink-100 bg-white p-2 shadow-card-hover animate-slide-down"
+      >
+        {menu.liens.map((lien) => (
+          <li key={lien.href}>
+            <Link
+              href={lien.href}
+              onClick={() => onChange(false)}
+              className="flex min-h-tap items-center rounded-xl px-3 text-sm font-medium text-ink-900 transition-colors hover:bg-brand-50 hover:text-primary"
+            >
+              {lien.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
-
-export const navLinks: NavLink[] = [
-  { name: 'Accueil', href: '/' },
-  {
-    name: 'Services',
-    href: '/services',
-    children: [
-      { name: 'Tous nos services', href: '/services', description: 'Vue d\'ensemble de nos prestations' },
-      { name: 'Particuliers', href: '/particuliers', description: 'Maisons, appartements, studios' },
-      { name: 'Professionnels', href: '/professionnels', description: 'Bureaux, commerces, hôtels…' },
-      { name: 'Espaces verts', href: '/espaces-verts', description: 'Tonte, débroussaillage, haies' },
-      { name: 'Abonnements', href: '/abonnements', description: 'Entretien régulier' },
-    ],
-  },
-  { name: 'Réalisations', href: '/realisations' },
-  { name: 'Boutique', href: '/boutique' },
-  { name: 'Tarifs', href: '/tarifs' },
-  { name: 'À propos', href: '/a-propos' },
-  {
-    name: 'Recrutement',
-    href: '/recrutement',
-    children: [
-      { name: 'Offres d’emploi & candidature', href: '/recrutement', description: 'Rejoindre NexClean' },
-      { name: 'Créer mon profil candidat', href: '/candidat/inscription', description: 'Inscription gratuite des demandeurs d’emploi' },
-      { name: 'Espace candidat', href: '/candidat/connexion', description: 'Profil, CV et candidatures' },
-      { name: 'Demander du personnel', href: '/recrutement/demander-du-personnel', description: 'Recrutement & placement pour votre structure' },
-    ],
-  },
-  { name: 'Blog', href: '/blog' },
-];
 
 export default function Header() {
   const pathname = usePathname() || '/';
   const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  // Sous-menu ouvert (un seul à la fois) ; la référence englobe toute la navigation.
-  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
-  const dropdownRef = useRef<HTMLElement>(null);
+  const [menuMobile, setMenuMobile] = useState(false);
+  const [sousMenu, setSousMenu] = useState<string | null>(null);
+  const navDesktop = useRef<HTMLElement>(null);
+  const boutonMobile = useRef<HTMLButtonElement>(null);
+
+  const fermerTout = useCallback(() => {
+    setMenuMobile(false);
+    setSousMenu(null);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    document.body.style.overflow = menuMobile ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
-  }, [menuOpen]);
+  }, [menuMobile]);
 
-  // Fermer menus à chaque navigation
+  // Le menu mobile n'existe plus à partir de lg : sans cela, le défilement resterait bloqué.
   useEffect(() => {
-    setMenuOpen(false);
-    setDropdownOpen(null);
-  }, [pathname]);
+    const media = window.matchMedia(LARGEUR_LG);
+    const onChange = () => {
+      if (media.matches) setMenuMobile(false);
+    };
+    media.addEventListener('change', onChange);
+    return () => media.removeEventListener('change', onChange);
+  }, []);
+
+  useEffect(fermerTout, [pathname, fermerTout]);
 
   useEffect(() => {
     const onClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setDropdownOpen(null);
+      if (navDesktop.current && !navDesktop.current.contains(e.target as Node)) setSousMenu(null);
     };
     document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
-  const isActive = (link: NavLink) =>
-    link.href === '/'
-      ? pathname === '/'
-      : pathname.startsWith(link.href) || !!link.children?.some((c) => pathname.startsWith(c.href));
+  const onKeyDownMobile = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape' && menuMobile) {
+      setMenuMobile(false);
+      boutonMobile.current?.focus();
+    }
+  };
+
+  const onBlurMobile = (e: React.FocusEvent<HTMLElement>) => {
+    // Le menu recouvre la page : on le ferme plutôt que de laisser le focus passer dessous.
+    if (menuMobile && e.relatedTarget && !e.currentTarget.contains(e.relatedTarget as Node)) setMenuMobile(false);
+  };
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'bg-white/90 backdrop-blur-xl shadow-[0_1px_0_0_theme(colors.ink.200),0_8px_24px_-12px_rgba(19,26,18,0.12)]'
-          : 'bg-white/70 backdrop-blur-md'
-      }`}
+      onKeyDown={onKeyDownMobile}
+      onBlur={onBlurMobile}
+      className={cx(
+        'fixed top-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-b transition-[border-color,box-shadow] duration-300',
+        scrolled ? 'border-ink-100 shadow-card' : 'border-transparent',
+      )}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 gap-4">
-          <Link href="/" className="flex-shrink-0 group">
-            <Logo height={42} priority className="h-9 sm:h-[42px] w-auto transition-transform duration-300 group-hover:scale-[1.02]" />
-          </Link>
+      <Container className="flex h-20 items-center justify-between gap-3">
+        <Link href="/" aria-label={`${BRAND.name} — Accueil`} className="flex-shrink-0">
+          <Logo height={42} priority className="h-9 w-auto" />
+        </Link>
 
-          {/* Desktop nav */}
-          <nav ref={dropdownRef} className="hidden xl:flex items-center gap-5 xl:gap-7" aria-label="Navigation principale">
-            {navLinks.filter((l) => l.href !== '/').map((link) =>
-              link.children ? (
-                <div key={link.name} className="relative">
-                  <button
-                    onClick={() => setDropdownOpen(dropdownOpen === link.name ? null : link.name)}
-                    aria-expanded={dropdownOpen === link.name}
-                    aria-haspopup="true"
-                    className={`flex items-center gap-1 text-sm font-medium transition-colors ${
-                      isActive(link) ? 'text-primary' : 'text-slate-700 hover:text-primary'
-                    }`}
-                  >
-                    {link.name}
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${dropdownOpen === link.name ? 'rotate-180' : ''}`} />
-                  </button>
-                  {dropdownOpen === link.name && (
-                    <div className="absolute left-1/2 -translate-x-1/2 top-full mt-4 w-80 bg-white rounded-2xl border border-ink-100 shadow-card-hover p-2 animate-slide-down">
-                      {link.children.map((child) => (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          className="block px-3 py-2.5 rounded-xl hover:bg-brand-50 transition-colors"
-                        >
-                          <span className="block text-sm font-medium text-slate-900">{child.name}</span>
-                          {child.description && (
-                            <span className="block text-xs text-slate-500">{child.description}</span>
-                          )}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className={`relative text-sm font-medium transition-colors duration-150 group ${
-                    isActive(link) ? 'text-primary' : 'text-slate-700 hover:text-primary'
-                  }`}
-                >
-                  {link.name}
-                  <span
-                    className={`absolute -bottom-1 left-0 h-[2px] rounded-full bg-brand-400 transition-all duration-300 ${
-                      isActive(link) ? 'w-full' : 'w-0 group-hover:w-full'
-                    }`}
-                  />
-                </Link>
-              )
-            )}
-          </nav>
+        <nav ref={navDesktop} className="hidden lg:flex items-center gap-0.5" aria-label="Navigation principale">
+          {MENUS_NAV.map((menu) => (
+            <SousMenu
+              key={menu.id}
+              menu={menu}
+              ouvert={sousMenu === menu.id}
+              actif={menu.actif(pathname)}
+              onChange={(ouvert) => setSousMenu(ouvert ? menu.id : null)}
+            />
+          ))}
+          {LIENS_NAV.map((lien) => {
+            const actif = estLienActif(pathname, lien.href);
+            return (
+              <Link key={lien.href} href={lien.href} aria-current={actif ? 'page' : undefined} className={itemClasses(actif)}>
+                {lien.label}
+              </Link>
+            );
+          })}
+        </nav>
 
-          {/* Desktop CTA */}
-          <div className="hidden xl:flex items-center gap-2">
-            <a
-              href={TEL_LINK}
-              aria-label={`Appeler NexClean au ${CONTACT.phoneDisplay}`}
-              className="w-10 h-10 rounded-full border border-ink-200 flex items-center justify-center text-ink-600 hover:text-primary hover:border-brand-400 hover:bg-brand-50 transition-colors"
-            >
-              <Phone className="w-4 h-4" />
-            </a>
-            <Button href="/contact" variant="primary" size="md" icon={ArrowRight} iconPosition="right">
-              Demander un devis
-            </Button>
-          </div>
-
-          {/* Tablette : CTA compact à côté du menu */}
-          <Button href="/contact" variant="primary" size="sm" className="hidden md:inline-flex xl:hidden ml-auto">
-            Devis gratuit
-          </Button>
-
-          {/* Mobile toggle */}
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="xl:hidden p-2 -mr-2 rounded-lg hover:bg-slate-100 transition-colors"
-            aria-label={menuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-            aria-expanded={menuOpen}
+        <div className="flex items-center gap-2">
+          <Button
+            href={TEL_LINK}
+            variant="outline"
+            size="sm"
+            icon={Phone}
+            aria-label={`Appeler ${BRAND.name}`}
+            className="hidden md:inline-flex w-11 !px-0"
           >
-            {menuOpen ? <X className="w-6 h-6 text-slate-900" /> : <Menu className="w-6 h-6 text-slate-900" />}
+            {null}
+          </Button>
+          <Button href={CTA_DEMANDE.href} size="sm" className="hidden md:inline-flex whitespace-nowrap">
+            {CTA_DEMANDE.label}
+          </Button>
+          <button
+            ref={boutonMobile}
+            type="button"
+            onClick={() => setMenuMobile(!menuMobile)}
+            aria-label={menuMobile ? 'Fermer le menu' : 'Ouvrir le menu'}
+            aria-expanded={menuMobile}
+            aria-controls="menu-mobile"
+            className="lg:hidden -mr-2 inline-flex min-h-tap min-w-tap items-center justify-center rounded-lg text-ink-900 transition-colors hover:bg-ink-100"
+          >
+            {menuMobile ? <X className="w-6 h-6" aria-hidden="true" /> : <Menu className="w-6 h-6" aria-hidden="true" />}
           </button>
         </div>
-      </div>
+      </Container>
 
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className="xl:hidden bg-white border-t border-slate-100 animate-slide-down max-h-[calc(100dvh-5rem)] overflow-y-auto">
-          <nav className="max-w-6xl mx-auto px-4 pt-4 pb-28 flex flex-col gap-0.5" aria-label="Navigation mobile">
-            {navLinks.map((link) => (
-              <div key={link.name}>
-                <Link
-                  href={link.href}
-                  className={`flex items-center justify-between py-3 px-4 rounded-lg text-base font-medium transition-colors ${
-                    isActive(link) ? 'text-primary bg-primary-light/50' : 'text-slate-800 hover:bg-slate-50'
-                  }`}
-                >
-                  {link.name}
-                  <ArrowRight className="w-4 h-4 text-slate-300" />
+      <div
+        id="menu-mobile"
+        hidden={!menuMobile}
+        className="lg:hidden max-h-[calc(100dvh-5rem)] overflow-y-auto border-t border-ink-100 bg-white animate-slide-down"
+      >
+        <nav aria-label="Navigation mobile" className={cx(containerClasses.default, 'pt-4 pb-28')}>
+          {MENUS_NAV.map((menu) => (
+            <div key={menu.id} className="mb-4">
+              <p id={`groupe-${menu.id}`} className="px-3 pb-1 text-eyebrow uppercase text-muted">
+                {menu.label}
+              </p>
+              <ul aria-labelledby={`groupe-${menu.id}`}>
+                {menu.liens.map((lien) => (
+                  <li key={lien.href}>
+                    <Link href={lien.href} onClick={fermerTout} className={lienMobileClasses}>
+                      {lien.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <ul className="mb-4 border-t border-ink-100 pt-3">
+            {LIENS_NAV.map((lien) => (
+              <li key={lien.href}>
+                <Link href={lien.href} onClick={fermerTout} className={lienMobileClasses}>
+                  {lien.label}
                 </Link>
-                {link.children && (
-                  <div className="ml-4 pl-3 border-l border-slate-100 mb-1">
-                    {link.children
-                      .filter((c) => c.href !== link.href)
-                      .map((child) => (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          className="block py-2.5 px-3 rounded-lg text-sm text-slate-600 hover:text-primary hover:bg-slate-50"
-                        >
-                          {child.name}
-                        </Link>
-                      ))}
-                  </div>
-                )}
-              </div>
+              </li>
             ))}
-            <Link
-              href="/contact"
-              className="flex items-center justify-between py-3 px-4 rounded-lg text-base font-medium text-slate-800 hover:bg-slate-50"
-            >
-              Contact / Devis
-              <ArrowRight className="w-4 h-4 text-slate-300" />
-            </Link>
-          </nav>
-        </div>
-      )}
+          </ul>
+          <Button href={CTA_DEMANDE.href} fullWidth onClick={fermerTout}>
+            {CTA_DEMANDE.label}
+          </Button>
+        </nav>
+      </div>
     </header>
   );
 }

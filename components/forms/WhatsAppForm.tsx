@@ -6,9 +6,8 @@
 // avec le message sans numéro : le client n'est jamais bloqué (RG-06).
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle, Loader2 } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import WhatsAppIcon from '@/components/ui/WhatsAppIcon';
 import { getWhatsAppLink } from '@/lib/constants';
 import { trackEvent } from '@/lib/analytics';
 import { construireMessage, lieuVide, type FormField, type NomsLieu, type ValeurLieu } from '@/lib/dossiers/formulaire-devis';
@@ -28,9 +27,9 @@ interface WhatsAppFormProps {
 }
 
 export const inputClass =
-  'w-full px-3 py-3 text-base sm:text-sm text-slate-900 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-slate-400';
+  'w-full px-4 py-3 text-base sm:text-sm text-ink-900 bg-ink-50 border border-ink-300 rounded-2xl outline-none focus:border-primary focus:bg-white focus-ring transition-all placeholder:text-ink-400';
 
-export const labelClass = 'block text-xs font-medium text-slate-600 mb-1.5';
+export const labelClass = 'block text-xs font-medium text-ink-700 mb-1.5';
 
 const DELAI_MS = 8000;
 
@@ -146,44 +145,40 @@ export default function WhatsAppForm({ subject, fields, submitLabel = 'Envoyer m
         <CheckCircle className="w-12 h-12 text-success mb-3" strokeWidth={1.5} />
         {fin.numero ? (
           <>
-            <p className="text-sm text-slate-500">Demande enregistrée</p>
-            <p className="font-mono font-bold text-2xl text-slate-900 mb-2">n° {fin.numero}</p>
+            <p className="text-sm text-muted">Demande enregistrée</p>
+            <p className="font-mono font-bold text-2xl text-ink-900 mb-2">n° {fin.numero}</p>
           </>
         ) : (
-          <p className="font-semibold text-slate-900 mb-1">Demande prête !</p>
+          <p className="font-semibold text-ink-900 mb-1">Demande prête !</p>
         )}
-        <p className="text-sm text-slate-600 max-w-xs mb-5">
+        <p className="text-sm text-ink-600 max-w-xs mb-5">
           {fin.bloque ? 'Ouvrez WhatsApp pour envoyer votre demande.' : 'Envoyez le message dans WhatsApp.'} Joignez vos photos ou vidéos dans la conversation WhatsApp pour un devis plus précis.
         </p>
-        <a
-          href={fin.lienWhatsApp}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`inline-flex items-center justify-center gap-2 min-h-12 px-6 rounded-full font-semibold mb-4 ${fin.bloque ? 'bg-[#25D366] text-white' : 'border border-slate-200 text-slate-800'}`}
-        >
-          <WhatsAppIcon className="w-5 h-5" /> Ouvrir WhatsApp
-        </a>
+        <Button href={fin.lienWhatsApp} variant={fin.bloque ? 'whatsapp' : 'outline'} whatsappIcon className="mb-4">
+          Ouvrir WhatsApp
+        </Button>
         {fin.lienSuivi && (
           <a href={fin.lienSuivi} className="text-sm text-primary underline mb-4">
             Suivre ma demande
           </a>
         )}
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => {
             setForm(vide);
             setLieu(lieuVide());
             setConsentement(false);
             setFin(null);
           }}
-          className="text-sm text-primary font-medium hover:underline"
         >
           Faire une nouvelle demande
-        </button>
+        </Button>
       </div>
     );
   }
 
-  const erreur = (cle: string) => erreurs[cle] && <p className="text-xs text-red-700 mt-1">{erreurs[cle]}</p>;
+  const erreur = (cle: string) => erreurs[cle] && <p className="text-xs text-danger mt-1">{erreurs[cle]}</p>;
 
   return (
     <form onSubmit={handleSubmit} className="grid sm:grid-cols-2 gap-4">
@@ -298,7 +293,7 @@ export default function WhatsAppForm({ subject, fields, submitLabel = 'Envoyer m
       })}
 
       <div className="sm:col-span-2">
-        <label className="flex items-start gap-3 text-sm text-slate-600">
+        <label className="flex items-start gap-3 text-sm text-ink-600">
           <input type="checkbox" checked={consentement} onChange={(e) => {
               setConsentement(e.target.checked);
               setErreurs(({ consentement: _c, ...reste }) => reste);
@@ -315,11 +310,10 @@ export default function WhatsAppForm({ subject, fields, submitLabel = 'Envoyer m
       </div>
 
       <div className="sm:col-span-2 space-y-3">
-        <Button type="submit" variant="whatsapp" size="lg" fullWidth disabled={loading}>
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <WhatsAppIcon className="w-4 h-4" />}
+        <Button type="submit" variant="whatsapp" size="lg" fullWidth loading={loading} loadingLabel="Envoi en cours…" whatsappIcon>
           {submitLabel}
         </Button>
-        <p className="text-center text-xs text-slate-400">{note || 'Vous serez redirigé vers WhatsApp pour envoyer votre demande.'}</p>
+        <p className="text-center text-xs text-muted">{note || 'Vous serez redirigé vers WhatsApp pour envoyer votre demande.'}</p>
       </div>
     </form>
   );

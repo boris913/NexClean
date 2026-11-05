@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import SectionLabel from '@/components/ui/SectionLabel';
+import { useId, useState, type KeyboardEvent } from 'react';
+import { Check, Banknote, Smartphone, Building2, ArrowRight } from 'lucide-react';
 import Button from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
+import Section from '@/components/ui/Section';
+import SectionHeader from '@/components/ui/SectionHeader';
+import { cx } from '@/components/ui/cx';
 import { pricingParticuliers, pricingProfessionnels, paymentMethods } from '@/content/pricing-data';
 import { getWhatsAppLink, PAYMENT_TERMS } from '@/lib/constants';
-import { Check, Banknote, Smartphone, Building2, ArrowRight } from 'lucide-react';
 
 const paymentIcons: Record<string, typeof Banknote> = {
   Banknote,
@@ -13,137 +16,155 @@ const paymentIcons: Record<string, typeof Banknote> = {
   Building2,
 };
 
-export default function PricingSection() {
-  const [tab, setTab] = useState<'particuliers' | 'professionnels'>('particuliers');
+const ONGLETS = [
+  { cle: 'particuliers', label: 'Particuliers' },
+  { cle: 'professionnels', label: 'Professionnels' },
+] as const;
+
+type Onglet = (typeof ONGLETS)[number]['cle'];
+
+interface PricingSectionProps {
+  eyebrow?: string;
+  title?: string;
+  intro?: string;
+  ctaLabel?: string;
+  popularLabel?: string;
+  /** Moyens et conditions de paiement sous la grille ; à retirer si la page les présente déjà. */
+  showPayment?: boolean;
+}
+
+export default function PricingSection({
+  eyebrow = 'Tarifs',
+  title = 'Tarifs indicatifs',
+  intro = "Prix de départ donnés à titre indicatif : le devis final dépend de la surface, de l'état des lieux, de l'accès, de la fréquence et des moyens nécessaires.",
+  ctaLabel = 'Demander un devis',
+  popularLabel = 'Recommandé',
+  showPayment = true,
+}: PricingSectionProps) {
+  const [tab, setTab] = useState<Onglet>('particuliers');
+  const id = useId();
   const options = tab === 'particuliers' ? pricingParticuliers : pricingProfessionnels;
 
+  function auClavier(e: KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    const suivant: Onglet = tab === 'particuliers' ? 'professionnels' : 'particuliers';
+    setTab(suivant);
+    document.getElementById(`${id}-onglet-${suivant}`)?.focus();
+  }
+
   return (
-    <section id="tarifs" className="py-20 sm:py-24 bg-white">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <SectionLabel className="mb-4">Tarifs</SectionLabel>
-          <h2 className="font-display font-bold text-3xl sm:text-5xl text-ink-900 mb-3">
-            Tarifs indicatifs
-          </h2>
-          <p className="text-slate-500 max-w-lg mx-auto mb-8">
-            Prix de départ donnés à titre indicatif : le devis final dépend de la surface, de l&apos;état des lieux, de l&apos;accès, de la fréquence et des moyens nécessaires.
-          </p>
+    <Section id="tarifs" tone="muted" labelledBy={`${id}-titre`} className="scroll-mt-20">
+      <SectionHeader id={`${id}-titre`} align="center" eyebrow={eyebrow} title={title} intro={intro} className="!mb-8" />
 
-          {/* Tabs */}
-          <div className="inline-flex bg-slate-100 rounded-xl p-1 gap-1">
-            {(['particuliers', 'professionnels'] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  tab === t
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                {t === 'particuliers' ? 'Particuliers' : 'Professionnels'}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Cards */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-12">
-          {options.map((option) => (
-            <div
-              key={option.id}
-              className={`relative bg-white rounded-2xl p-6 border transition-all duration-200 ${
-                option.popular
-                  ? 'border-brand-400 shadow-[0_0_0_2px_#84CC45] shadow-card'
-                  : 'border-slate-100 shadow-card hover:shadow-card-hover hover:border-slate-200'
-              }`}
-            >
-              {/* Popular badge */}
-              {option.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="text-xs font-semibold bg-cta text-ink-900 px-3 py-1 rounded-full">
-                    Recommandé
-                  </span>
-                </div>
+      <div className="mb-10 flex justify-center">
+        <div role="tablist" aria-label="Type de client" onKeyDown={auClavier} className="inline-flex gap-1 rounded-full bg-ink-100 p-1">
+          {ONGLETS.map((o) => (
+            <button
+              key={o.cle}
+              id={`${id}-onglet-${o.cle}`}
+              type="button"
+              role="tab"
+              aria-selected={tab === o.cle}
+              aria-controls={`${id}-panneau`}
+              tabIndex={tab === o.cle ? 0 : -1}
+              onClick={() => setTab(o.cle)}
+              className={cx(
+                'min-h-tap rounded-full px-5 text-sm font-medium transition-colors duration-200',
+                tab === o.cle ? 'bg-white text-ink-900 shadow-card' : 'text-ink-600 hover:text-ink-900',
               )}
-
-              <div className="mb-5">
-                <h3 className="text-base font-semibold text-slate-900 mb-1">{option.name}</h3>
-                <p className="text-xs text-slate-400">{option.surface}</p>
-              </div>
-
-              {/* Prices */}
-              <div className="mb-5 space-y-3">
-                <div>
-                  <p className="text-xs text-slate-400 mb-0.5">Ponctuel, à partir de</p>
-                  <p className="text-xl font-bold text-slate-900">{option.pricePonctuel}</p>
-                </div>
-                {option.priceAbonnement && (
-                  <div className="pt-3 border-t border-slate-100">
-                    <p className="text-xs text-slate-400 mb-0.5">Abonnement mensuel, à partir de</p>
-                    <p className="text-lg font-semibold text-success">{option.priceAbonnement}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Features */}
-              <ul className="space-y-2 mb-6">
-                {option.features.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
-                    <Check className="w-3.5 h-3.5 text-success flex-shrink-0" strokeWidth={2.5} />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-
-              <Button
-                href={getWhatsAppLink(`Devis ${option.name} — ${tab}`)}
-                variant={option.popular ? 'primary' : 'secondary'}
-                size="sm"
-                fullWidth
-                icon={ArrowRight}
-                iconPosition="right"
-              >
-                Demander un devis
-              </Button>
-            </div>
+            >
+              {o.label}
+            </button>
           ))}
         </div>
-
-        {/* Payment methods */}
-        <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 mb-8">
-          <p className="text-sm font-medium text-slate-700 text-center mb-4">
-            Moyens de paiement acceptés
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            {paymentMethods.map((m) => {
-              const Icon = paymentIcons[m.icon] || Banknote;
-              return (
-                <div
-                  key={m.name}
-                  className="flex items-center gap-2 text-sm text-slate-600 bg-white border border-slate-200 px-4 py-2 rounded-lg"
-                >
-                  <Icon className="w-4 h-4 text-slate-400" />
-                  {m.name}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Note */}
-        <div className="grid sm:grid-cols-2 gap-4 text-sm text-slate-600">
-          <p className="rounded-xl border border-slate-100 p-4">
-            <span className="block font-semibold text-slate-900 mb-1">Prestation ponctuelle</span>
-            {PAYMENT_TERMS.ponctuel}
-          </p>
-          <p className="rounded-xl border border-slate-100 p-4">
-            <span className="block font-semibold text-slate-900 mb-1">Abonnement</span>
-            {PAYMENT_TERMS.abonnement}
-          </p>
-        </div>
       </div>
-    </section>
+
+      <div
+        id={`${id}-panneau`}
+        role="tabpanel"
+        aria-labelledby={`${id}-onglet-${tab}`}
+        className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+      >
+        {options.map((option) => (
+          <Card key={option.id} padding="sm" className={cx(option.popular && 'ring-2 ring-cta')}>
+            {option.popular && (
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-cta px-3 py-1 text-xs font-semibold text-ink-900">
+                {popularLabel}
+              </span>
+            )}
+
+            <div className="mb-5">
+              <h3 className="mb-1 font-display text-h3 text-ink-900">{option.name}</h3>
+              <p className="text-xs text-muted">{option.surface}</p>
+            </div>
+
+            <div className="mb-5 space-y-3">
+              <div>
+                <p className="mb-0.5 text-xs text-muted">Ponctuel, à partir de</p>
+                <p className="text-xl font-bold text-ink-900">{option.pricePonctuel}</p>
+              </div>
+              {option.priceAbonnement && (
+                <div className="border-t border-ink-100 pt-3">
+                  <p className="mb-0.5 text-xs text-muted">Abonnement mensuel, à partir de</p>
+                  <p className="text-lg font-semibold text-success">{option.priceAbonnement}</p>
+                </div>
+              )}
+            </div>
+
+            <ul className="mb-6 space-y-2">
+              {option.features.map((f) => (
+                <li key={f} className="flex items-start gap-2 text-small text-ink-600">
+                  <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-success" aria-hidden="true" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+
+            <Button
+              href={getWhatsAppLink(`Devis ${option.name} — ${tab}`)}
+              variant={option.popular ? 'primary' : 'outline'}
+              size="sm"
+              fullWidth
+              icon={ArrowRight}
+              iconPosition="right"
+              className="mt-auto"
+            >
+              {ctaLabel}
+            </Button>
+          </Card>
+        ))}
+      </div>
+
+      {showPayment && (
+        <>
+          <Card padding="sm" className="mb-6 mt-10">
+            <p className="mb-4 text-center text-small font-medium text-ink-700">Moyens de paiement acceptés</p>
+            <div className="flex flex-wrap justify-center gap-3">
+              {paymentMethods.map((m) => {
+                const Icon = paymentIcons[m.icon] || Banknote;
+                return (
+                  <div key={m.name} className="flex items-center gap-2 rounded-full border border-ink-200 bg-white px-4 py-2 text-small text-ink-600">
+                    <Icon className="h-4 w-4 text-ink-400" aria-hidden="true" />
+                    {m.name}
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+
+          <div className="grid gap-6 text-small text-ink-600 sm:grid-cols-2">
+            <Card padding="sm">
+              <p className="mb-1 font-semibold text-ink-900">Prestation ponctuelle</p>
+              <p>{PAYMENT_TERMS.ponctuel}</p>
+            </Card>
+            <Card padding="sm">
+              <p className="mb-1 font-semibold text-ink-900">Abonnement</p>
+              <p>{PAYMENT_TERMS.abonnement}</p>
+            </Card>
+          </div>
+        </>
+      )}
+    </Section>
   );
 }

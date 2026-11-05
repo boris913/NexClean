@@ -32,7 +32,7 @@ const fontDisplay = localFont({
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#84CC45',
+  themeColor: '#2C4B1A',
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -89,7 +89,7 @@ export async function generateMetadata(): Promise<Metadata> {
     }),
     applicationName: SITE_NAME,
     category: 'services',
-    classification: 'Nettoyage professionnel',
+    classification: 'Services aux entreprises et aux particuliers : propreté et hygiène, recrutement et placement de personnel, espaces verts',
     referrer: 'origin-when-cross-origin',
     formatDetection: {
       email: false,

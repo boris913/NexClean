@@ -1,12 +1,10 @@
 import HeroSection from '@/components/sections/HeroSection';
-import ServicesSection from '@/components/sections/ServicesSection';
-import ServicesMarquee from '@/components/sections/ServicesMarquee';
-import AudienceSection from '@/components/sections/AudienceSection';
-import BeforeAfterSection from '@/components/sections/BeforeAfterSection';
-import WhyUsSection from '@/components/sections/WhyUsSection';
-import ProcessSection from '@/components/sections/ProcessSection';
-import SubscriptionsSection from '@/components/sections/SubscriptionsSection';
-import ProductsSection from '@/components/sections/ProductsSection';
+import PiliersSection from '@/components/sections/PiliersSection';
+import ParcoursSection from '@/components/sections/ParcoursSection';
+import FocusRecrutementSection from '@/components/sections/FocusRecrutementSection';
+import FocusPropreteSection from '@/components/sections/FocusPropreteSection';
+import SuiviSection from '@/components/sections/SuiviSection';
+import EmploiSection from '@/components/sections/EmploiSection';
 import TestimonialsSection from '@/components/sections/TestimonialsSection';
 import CoverageSection from '@/components/sections/CoverageSection';
 import FAQSection from '@/components/sections/FAQSection';
@@ -14,6 +12,7 @@ import CTASection from '@/components/sections/CTASection';
 import JsonLd from '@/components/ui/JsonLd';
 import { SITE_URL, OG_IMAGE, titreParDefaut, descriptionParDefaut, FAQ_SCHEMA } from '@/lib/seo';
 import { lireCouverture } from '@/lib/geo/couverture';
+import { CTA_FINAL, FAQ_EN_TETE, ZONES_EN_TETE } from '@/content/home-data';
 import type { Metadata } from 'next';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -47,18 +46,23 @@ export default async function Home() {
   return (
     <>
       <HeroSection villes={libelle} />
-      <ServicesMarquee />
-      <ServicesSection />
-      <AudienceSection />
-      <BeforeAfterSection />
-      <WhyUsSection />
-      <ProcessSection />
-      <SubscriptionsSection />
-      <ProductsSection />
+      <PiliersSection />
+      <ParcoursSection />
+      <FocusRecrutementSection />
+      <FocusPropreteSection />
+      <SuiviSection />
+      <EmploiSection />
       <TestimonialsSection />
-      <CoverageSection />
-      <FAQSection />
-      <CTASection />
+      <CoverageSection eyebrow={ZONES_EN_TETE.surtitre} intro={ZONES_EN_TETE.sousTitre} />
+      <FAQSection eyebrow={FAQ_EN_TETE.surtitre} title={FAQ_EN_TETE.titre} intro={FAQ_EN_TETE.sousTitre} />
+      <CTASection
+        title={CTA_FINAL.titre}
+        subtitle={CTA_FINAL.texte}
+        formHref={CTA_FINAL.cta.href}
+        formLabel={CTA_FINAL.cta.label}
+        whatsappMessage={CTA_FINAL.whatsapp.message}
+        whatsappLabel={CTA_FINAL.whatsapp.label}
+      />
       <JsonLd data={FAQ_SCHEMA} />
     </>
   );

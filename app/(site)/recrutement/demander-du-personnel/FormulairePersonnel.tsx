@@ -3,8 +3,9 @@
 // estimation avant envoi, confirmation avec récapitulatif WhatsApp, repli WhatsApp si échec.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { AlertCircle, CheckCircle2, Copy, Loader2, Plus, Trash2, CopyPlus } from 'lucide-react';
-import WhatsAppIcon from '@/components/ui/WhatsAppIcon';
+import { AlertCircle, CheckCircle2, Copy, Plus, Trash2, CopyPlus } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import Card, { cardClasses } from '@/components/ui/Card';
 import { inputClass, labelClass } from '@/components/forms/WhatsAppForm';
 import { getWhatsAppLink } from '@/lib/constants';
 import { trackEvent } from '@/lib/analytics';
@@ -36,6 +37,8 @@ import { envoyerDemandePersonnel } from './actions';
 const CLE_BROUILLON = 'nexclean:demande-personnel:v1';
 const ETAPES = ['Vous', 'Lieu', 'Postes', 'Envoi'] as const;
 const idChamp = (cle: string) => `dp-${cle.replace(/\./g, '-')}`;
+/** `text-red-700` reste : sélecteur des tests e2e (`p.text-red-700`, e2e/parcours.spec.ts). */
+const erreurChamp = 'text-xs text-red-700 mt-1';
 
 type Confirmation = { numero: string; lienSuivi: string; estimation: Estimation };
 
@@ -47,9 +50,9 @@ function Champ({ cle, libelle, requis, erreurs, aide, children }: { cle: string;
         {libelle} {requis && <span className="text-accent" aria-hidden>*</span>}
       </label>
       {children}
-      {aide && !err && <p className="text-xs text-slate-500 mt-1">{aide}</p>}
+      {aide && !err && <p className="text-xs text-muted mt-1">{aide}</p>}
       {err && (
-        <p id={`${idChamp(cle)}-err`} className="text-xs text-red-700 mt-1">
+        <p id={`${idChamp(cle)}-err`} className={erreurChamp}>
           {err}
         </p>
       )}
@@ -211,24 +214,21 @@ export default function FormulairePersonnel({ listes, commission, metiers }: { l
   if (confirmation) {
     const c = confirmation;
     return (
-      <div ref={haut} className="bg-white rounded-2xl border border-slate-100 shadow-card p-6 text-center scroll-mt-28" role="status">
+      <div ref={haut} className={cardClasses({ className: 'text-center scroll-mt-28' })} role="status">
         <CheckCircle2 className="w-12 h-12 text-success mx-auto mb-3" strokeWidth={1.5} />
-        <p className="text-slate-600">Demande envoyée. Votre numéro de dossier :</p>
+        <p className="text-ink-600">Demande envoyée. Votre numéro de dossier :</p>
         <p className="font-mono font-bold text-3xl text-ink-900 my-2 break-all">{c.numero}</p>
-        <p className="font-semibold text-slate-900 mt-4">{texteEstimation(c.estimation)}</p>
-        <p className="text-sm text-slate-500">{MENTION_ESTIMATION}</p>
-        <p className="mt-4 text-slate-700">Un conseiller vous contacte sous 24 h ouvrées.</p>
+        <p className="font-semibold text-ink-900 mt-4">{texteEstimation(c.estimation)}</p>
+        <p className="text-sm text-muted">{MENTION_ESTIMATION}</p>
+        <p className="mt-4 text-ink-700">Un conseiller vous contacte sous 24 h ouvrées.</p>
         <div className="mt-6 space-y-3">
-          <a
-            href={getWhatsAppLink(recapitulatif(false, c))}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex w-full items-center justify-center gap-2 min-h-12 px-5 rounded-full bg-[#25D366] text-white font-semibold"
-          >
-            <WhatsAppIcon className="w-5 h-5" /> Recevoir le récapitulatif sur WhatsApp
-          </a>
-          <button
-            type="button"
+          <Button href={getWhatsAppLink(recapitulatif(false, c))} variant="whatsapp" whatsappIcon fullWidth>
+            Recevoir le récapitulatif sur WhatsApp
+          </Button>
+          <Button
+            variant="outline"
+            icon={Copy}
+            fullWidth
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(c.lienSuivi);
@@ -237,10 +237,9 @@ export default function FormulairePersonnel({ listes, commission, metiers }: { l
                 window.prompt('Copiez le lien de suivi :', c.lienSuivi);
               }
             }}
-            className="flex w-full items-center justify-center gap-2 min-h-12 px-5 rounded-full border border-slate-200 font-semibold text-slate-800"
           >
-            <Copy className="w-4 h-4" /> {copie ? 'Lien copié ✓' : 'Copier le lien de suivi'}
-          </button>
+            {copie ? 'Lien copié ✓' : 'Copier le lien de suivi'}
+          </Button>
           <a href={c.lienSuivi} className="block text-sm text-primary underline break-all">
             {c.lienSuivi}
           </a>
@@ -249,17 +248,14 @@ export default function FormulairePersonnel({ listes, commission, metiers }: { l
     );
   }
 
-  const boutonSecondaire = 'inline-flex items-center justify-center gap-2 min-h-12 px-5 rounded-full border border-slate-200 bg-white font-semibold text-slate-800';
-  const boutonPrincipal = 'inline-flex items-center justify-center gap-2 min-h-12 px-6 rounded-full bg-primary text-white font-semibold disabled:opacity-60';
-
   return (
     <form onSubmit={envoyer} noValidate className="scroll-mt-28" ref={haut as unknown as React.Ref<HTMLFormElement>}>
       {/* Progression */}
       <ol className="grid grid-cols-4 gap-2 mb-5" aria-label="Étapes">
         {ETAPES.map((nom, i) => (
           <li key={nom} aria-current={etape === i + 1 ? 'step' : undefined}>
-            <div className={`h-1.5 rounded-full ${i + 1 <= etape ? 'bg-primary' : 'bg-slate-200'}`} />
-            <span className={`block text-xs mt-1 ${i + 1 === etape ? 'font-semibold text-ink-900' : 'text-slate-500'}`}>
+            <div className={`h-1.5 rounded-full ${i + 1 <= etape ? 'bg-primary' : 'bg-ink-200'}`} />
+            <span className={`block text-xs mt-1 ${i + 1 === etape ? 'font-semibold text-ink-900' : 'text-muted'}`}>
               {i + 1}. {nom}
             </span>
           </li>
@@ -274,17 +270,17 @@ export default function FormulairePersonnel({ listes, commission, metiers }: { l
         </label>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-5 sm:p-6 space-y-4">
+      <Card padding="sm" className="space-y-4">
         {etape === 1 && (
           <>
-            <h2 className="font-semibold text-lg text-ink-900">Vous</h2>
+            <h2 className="font-display text-h3 text-ink-900">Vous</h2>
             <fieldset>
               <legend className={labelClass}>
                 Vous êtes <span className="text-accent">*</span>
               </legend>
               <div className="grid grid-cols-2 gap-2">
                 {(['entreprise', 'particulier'] as const).map((t) => (
-                  <label key={t} className={`flex items-center gap-2 min-h-12 px-3 rounded-lg border ${b.clientType === t ? 'border-primary bg-primary/5' : 'border-slate-200'}`}>
+                  <label key={t} className={`flex items-center gap-2 min-h-12 px-3 rounded-2xl border ${b.clientType === t ? 'border-primary bg-primary/5' : 'border-ink-200'}`}>
                     <input type="radio" name="clientType" checked={b.clientType === t} onChange={() => maj({ clientType: t })} className="h-5 w-5 accent-primary" />
                     <span className="text-sm">{t === 'entreprise' ? 'Entreprise / organisation' : 'Particulier'}</span>
                   </label>
@@ -315,7 +311,7 @@ export default function FormulairePersonnel({ listes, commission, metiers }: { l
 
         {etape === 2 && (
           <>
-            <h2 className="font-semibold text-lg text-ink-900">Lieu</h2>
+            <h2 className="font-display text-h3 text-ink-900">Lieu</h2>
             <Champ cle="villeId" libelle="Ville" requis erreurs={erreurs}>
               <select
                 {...a11y('villeId', erreurs)}
@@ -394,14 +390,14 @@ export default function FormulairePersonnel({ listes, commission, metiers }: { l
 
         {etape === 3 && (
           <>
-            <h2 className="font-semibold text-lg text-ink-900">Postes à pourvoir</h2>
+            <h2 className="font-display text-h3 text-ink-900">Postes à pourvoir</h2>
             <datalist id="dp-metiers">
               {metiers.map((m) => (
                 <option key={m} value={m} />
               ))}
             </datalist>
             {b.lignes.map((l, i) => (
-              <fieldset key={i} className="border border-slate-200 rounded-xl p-4 space-y-4">
+              <fieldset key={i} className="border border-ink-200 rounded-2xl p-4 space-y-4">
                 <legend className="px-1 text-sm font-semibold text-ink-900">Poste {i + 1}</legend>
                 <div className="grid grid-cols-[1fr_6rem] gap-3">
                   <Champ cle={`lignes.${i}.intitule`} libelle="Intitulé du poste" requis erreurs={erreurs}>
@@ -452,7 +448,7 @@ export default function FormulairePersonnel({ listes, commission, metiers }: { l
                     {JOURS.map((j) => {
                       const actif = l.joursRepos.includes(j);
                       return (
-                        <label key={j} className={`inline-flex items-center min-h-11 px-3 rounded-full border text-sm cursor-pointer ${actif ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-slate-200 text-slate-600'}`}>
+                        <label key={j} className={`inline-flex items-center min-h-11 px-3 rounded-full border text-sm cursor-pointer ${actif ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-ink-200 text-ink-600'}`}>
                           <input type="checkbox" className="sr-only" checked={actif} onChange={() => majLigne(i, { joursRepos: actif ? l.joursRepos.filter((x) => x !== j) : [...l.joursRepos, j] })} />
                           {j.slice(0, 3)}.<span className="sr-only">{j.slice(3)}</span>
                         </label>
@@ -480,14 +476,14 @@ export default function FormulairePersonnel({ listes, commission, metiers }: { l
                 </Champ>
                 <div className="flex flex-wrap gap-2 pt-1">
                   {b.lignes.length < MAX_LIGNES && (
-                    <button type="button" className="inline-flex items-center gap-1.5 text-sm text-primary min-h-11 px-2" onClick={() => setB((x) => ({ ...x, lignes: [...x.lignes.slice(0, i + 1), { ...l, joursRepos: [...l.joursRepos] }, ...x.lignes.slice(i + 1)] }))}>
+                    <button type="button" className="inline-flex items-center gap-1.5 text-sm font-medium text-primary min-h-tap px-2" onClick={() => setB((x) => ({ ...x, lignes: [...x.lignes.slice(0, i + 1), { ...l, joursRepos: [...l.joursRepos] }, ...x.lignes.slice(i + 1)] }))}>
                       <CopyPlus className="w-4 h-4" /> Dupliquer ce poste
                     </button>
                   )}
                   {b.lignes.length > 1 && (
                     <button
                       type="button"
-                      className="inline-flex items-center gap-1.5 text-sm text-red-700 min-h-11 px-2"
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-danger min-h-tap px-2"
                       onClick={() => {
                         setB((x) => ({ ...x, lignes: x.lignes.filter((_, j) => j !== i) }));
                         setErreurs({});
@@ -499,19 +495,19 @@ export default function FormulairePersonnel({ listes, commission, metiers }: { l
                 </div>
               </fieldset>
             ))}
-            {erreurs.lignes && <p className="text-sm text-red-700">{erreurs.lignes}</p>}
+            {erreurs.lignes && <p className="text-sm text-danger">{erreurs.lignes}</p>}
             {b.lignes.length < MAX_LIGNES && (
-              <button type="button" className={`${boutonSecondaire} w-full`} onClick={() => setB((x) => ({ ...x, lignes: [...x.lignes, ligneVide()] }))}>
-                <Plus className="w-4 h-4" /> Ajouter un autre poste
-              </button>
+              <Button variant="outline" icon={Plus} fullWidth onClick={() => setB((x) => ({ ...x, lignes: [...x.lignes, ligneVide()] }))}>
+                Ajouter un autre poste
+              </Button>
             )}
             {besoinImportant && (
-              <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-sm text-amber-900">
+              <div className="rounded-2xl bg-warning-soft border border-warning-border p-4 text-sm text-ink-800">
                 <p className="font-medium mb-2">Pour un besoin de cette taille, contactez-nous directement.</p>
                 <p className="mb-3">Vous pouvez aussi envoyer la demande avec {MAX_PERSONNES_PAR_LIGNE} personnes maximum par poste et préciser le besoin réel ci-dessous.</p>
-                <a href={getWhatsAppLink('Bonjour NEXCLEAN, j’ai un besoin important en personnel et je souhaite en discuter.')} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 min-h-11 px-4 rounded-full bg-[#25D366] text-white font-semibold">
-                  <WhatsAppIcon className="w-4 h-4" /> Nous écrire sur WhatsApp
-                </a>
+                <Button href={getWhatsAppLink('Bonjour NEXCLEAN, j’ai un besoin important en personnel et je souhaite en discuter.')} variant="whatsapp" size="sm" whatsappIcon>
+                  Nous écrire sur WhatsApp
+                </Button>
               </div>
             )}
             <Champ cle="precisions" libelle="Précisions (facultatif)" erreurs={erreurs}>
@@ -522,7 +518,7 @@ export default function FormulairePersonnel({ listes, commission, metiers }: { l
 
         {etape === 4 && (
           <>
-            <h2 className="font-semibold text-lg text-ink-900">Récapitulatif</h2>
+            <h2 className="font-display text-h3 text-ink-900">Récapitulatif</h2>
             <Recap titre="Vous" onModifier={() => allerA(1)}>
               <p>{b.clientType === 'entreprise' ? b.entreprise : 'Particulier'}</p>
               <p>
@@ -540,7 +536,7 @@ export default function FormulairePersonnel({ listes, commission, metiers }: { l
               <ul className="space-y-2">
                 {b.lignes.map((l, i) => (
                   <li key={i}>
-                    <p className="font-medium text-slate-900">
+                    <p className="font-medium text-ink-900">
                       {l.nombre} × {l.intitule}
                     </p>
                     <p>
@@ -553,12 +549,12 @@ export default function FormulairePersonnel({ listes, commission, metiers }: { l
                 ))}
               </ul>
             </Recap>
-            <div className="rounded-xl bg-primary/5 border border-primary/20 p-4" aria-live="polite">
+            <div className="rounded-2xl bg-pillar-recrutement-soft border border-pillar-recrutement-border p-4" aria-live="polite">
               <p className="font-semibold text-ink-900">{texteEstimation(estimation)}</p>
-              <p className="text-sm text-slate-600 mt-1">{MENTION_ESTIMATION}</p>
+              <p className="text-sm text-ink-600 mt-1">{MENTION_ESTIMATION}</p>
             </div>
             <div>
-              <label className="flex items-start gap-3 min-h-11 text-sm text-slate-700">
+              <label className="flex items-start gap-3 min-h-11 text-sm text-ink-700">
                 <input {...a11y('consentement', erreurs)} type="checkbox" className="h-5 w-5 mt-0.5 accent-primary shrink-0" checked={b.consentement} onChange={(e) => maj({ consentement: e.target.checked })} />
                 <span>
                   J’accepte que NEXCLEAN traite ces informations pour répondre à ma demande et me contacte sur WhatsApp (
@@ -569,55 +565,49 @@ export default function FormulairePersonnel({ listes, commission, metiers }: { l
                 </span>
               </label>
               {erreurs.consentement && (
-                <p id={`${idChamp('consentement')}-err`} className="text-xs text-red-700 mt-1">
+                <p id={`${idChamp('consentement')}-err`} className={erreurChamp}>
                   {erreurs.consentement}
                 </p>
               )}
             </div>
             {echec && (
-              <div role="alert" className="rounded-xl bg-red-50 border border-red-200 p-4 text-sm text-red-900">
+              <div role="alert" className="rounded-2xl bg-danger-soft border border-danger-border p-4 text-sm text-danger">
                 <p className="flex items-start gap-2 font-medium mb-3">
                   <AlertCircle className="w-5 h-5 shrink-0" /> {echec}
                 </p>
-                <a href={getWhatsAppLink(recapitulatif(true))} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 min-h-11 px-4 rounded-full bg-[#25D366] text-white font-semibold">
-                  <WhatsAppIcon className="w-4 h-4" /> Envoyer ma demande sur WhatsApp
-                </a>
+                <Button href={getWhatsAppLink(recapitulatif(true))} variant="whatsapp" size="sm" whatsappIcon>
+                  Envoyer ma demande sur WhatsApp
+                </Button>
               </div>
             )}
           </>
         )}
-      </div>
+      </Card>
 
       {Object.keys(erreurs).length > 0 && (
-        <p role="alert" className="text-sm text-red-700 mt-3">
+        <p role="alert" className="text-sm text-danger mt-3">
           Merci de corriger les champs signalés.
         </p>
       )}
 
       <div className="flex gap-3 mt-5">
         {etape > 1 && (
-          <button type="button" className={boutonSecondaire} onClick={() => allerA(etape - 1)}>
+          <Button variant="outline" onClick={() => allerA(etape - 1)}>
             Retour
-          </button>
+          </Button>
         )}
         {etape < 4 ? (
-          <button type="button" className={`${boutonPrincipal} flex-1`} onClick={suivant}>
+          <Button className="flex-1" onClick={suivant}>
             Continuer
-          </button>
+          </Button>
         ) : (
-          <button type="submit" disabled={envoi} className={`${boutonPrincipal} flex-1`}>
-            {envoi ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Envoi…
-              </>
-            ) : (
-              'Envoyer ma demande'
-            )}
-          </button>
+          <Button type="submit" className="flex-1" loading={envoi} loadingLabel="Envoi en cours…">
+            Envoyer ma demande
+          </Button>
         )}
       </div>
       {etape < 4 && personnes > 0 && (
-        <p className="text-xs text-slate-500 mt-3 text-center">
+        <p className="text-xs text-muted mt-3 text-center">
           {personnes} personne{personnes > 1 ? 's' : ''} · estimation {formaterFCFA(estimation.montant)}
         </p>
       )}
@@ -627,14 +617,14 @@ export default function FormulairePersonnel({ listes, commission, metiers }: { l
 
 function Recap({ titre, onModifier, children }: { titre: string; onModifier: () => void; children: React.ReactNode }) {
   return (
-    <section className="border border-slate-100 rounded-xl p-4">
+    <section className="border border-ink-100 rounded-2xl p-4">
       <div className="flex items-center justify-between mb-1">
         <h3 className="font-semibold text-sm text-ink-900">{titre}</h3>
         <button type="button" onClick={onModifier} className="text-sm text-primary min-h-11 px-2 -my-2">
           Modifier
         </button>
       </div>
-      <div className="text-sm text-slate-600 space-y-0.5 break-words">{children}</div>
+      <div className="text-sm text-ink-600 space-y-0.5 break-words">{children}</div>
     </section>
   );
 }

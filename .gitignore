@@ -43,3 +43,6 @@ next-env.d.ts
 # Tests de bout en bout (Playwright)
 /test-results/
 /playwright-report/
+
+.claude/worktrees/
+.claude

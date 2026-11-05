@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
+import { buttonClasses } from '@/components/ui/Button';
+import { cardClasses } from '@/components/ui/Card';
 import { type Product, formatPrice, SHOP_INFO } from '@/content/products-data';
 
 export default function ProductCard({ product }: { product: Product }) {
@@ -9,34 +11,35 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <Link
       href={`/boutique/${product.slug}`}
-      className="group flex flex-col overflow-hidden rounded-3xl bg-white border border-ink-100 shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300"
+      className={cardClasses({ variant: 'interactive', className: 'h-full overflow-hidden !p-0' })}
     >
-      <div className="relative aspect-[3/4] bg-brand-50 overflow-hidden">
+      <div className="relative aspect-[3/4] overflow-hidden bg-brand-50">
         <Image
           src={product.images[0].src}
           alt={product.images[0].alt}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-700"
+          className="object-cover transition-transform duration-700 motion-safe:group-hover:scale-105"
           sizes="(max-width: 640px) 100vw, 33vw"
         />
         {!product.available && (
-          <span className="absolute top-3 left-3 text-xs font-semibold bg-slate-900/80 text-white px-2.5 py-1 rounded-full">
+          <span className="absolute left-3 top-3 rounded-full bg-ink-900/80 px-2.5 py-1 text-xs font-semibold text-white">
             Bientôt disponible
           </span>
         )}
       </div>
-      <div className="flex flex-col flex-1 p-5">
-        <h3 className="text-base font-semibold text-slate-900 mb-1 group-hover:text-primary transition-colors">{product.name}</h3>
-        <p className="text-sm text-slate-500 mb-4">{product.tagline}</p>
+      <div className="flex flex-1 flex-col p-5">
+        <h2 className="mb-1 text-h3 text-ink-900 transition-colors group-hover:text-primary">{product.name}</h2>
+        <p className="mb-4 text-small text-muted">{product.tagline}</p>
         <div className="mt-auto flex items-end justify-between gap-3">
           <span>
             <span className="block font-display text-2xl font-extrabold text-ink-900">{formatPrice(minPrice)}</span>
-            <span className="block text-xs text-ink-500">
+            <span className="block text-xs text-muted">
               {product.formats.map((f) => f.label).join(' · ')} · {SHOP_INFO.priceNote}
             </span>
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-cta px-4 py-2 text-sm font-bold text-ink-900 group-hover:bg-brand-300 transition-colors">
-            Acheter <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+          {/* Pastille dans un lien : un span, pas un second élément interactif. */}
+          <span className={buttonClasses({ size: 'sm' })}>
+            Acheter <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </span>
         </div>
       </div>

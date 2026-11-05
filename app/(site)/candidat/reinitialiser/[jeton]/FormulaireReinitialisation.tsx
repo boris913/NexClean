@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import { cardClasses } from '@/components/ui/Card';
 import { inputClass, labelClass } from '@/components/forms/WhatsAppForm';
 import { schemaMotDePasse } from '@/lib/candidats/domaine';
 import { reinitialiser } from '../../actions';
@@ -15,8 +16,8 @@ export default function FormulaireReinitialisation({ jeton }: { jeton: string })
 
   if (fait)
     return (
-      <div role="status" className="bg-white rounded-2xl border border-slate-100 shadow-card p-6 space-y-3">
-        <p className="text-slate-700">Mot de passe modifié.</p>
+      <div role="status" className={cardClasses({ className: 'space-y-3' })}>
+        <p className="text-ink-700">Mot de passe modifié.</p>
         <Link href="/candidat/connexion" className="text-primary underline font-semibold">
           Se connecter
         </Link>
@@ -26,7 +27,7 @@ export default function FormulaireReinitialisation({ jeton }: { jeton: string })
   return (
     <form
       noValidate
-      className="bg-white rounded-2xl border border-slate-100 shadow-card p-5 sm:p-6 space-y-4"
+      className={cardClasses({ padding: 'sm', className: 'space-y-4' })}
       onSubmit={async (e) => {
         e.preventDefault();
         const m = schemaMotDePasse.safeParse(motDePasse);
@@ -49,7 +50,7 @@ export default function FormulaireReinitialisation({ jeton }: { jeton: string })
           Nouveau mot de passe
         </label>
         <input id="re-mdp" type="password" autoComplete="new-password" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} className={inputClass} />
-        <p className="text-xs text-slate-500 mt-1">Au moins 8 caractères, ou un code de 6 chiffres.</p>
+        <p className="text-xs text-muted mt-1">Au moins 8 caractères, ou un code de 6 chiffres.</p>
       </div>
       <div>
         <label htmlFor="re-confirmation" className={labelClass}>
@@ -58,13 +59,13 @@ export default function FormulaireReinitialisation({ jeton }: { jeton: string })
         <input id="re-confirmation" type="password" autoComplete="new-password" value={confirmation} onChange={(e) => setConfirmation(e.target.value)} className={inputClass} />
       </div>
       {erreur && (
-        <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <p role="alert" className="rounded-2xl border border-danger-border bg-danger-soft px-4 py-3 text-sm text-danger">
           {erreur}
         </p>
       )}
-      <button type="submit" disabled={envoi} className="flex w-full items-center justify-center gap-2 min-h-12 px-6 rounded-full bg-primary text-white font-semibold disabled:opacity-60">
-        {envoi && <Loader2 className="w-4 h-4 animate-spin" />} Enregistrer
-      </button>
+      <Button type="submit" fullWidth loading={envoi}>
+        Enregistrer mon mot de passe
+      </Button>
     </form>
   );
 }

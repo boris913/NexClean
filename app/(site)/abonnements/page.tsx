@@ -1,18 +1,19 @@
 import type { Metadata } from 'next';
 import { lireCouverture } from '@/lib/geo/couverture';
+import Button from '@/components/ui/Button';
 import PageHero from '@/components/ui/PageHero';
 import SubscriptionsSection from '@/components/sections/SubscriptionsSection';
 import PricingSection from '@/components/sections/PricingSection';
 import FAQSection from '@/components/sections/FAQSection';
 import CTASection from '@/components/sections/CTASection';
-import { PAYMENT_TERMS } from '@/lib/constants';
+import { PAYMENT_TERMS, WHATSAPP_MESSAGES, getWhatsAppLink } from '@/lib/constants';
 import { pageMetadata } from '@/lib/seo';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { libelle: villes } = await lireCouverture();
   return pageMetadata({
-    title: `Abonnement nettoyage et entretien régulier à ${villes}`,
-    description: `Formules d'entretien régulier NexClean à ${villes} pour particuliers, entreprises et espaces verts. Passages planifiés et tarif préférentiel.`,
+    title: `Abonnements d'entretien à ${villes} : logement, locaux, espaces verts`,
+    description: `Formules d'entretien régulier à ${villes} pour particuliers et entreprises : passages planifiés, tarif préférentiel, même équipe autant que possible.`,
     path: '/abonnements',
   });
 }
@@ -37,17 +38,26 @@ export default function AbonnementsPage() {
     <>
       <PageHero
         label="Abonnements"
+        pillar="proprete"
         title="L'entretien régulier, planifié pour vous"
         subtitle="Des passages réguliers à tarif préférentiel, pour votre logement, vos locaux ou vos espaces verts."
-        breadcrumb={[{ name: 'Services', href: '/services' }, { name: 'Abonnements' }]}
-      />
-      <SubscriptionsSection withHeader={false} />
+        breadcrumb={[{ name: 'Abonnements' }]}
+      >
+        <Button href={getWhatsAppLink(WHATSAPP_MESSAGES.abonnements)} variant="whatsapp" size="lg" whatsappIcon>
+          Demander une formule
+        </Button>
+        <Button href="/contact" variant="outline" size="lg">
+          Faire une demande
+        </Button>
+      </PageHero>
+      <SubscriptionsSection title="Nos formules" subtitle="Passages planifiés à l'avance, pour chaque type de site." showDetailsLink={false} />
       <PricingSection />
       <FAQSection items={subscriptionFaq} />
       <CTASection
         title="Construisons votre formule"
         subtitle="Dites-nous ce que vous souhaitez entretenir et à quelle fréquence."
-        whatsappMessage="Bonjour NexClean, je souhaite des informations sur vos formules d'abonnement."
+        whatsappLabel="Demander une formule"
+        whatsappMessage={WHATSAPP_MESSAGES.abonnements}
       />
     </>
   );

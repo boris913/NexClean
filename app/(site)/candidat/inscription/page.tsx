@@ -1,6 +1,7 @@
 // MVP2-01 RG-01..05 : inscription gratuite des demandeurs d'emploi.
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { lireCouverture } from '@/lib/geo/couverture';
 import { pageMetadata } from '@/lib/seo';
 import { listesLieux } from '@/lib/geo/service';
 import { lireParametre } from '@/lib/parametres';
@@ -11,24 +12,26 @@ import FormulaireCandidat from '../FormulaireCandidat';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = pageMetadata({
-  title: 'Inscription candidat — trouvez un emploi avec NEXCLEAN',
-  description:
-    'Inscrivez-vous gratuitement : agents d’entretien, serveurs, cuisiniers, gardiens, nounous, vendeurs… NEXCLEAN vous propose des emplois qui vous correspondent à Douala et Yaoundé.',
-  path: '/candidat/inscription',
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const { libelle: villes } = await lireCouverture();
+  return pageMetadata({
+    title: `Créer mon profil candidat — emploi à ${villes}`,
+    description: 'Inscrivez-vous gratuitement : créez votre profil candidat, postulez aux offres et soyez présenté à des employeurs, toujours avec votre accord.',
+    path: '/candidat/inscription',
+  });
+}
 
 export default async function PageInscription() {
   const [listes, metiers, connecte] = await Promise.all([listesLieux(), lireParametre('metiers'), candidatConnecte()]);
   return (
     <Coque
-      surtitre="Recrutement"
+      surtitre="Emploi"
       titre="Créer mon profil candidat"
       large
       intro={
         <>
           <p>
-            <strong className="text-ink-900">{MENTION_GRATUITE}</strong> Remplissez votre profil en quelques minutes : un conseiller vous contacte quand une offre vous correspond.
+            <strong className="text-ink-900">{MENTION_GRATUITE}</strong>
           </p>
           <p className="text-sm mt-2">
             Déjà inscrit(e) ?{' '}

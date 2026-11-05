@@ -37,10 +37,10 @@ export const services: Service[] = [
     includes: ['Sols et carrelages', 'Dépoussiérage complet', 'Sanitaires et cuisine', 'Grand nettoyage, emménagement / déménagement'],
     audiences: ['particulier'],
     seo: {
-      title: 'Nettoyage maison et appartement à Douala',
+      title: 'Nettoyage maison et appartement à Douala et Yaoundé',
       description:
-        'Nettoyage de maisons, appartements et studios à Douala par NexClean : sols, sanitaires, cuisine, grand nettoyage et emménagement. Devis rapide sur WhatsApp.',
-      h1: 'Nettoyage maison & appartement à Douala',
+        'Nettoyage de maisons, appartements et studios à Douala et Yaoundé par NEXCLEAN : sols, sanitaires, cuisine, grand nettoyage et emménagement. Devis rapide sur WhatsApp.',
+      h1: 'Nettoyage maison & appartement à Douala et Yaoundé',
       intro:
         "Que ce soit pour un entretien ponctuel, un grand nettoyage ou avant/après un déménagement, nos équipes remettent votre logement au propre avec le matériel et les produits adaptés.",
     },
@@ -56,10 +56,10 @@ export const services: Service[] = [
     includes: ['Espaces de travail', 'Salles de réunion', 'Sanitaires', 'Accueil et zones communes'],
     audiences: ['professionnel'],
     seo: {
-      title: 'Nettoyage de bureaux à Douala',
+      title: 'Nettoyage de bureaux à Douala et Yaoundé',
       description:
-        "Entretien de bureaux, commerces et cabinets à Douala : passages ponctuels ou réguliers, horaires adaptés à votre activité. Visite technique et devis professionnel.",
-      h1: 'Nettoyage de bureaux à Douala',
+        "Entretien de bureaux, commerces et cabinets à Douala et Yaoundé : passages ponctuels ou réguliers, horaires adaptés à votre activité. Visite technique et devis professionnel.",
+      h1: 'Nettoyage de bureaux à Douala et Yaoundé',
       intro:
         "Un espace de travail propre améliore le confort de vos équipes et l'image donnée à vos clients. Nous intervenons selon une fréquence et des horaires adaptés à votre activité.",
     },
@@ -75,10 +75,10 @@ export const services: Service[] = [
     includes: ['Évacuation des résidus légers', 'Dépoussiérage en profondeur', 'Vitres et sols', 'Finitions avant livraison'],
     audiences: ['particulier', 'professionnel'],
     seo: {
-      title: 'Nettoyage fin de chantier à Douala',
+      title: 'Nettoyage fin de chantier à Douala et Yaoundé',
       description:
-        'Nettoyage après travaux et fin de chantier à Douala : dépoussiérage, sols, vitres, traces de peinture. État des lieux et devis sur mesure par NexClean.',
-      h1: 'Nettoyage fin de chantier à Douala',
+        'Nettoyage après travaux et fin de chantier à Douala et Yaoundé : dépoussiérage, sols, vitres, traces de peinture. État des lieux et devis sur mesure par NEXCLEAN.',
+      h1: 'Nettoyage fin de chantier à Douala et Yaoundé',
       intro:
         "Après des travaux, la poussière et les résidus s'infiltrent partout. Nous préparons vos locaux pour une remise des clés ou un emménagement dans de bonnes conditions.",
     },
@@ -93,10 +93,10 @@ export const services: Service[] = [
     includes: ['Vitres intérieures', 'Vitres extérieures accessibles', 'Miroirs', 'Baies vitrées et vitrines'],
     audiences: ['particulier', 'professionnel'],
     seo: {
-      title: 'Nettoyage de vitres à Douala',
+      title: 'Nettoyage de vitres à Douala et Yaoundé',
       description:
-        'Nettoyage de vitres, baies vitrées et vitrines à Douala pour particuliers et professionnels. Devis selon surface et accessibilité.',
-      h1: 'Nettoyage de vitres à Douala',
+        'Nettoyage de vitres, baies vitrées et vitrines à Douala et Yaoundé pour particuliers et professionnels. Devis selon surface et accessibilité.',
+      h1: 'Nettoyage de vitres à Douala et Yaoundé',
       intro:
         'Des vitres propres apportent de la lumière et soignent votre image. Le tarif dépend de la surface vitrée et de son accessibilité.',
     },
@@ -111,10 +111,10 @@ export const services: Service[] = [
     includes: ['Surfaces de contact', 'Sanitaires', 'Poignées et interrupteurs', 'Zones à fort passage'],
     audiences: ['particulier', 'professionnel'],
     seo: {
-      title: 'Désinfection de locaux à Douala',
+      title: 'Désinfection de locaux à Douala et Yaoundé',
       description:
-        'Désinfection de maisons, bureaux et commerces à Douala : surfaces de contact, sanitaires, zones à fort passage. Devis rapide par NexClean.',
-      h1: 'Désinfection de locaux à Douala',
+        'Désinfection de maisons, bureaux et commerces à Douala et Yaoundé : surfaces de contact, sanitaires, zones à fort passage. Devis rapide par NEXCLEAN.',
+      h1: 'Désinfection de locaux à Douala et Yaoundé',
       intro:
         'Nous traitons en priorité les surfaces les plus touchées et les zones sanitaires, en complément ou en dehors d\'un nettoyage classique.',
     },
@@ -131,10 +131,10 @@ export const services: Service[] = [
     audiences: ['particulier', 'professionnel'],
     href: '/espaces-verts',
     seo: {
-      title: 'Entretien espaces verts à Douala',
+      title: 'Entretien espaces verts à Douala et Yaoundé',
       description:
-        "Entretien d'espaces verts à Douala : tonte, débroussaillage, désherbage, taille de haies. Interventions ponctuelles ou contrats réguliers.",
-      h1: 'Entretien des espaces verts à Douala',
+        "Entretien d'espaces verts à Douala et Yaoundé : tonte, débroussaillage, désherbage, taille de haies. Interventions ponctuelles ou contrats réguliers.",
+      h1: 'Entretien des espaces verts à Douala et Yaoundé',
       intro: '',
     },
     idealFor: ['Jardins et cours', 'Résidences', 'Entreprises et hôtels', 'Administrations'],
@@ -149,8 +149,8 @@ export const services: Service[] = [
     audiences: ['particulier', 'professionnel'],
     href: '/abonnements',
     seo: {
-      title: 'Abonnement nettoyage à Douala',
-      description: 'Formules d\'entretien régulier pour particuliers et professionnels à Douala.',
+      title: 'Abonnement nettoyage à Douala et Yaoundé',
+      description: 'Formules d\'entretien régulier pour particuliers et professionnels à Douala et Yaoundé.',
       h1: 'Entretien régulier',
       intro: '',
     },

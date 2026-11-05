@@ -4,8 +4,10 @@ import { notFound } from 'next/navigation';
 import { Check } from 'lucide-react';
 import PageHero from '@/components/ui/PageHero';
 import Button from '@/components/ui/Button';
-import WhatsAppIcon from '@/components/ui/WhatsAppIcon';
+import Card from '@/components/ui/Card';
 import JsonLd from '@/components/ui/JsonLd';
+import Section from '@/components/ui/Section';
+import { PILLARS } from '@/components/ui/pillars';
 import ServicesSection from '@/components/sections/ServicesSection';
 import ProcessSection from '@/components/sections/ProcessSection';
 import CTASection from '@/components/sections/CTASection';
@@ -35,60 +37,66 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
   return (
     <>
       <PageHero
-        label="Service"
+        label={PILLARS.proprete.label}
+        pillar="proprete"
         title={service.seo.h1}
         subtitle={service.seo.intro}
-        breadcrumb={[{ name: 'Services', href: '/services' }, { name: service.name }]}
+        breadcrumb={[{ name: 'Propreté', href: '/services' }, { name: service.name }]}
       >
-        <Button href={getWhatsAppLink(quoteMessage)} variant="whatsapp" size="lg">
-          <WhatsAppIcon className="w-5 h-5" />
-          Demander un devis
+        <Button href={getWhatsAppLink(quoteMessage)} variant="whatsapp" size="lg" whatsappIcon>
+          Demander un devis pour cette prestation
         </Button>
-        <Button href="/contact" variant="secondary" size="lg">
-          Formulaire de devis
+        <Button href="/tarifs" variant="outline" size="lg">
+          Voir les tarifs
         </Button>
       </PageHero>
 
-      <section className="py-16 sm:py-20 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-3 gap-6">
-          <div className="rounded-2xl border border-slate-100 p-6 shadow-card">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">Ce qui est inclus</h2>
+      <Section>
+        <div className="grid gap-6 md:grid-cols-3">
+          <Card>
+            <h2 className="mb-4 font-display text-h3 text-ink-900">Ce qui est inclus</h2>
             <ul className="space-y-2.5">
               {service.includes.map((item) => (
-                <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
-                  <Check className="w-4 h-4 text-success flex-shrink-0 mt-0.5" strokeWidth={2.5} />
+                <li key={item} className="flex items-start gap-2 text-small text-ink-600">
+                  <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-success" aria-hidden="true" />
                   {item}
                 </li>
               ))}
             </ul>
-          </div>
-          <div className="rounded-2xl border border-slate-100 p-6 shadow-card">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">Pour qui ?</h2>
+          </Card>
+          <Card>
+            <h2 className="mb-4 font-display text-h3 text-ink-900">Pour qui ?</h2>
             <ul className="space-y-2.5">
               {service.idealFor.map((item) => (
-                <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
-                  <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" strokeWidth={2.5} />
+                <li key={item} className="flex items-start gap-2 text-small text-ink-600">
+                  <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" aria-hidden="true" />
                   {item}
                 </li>
               ))}
             </ul>
-          </div>
-          <div className="rounded-2xl bg-slate-900 text-white p-6">
-            <h2 className="text-lg font-semibold mb-2">Tarif</h2>
-            <p className="text-2xl font-bold mb-3">{service.priceRange}</p>
-            <p className="text-sm text-slate-300 mb-4">
+          </Card>
+          <div className="surface-dark rounded-card bg-forest p-6 text-white sm:p-7">
+            <h2 className="mb-2 font-display text-h3 text-white">Tarif</h2>
+            <p className="mb-3 text-2xl font-bold">{service.priceRange}</p>
+            <p className="mb-4 text-small text-brand-100">
               Prix indicatif : le devis final dépend de la surface, de l&apos;état, de l&apos;accès et des moyens nécessaires.
             </p>
-            <p className="text-xs text-slate-400">{PAYMENT_TERMS.ponctuel}</p>
+            <p className="text-xs text-brand-100">{PAYMENT_TERMS.ponctuel}</p>
           </div>
         </div>
-      </section>
+      </Section>
 
-      <ProcessSection />
-      <ServicesSection items={related} title="Autres services" subtitle="Découvrez nos autres prestations." />
-      <CTASection whatsappMessage={quoteMessage} />
+      <ProcessSection whatsappMessage={quoteMessage} />
+      <ServicesSection items={related} title="Autres prestations" subtitle="Découvrez nos autres prestations." showAllLink={false} />
+      <CTASection
+        title="Un espace à remettre au propre ?"
+        subtitle="Envoyez-nous quelques photos sur WhatsApp : nous revenons vers vous avec un devis."
+        formHref="/contact#contact"
+        formLabel="Demander un devis"
+        whatsappMessage={quoteMessage}
+      />
       <JsonLd data={serviceSchema(service, (await lireCouverture()).villes)} />
-      <JsonLd data={breadcrumbSchema([{ name: 'Services', path: '/services' }, { name: service.name, path: `/services/${slug}` }])} />
+      <JsonLd data={breadcrumbSchema([{ name: 'Propreté', path: '/services' }, { name: service.name, path: `/services/${slug}` }])} />
     </>
   );
 }

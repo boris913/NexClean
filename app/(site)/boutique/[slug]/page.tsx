@@ -3,7 +3,9 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Check, AlertTriangle, Package, Truck, FileText } from 'lucide-react';
 import Breadcrumb from '@/components/ui/Breadcrumb';
+import IconBadge from '@/components/ui/IconBadge';
 import JsonLd from '@/components/ui/JsonLd';
+import Section from '@/components/ui/Section';
 import ProductOrder from './ProductOrder';
 import { products, getProductBySlug, SHOP_INFO } from '@/content/products-data';
 import { PAYMENT_TERMS } from '@/lib/constants';
@@ -25,14 +27,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   });
 }
 
-function InfoList({ title, items, icon: Icon = Check }: { title: string; items: string[]; icon?: typeof Check }) {
+function InfoList({ title, items }: { title: string; items: string[] }) {
   return (
     <div>
-      <h2 className="font-semibold text-slate-900 mb-3">{title}</h2>
+      <h2 className="mb-3 text-h3 text-ink-900">{title}</h2>
       <ul className="space-y-2">
         {items.map((i) => (
-          <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
-            <Icon className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+          <li key={i} className="flex items-start gap-2 text-small text-ink-600">
+            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-success" aria-hidden="true" />
             {i}
           </li>
         ))}
@@ -48,83 +50,87 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   return (
     <>
-      <section className="py-8 sm:py-12 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Breadcrumb items={[{ name: 'Accueil', href: '/' }, { name: 'Boutique', href: '/boutique' }, { name: product.name }]} />
+      <Section spacing="sm">
+        <Breadcrumb items={[{ name: 'Accueil', href: '/' }, { name: 'Boutique', href: '/boutique' }, { name: product.name }]} />
 
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-            <div className="space-y-3">
-              <div className="relative aspect-[3/4] max-h-[640px] mx-auto rounded-3xl overflow-hidden bg-brand-50">
-                <Image src={product.images[0].src} alt={product.images[0].alt} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" priority />
+        <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
+          <div className="space-y-3">
+            <div className="relative mx-auto aspect-[3/4] max-h-[640px] overflow-hidden rounded-card bg-brand-50">
+              <Image src={product.images[0].src} alt={product.images[0].alt} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" priority />
+            </div>
+            {product.images.length > 1 && (
+              <div className="grid grid-cols-4 gap-3">
+                {product.images.slice(1).map((img) => (
+                  <div key={img.src} className="relative aspect-square overflow-hidden rounded-2xl bg-ink-50">
+                    <Image src={img.src} alt={img.alt} fill className="object-cover" sizes="25vw" />
+                  </div>
+                ))}
               </div>
-              {product.images.length > 1 && (
-                <div className="grid grid-cols-4 gap-3">
-                  {product.images.slice(1).map((img) => (
-                    <div key={img.src} className="relative aspect-square rounded-xl overflow-hidden bg-slate-50">
-                      <Image src={img.src} alt={img.alt} fill className="object-cover" sizes="25vw" />
-                    </div>
-                  ))}
+            )}
+          </div>
+
+          <div>
+            <h1 className="mb-2 font-display text-h2 text-ink-900">{product.name}</h1>
+            <p className="mb-4 text-muted">{product.tagline}</p>
+            <p className="mb-6 text-ink-700">{product.description}</p>
+            <dl className="mb-6 grid grid-cols-2 gap-3 text-small">
+              <div className="rounded-2xl bg-ink-50 p-3">
+                <dt className="text-muted">Format</dt>
+                <dd className="font-semibold text-ink-900">{product.formats.map((f) => f.label).join(', ')}</dd>
+              </div>
+              {product.scent && (
+                <div className="rounded-2xl bg-ink-50 p-3">
+                  <dt className="text-muted">Parfum</dt>
+                  <dd className="font-semibold text-ink-900">{product.scent}</dd>
                 </div>
               )}
-            </div>
-
-            <div>
-              <h1 className="font-display font-bold text-3xl sm:text-5xl text-ink-900 mb-2">{product.name}</h1>
-              <p className="text-slate-500 mb-4">{product.tagline}</p>
-              <p className="text-slate-700 mb-6 leading-relaxed">{product.description}</p>
-              <dl className="grid grid-cols-2 gap-3 mb-6 text-sm">
-                <div className="rounded-xl bg-slate-50 p-3">
-                  <dt className="text-slate-500">Format</dt>
-                  <dd className="font-semibold text-slate-900">{product.formats.map((f) => f.label).join(', ')}</dd>
-                </div>
-                {product.scent && (
-                  <div className="rounded-xl bg-slate-50 p-3">
-                    <dt className="text-slate-500">Parfum</dt>
-                    <dd className="font-semibold text-slate-900">{product.scent}</dd>
-                  </div>
-                )}
-                <div className="rounded-xl bg-slate-50 p-3">
-                  <dt className="text-slate-500">Disponibilité</dt>
-                  <dd className={`font-semibold ${product.available ? 'text-success' : 'text-slate-500'}`}>
-                    {product.available ? 'Disponible' : 'Bientôt disponible'}
-                  </dd>
-                </div>
-              </dl>
-              <ProductOrder product={product} />
-              <div className="mt-6 space-y-2 text-sm text-slate-600">
-                <p className="flex gap-2"><Truck className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />{SHOP_INFO.delivery}</p>
-                <p className="flex gap-2"><Package className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />{PAYMENT_TERMS.produits}</p>
+              <div className="rounded-2xl bg-ink-50 p-3">
+                <dt className="text-muted">Disponibilité</dt>
+                <dd className={`font-semibold ${product.available ? 'text-success' : 'text-muted'}`}>
+                  {product.available ? 'Disponible' : 'Bientôt disponible'}
+                </dd>
               </div>
+            </dl>
+            <ProductOrder product={product} />
+            <div className="mt-6 space-y-2 text-small text-ink-600">
+              <p className="flex gap-2">
+                <Truck className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" aria-hidden="true" />
+                {SHOP_INFO.delivery}
+              </p>
+              <p className="flex gap-2">
+                <Package className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" aria-hidden="true" />
+                {PAYMENT_TERMS.produits}
+              </p>
             </div>
           </div>
         </div>
-      </section>
+      </Section>
 
-      <section className="py-12 sm:py-16 bg-slate-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <Section tone="muted" spacing="sm">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           <InfoList title="Usages" items={product.usages} />
           <InfoList title="Surfaces compatibles" items={product.surfaces} />
           <InfoList title="Mode d'emploi" items={product.instructions} />
           <InfoList title="Composition" items={product.ingredients} />
-          <div className="md:col-span-2 rounded-2xl border border-amber-200 bg-amber-50 p-6">
-            <h2 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-amber-600" />
-              Précautions d&apos;emploi & stockage
+          <InfoList title="Conservation" items={[product.storage]} />
+          <div className="rounded-card border border-warning-border bg-warning-soft p-6 md:col-span-2 lg:col-span-3">
+            <h2 className="mb-3 flex items-center gap-3 text-h3 text-ink-900">
+              <IconBadge icon={AlertTriangle} tone="warning" size="sm" className="bg-white" />
+              Précautions
             </h2>
-            <ul className="space-y-1.5 text-sm text-slate-700 list-disc pl-5">
+            <ul className="list-disc space-y-1.5 pl-5 text-small text-ink-700">
               {product.precautions.map((p) => (
                 <li key={p}>{p}</li>
               ))}
-              <li>{product.storage}</li>
             </ul>
             {product.safetySheetUrl && (
-              <a href={product.safetySheetUrl} className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
-                <FileText className="w-4 h-4" /> Fiche de données de sécurité (PDF)
+              <a href={product.safetySheetUrl} className="mt-4 inline-flex min-h-tap items-center gap-2 text-small font-medium text-primary hover:underline">
+                <FileText className="h-4 w-4" aria-hidden="true" /> Fiche de données de sécurité (PDF)
               </a>
             )}
           </div>
         </div>
-      </section>
+      </Section>
 
       <JsonLd data={productSchema(product)} />
       <JsonLd data={breadcrumbSchema([{ name: 'Boutique', path: '/boutique' }, { name: product.name, path: `/boutique/${slug}` }])} />
