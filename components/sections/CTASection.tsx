@@ -1,7 +1,8 @@
-import { FileText, Phone } from 'lucide-react';
+import { ArrowRight, FileText, Phone } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Reveal from '@/components/ui/Reveal';
 import Section from '@/components/ui/Section';
+import { CTA_FINAL } from '@/content/home-data';
 import { CONTACT, TEL_LINK, getWhatsAppLink } from '@/lib/constants';
 
 interface CTASectionProps {
@@ -11,16 +12,19 @@ interface CTASectionProps {
   formHref?: string;
   formLabel?: string;
   whatsappLabel?: string;
+  /** Action complémentaire, par exemple « Demander du personnel ». */
+  secondaryCta?: { href: string; label: string };
 }
 
-/** CTA de fin de page : formulaire + WhatsApp + téléphone. */
+/** CTA de fin de page : demande + WhatsApp + téléphone. Par défaut, le message neutre de l'accueil. */
 export default function CTASection({
-  title = 'Prêt à nous confier votre espace ?',
-  subtitle = 'Envoyez-nous quelques photos sur WhatsApp : nous revenons vers vous avec un devis.',
+  title = CTA_FINAL.titre,
+  subtitle = CTA_FINAL.texte,
   whatsappMessage,
-  formHref = '/contact',
-  formLabel = 'Formulaire de devis',
-  whatsappLabel = 'Devis sur WhatsApp',
+  formHref = CTA_FINAL.cta.href,
+  formLabel = CTA_FINAL.cta.label,
+  whatsappLabel = CTA_FINAL.whatsapp.label,
+  secondaryCta,
 }: CTASectionProps) {
   return (
     <Section spacing="sm">
@@ -34,6 +38,11 @@ export default function CTASection({
           <Button href={formHref} size="lg" icon={FileText}>
             {formLabel}
           </Button>
+          {secondaryCta && (
+            <Button href={secondaryCta.href} variant="inverse" size="lg" icon={ArrowRight} iconPosition="right">
+              {secondaryCta.label}
+            </Button>
+          )}
           <Button href={getWhatsAppLink(whatsappMessage)} variant="whatsapp" size="lg" whatsappIcon>
             {whatsappLabel}
           </Button>
