@@ -335,7 +335,7 @@ export default function FormulaireCandidat(props: Props) {
         )}
         {termine.some((t) => !t.ok) && <p className="text-sm text-ink-600 mt-2">Vous pourrez ajouter ces documents depuis votre espace.</p>}
         <div className="mt-6 space-y-3">
-          <Button href={getWhatsAppLink(texteWa)} variant="whatsapp" whatsappIcon fullWidth>
+          <Button href={getWhatsAppLink(texteWa)} whatsappIcon fullWidth>
             Recevoir la confirmation sur WhatsApp
           </Button>
           <Button href="/candidat/espace" variant="outline" fullWidth>

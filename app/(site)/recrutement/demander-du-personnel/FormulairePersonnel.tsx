@@ -222,7 +222,7 @@ export default function FormulairePersonnel({ listes, commission, metiers }: { l
         <p className="text-sm text-muted">{MENTION_ESTIMATION}</p>
         <p className="mt-4 text-ink-700">Un conseiller vous contacte sous 24 h ouvrées.</p>
         <div className="mt-6 space-y-3">
-          <Button href={getWhatsAppLink(recapitulatif(false, c))} variant="whatsapp" whatsappIcon fullWidth>
+          <Button href={getWhatsAppLink(recapitulatif(false, c))} whatsappIcon fullWidth>
             Recevoir le récapitulatif sur WhatsApp
           </Button>
           <Button

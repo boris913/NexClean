@@ -43,7 +43,7 @@ export default function CTASection({
               {secondaryCta.label}
             </Button>
           )}
-          <Button href={getWhatsAppLink(whatsappMessage)} variant="whatsapp" size="lg" whatsappIcon>
+          <Button href={getWhatsAppLink(whatsappMessage)} variant="inverse" size="lg" whatsappIcon>
             {whatsappLabel}
           </Button>
           <Button href={TEL_LINK} variant="inverse" size="lg" icon={Phone}>

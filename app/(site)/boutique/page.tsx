@@ -27,7 +27,7 @@ export default function BoutiquePage() {
         subtitle="Les produits d'entretien utilisés par nos équipes, disponibles pour votre maison ou votre entreprise. Commande simple sur WhatsApp."
         breadcrumb={[{ name: 'Boutique' }]}
       >
-        <Button href={getWhatsAppLink(WHATSAPP_MESSAGES.boutique)} variant="whatsapp" size="lg" whatsappIcon>
+        <Button href={getWhatsAppLink(WHATSAPP_MESSAGES.boutique)} size="lg" whatsappIcon>
           Commander sur WhatsApp
         </Button>
       </PageHero>

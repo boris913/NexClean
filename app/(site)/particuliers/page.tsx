@@ -46,7 +46,7 @@ export default function ParticuliersPage() {
         subtitle="Ménage, grand nettoyage, vitres, jardin, et recrutement de personnel de maison : une seule demande, un seul suivi."
         breadcrumb={[{ name: 'Particuliers' }]}
       >
-        <Button href={getWhatsAppLink(QUICK_QUOTE_MSG)} variant="whatsapp" size="lg" whatsappIcon>
+        <Button href={getWhatsAppLink(QUICK_QUOTE_MSG)} size="lg" whatsappIcon>
           Demander un devis
         </Button>
         <Button href={RECRUTEMENT_HREF} variant="outline" size="lg">

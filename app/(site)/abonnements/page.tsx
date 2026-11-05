@@ -43,7 +43,7 @@ export default function AbonnementsPage() {
         subtitle="Des passages réguliers à tarif préférentiel, pour votre logement, vos locaux ou vos espaces verts."
         breadcrumb={[{ name: 'Abonnements' }]}
       >
-        <Button href={getWhatsAppLink(WHATSAPP_MESSAGES.abonnements)} variant="whatsapp" size="lg" whatsappIcon>
+        <Button href={getWhatsAppLink(WHATSAPP_MESSAGES.abonnements)} size="lg" whatsappIcon>
           Demander une formule
         </Button>
         <Button href="/contact" variant="outline" size="lg">

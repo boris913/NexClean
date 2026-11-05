@@ -36,7 +36,7 @@ export default async function PageSuivi({ params }: { params: Promise<{ jeton: s
       <Section tone="muted" spacing="sm" container="narrow" className="min-h-[70vh] text-center">
         <h1 className="font-display text-h2 text-ink-900 mb-3">Lien invalide ou expiré</h1>
         <p className="text-ink-600 mb-6">Contactez-nous sur WhatsApp en indiquant votre numéro de demande.</p>
-        <Button href={getWhatsAppLink('Bonjour NEXCLEAN, je souhaite suivre ma demande.')} variant="whatsapp" whatsappIcon>
+        <Button href={getWhatsAppLink('Bonjour NEXCLEAN, je souhaite suivre ma demande.')} whatsappIcon>
           Nous écrire sur WhatsApp
         </Button>
       </Section>
@@ -99,7 +99,7 @@ export default async function PageSuivi({ params }: { params: Promise<{ jeton: s
         <h2 id="section-question" className="font-display text-h3 text-ink-900 mb-3">
           Une question ?
         </h2>
-        <Button href={getWhatsAppLink(`Bonjour NEXCLEAN, je vous contacte au sujet de ma demande n° ${vue.numero}.`)} variant="whatsapp" whatsappIcon fullWidth>
+        <Button href={getWhatsAppLink(`Bonjour NEXCLEAN, je vous contacte au sujet de ma demande n° ${vue.numero}.`)} whatsappIcon fullWidth>
           Écrire à mon référent
         </Button>
       </section>

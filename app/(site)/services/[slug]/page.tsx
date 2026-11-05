@@ -43,7 +43,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
         subtitle={service.seo.intro}
         breadcrumb={[{ name: 'Propreté', href: '/services' }, { name: service.name }]}
       >
-        <Button href={getWhatsAppLink(quoteMessage)} variant="whatsapp" size="lg" whatsappIcon>
+        <Button href={getWhatsAppLink(quoteMessage)} size="lg" whatsappIcon>
           Demander un devis pour cette prestation
         </Button>
         <Button href="/tarifs" variant="outline" size="lg">
@@ -52,7 +52,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
       </PageHero>
 
       <Section>
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-3 md:items-start">
           <Card>
             <h2 className="mb-4 font-display text-h3 text-ink-900">Ce qui est inclus</h2>
             <ul className="space-y-2.5">

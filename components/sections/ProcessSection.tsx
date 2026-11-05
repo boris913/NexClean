@@ -50,7 +50,7 @@ export default function ProcessSection({ whatsappMessage = WHATSAPP_MESSAGE_SERV
       </Stagger>
 
       <div className="text-center">
-        <Button href={getWhatsAppLink(whatsappMessage)} variant="whatsapp" size="lg" whatsappIcon>
+        <Button href={getWhatsAppLink(whatsappMessage)} size="lg" whatsappIcon>
           Démarrer ma demande
         </Button>
       </div>

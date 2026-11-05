@@ -10,7 +10,7 @@ import { cx } from '@/components/ui/cx';
  * - `secondary` : vert profond + texte blanc (9,87:1) — action forte secondaire.
  * - `outline`   : contour, texte vert profond — action tertiaire sur fond clair.
  * - `ghost`     : texte seul (brand-700, 5,94:1).
- * - `whatsapp`  : vert WhatsApp + texte encre (8,94:1).
+ * - `whatsapp`  : canal secondaire, fond blanc + icône vert WhatsApp foncé (7,67:1).
  * - `inverse`   : contour blanc sur fond sombre (Section `dark`, PageHero `dark`).
  */
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'whatsapp' | 'inverse';
@@ -70,8 +70,10 @@ export const buttonVariantClasses: Record<ButtonVariant, string> = {
   outline:
     'border border-ink-300 bg-white text-forest hover:border-forest hover:bg-brand-50 active:bg-brand-100',
   ghost: 'text-primary hover:text-primary-dark hover:bg-brand-50 active:bg-brand-100',
+  // Canal secondaire : fond clair, icône aux couleurs de WhatsApp. Quand WhatsApp est l'action
+  // principale d'un bloc, utiliser `primary` + `whatsappIcon` (un seul bouton plein par bloc).
   whatsapp:
-    'bg-whatsapp text-whatsapp-ink shadow-btn hover:bg-whatsapp-hover hover:shadow-whatsapp active:bg-whatsapp-hover motion-safe:hover:-translate-y-0.5',
+    'border border-ink-200 bg-white text-ink-900 shadow-btn hover:border-whatsapp-dark hover:bg-ink-50 active:bg-ink-100',
   inverse: 'border border-white/60 text-white hover:bg-white/10 hover:border-white active:bg-white/20',
 };
 
@@ -127,7 +129,9 @@ export default function Button({
         <Loader2 className={cx(iconClass, 'animate-spin')} aria-hidden="true" />
       ) : (
         <>
-          {whatsappIcon && <WhatsAppIcon className={iconClass} />}
+          {whatsappIcon && (
+            <WhatsAppIcon className={cx(iconClass, resolveButtonVariant(variant) === 'whatsapp' && 'text-whatsapp-dark')} />
+          )}
           {Icon && iconPosition === 'left' && <Icon className={iconClass} aria-hidden="true" />}
         </>
       )}
