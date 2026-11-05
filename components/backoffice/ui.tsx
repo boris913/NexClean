@@ -58,7 +58,7 @@ export function Carte({ titre, description, children, actions }: { titre?: strin
 
 const stylesAlerte: Record<'erreur' | 'succes' | 'info', { classe: string; icone: LucideIcon }> = {
   erreur: { classe: 'bg-red-50 text-red-800 border-red-200', icone: AlertTriangle },
-  succes: { classe: 'bg-brand-50 text-brand-900 border-brand-200', icone: CheckCircle2 },
+  succes: { classe: 'bg-success-soft text-leaf-700 border-success-border', icone: CheckCircle2 },
   info: { classe: 'bg-ocean-50 text-ink-800 border-ocean-100', icone: Info },
 };
 
@@ -159,13 +159,13 @@ export function Pagination({ page, suivante, lien, libelles = ['Précédents', '
 
 const tonsPastille = {
   neutre: 'bg-ink-50 text-ink-700 ring-ink-200',
-  vert: 'bg-brand-50 text-brand-800 ring-brand-600/25',
+  vert: 'bg-success-soft text-leaf-700 ring-leaf-600/25',
   rouge: 'bg-red-50 text-red-700 ring-red-600/20',
   orange: 'bg-amber-50 text-amber-800 ring-amber-600/25',
   bleu: 'bg-ocean-50 text-ocean-700 ring-ocean-500/20',
 } as const;
 
-const pointsPastille = { neutre: 'bg-ink-400', vert: 'bg-brand-500', rouge: 'bg-red-500', orange: 'bg-amber-500', bleu: 'bg-ocean-500' } as const;
+const pointsPastille = { neutre: 'bg-ink-400', vert: 'bg-leaf-500', rouge: 'bg-red-500', orange: 'bg-amber-500', bleu: 'bg-ocean-500' } as const;
 
 export function Pastille({ children, ton = 'neutre', point = false }: { children: ReactNode; ton?: keyof typeof tonsPastille; point?: boolean }) {
   return (

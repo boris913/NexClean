@@ -195,7 +195,7 @@ export default function Postuler({ offre, metier, connecte, dejaPostule, listes 
         <p className="font-semibold text-ink-900 mb-2">{MESSAGE_RESEAU}</p>
         <p className="text-sm text-muted max-w-md mx-auto mb-6">Votre candidature n’a pas pu être enregistrée. Envoyez-la sur WhatsApp, ou réessayez dans quelques minutes.</p>
         <div className="flex flex-col gap-3 items-center">
-          <Button href={getWhatsAppLink(etat.message)} variant="whatsapp" size="lg" whatsappIcon>
+          <Button href={getWhatsAppLink(etat.message)} size="lg" whatsappIcon>
             Continuer sur WhatsApp
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setEtat({ type: 'saisie' })}>

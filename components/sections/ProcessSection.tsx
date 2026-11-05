@@ -1,7 +1,5 @@
 import { Search, FileText, Calendar, SprayCan, ClipboardCheck, Repeat } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
-import IconBadge from '@/components/ui/IconBadge';
 import { Stagger, StaggerItem } from '@/components/ui/Reveal';
 import Section from '@/components/ui/Section';
 import SectionHeader from '@/components/ui/SectionHeader';
@@ -27,33 +25,30 @@ export default function ProcessSection({ whatsappMessage = WHATSAPP_MESSAGE_SERV
     <Section id="processus" tone="muted" labelledBy="processus-titre" className="scroll-mt-20">
       <SectionHeader
         id="processus-titre"
-        align="center"
         pillar="proprete"
         eyebrow="Comment ça marche"
         title="Comment se déroule une intervention"
         intro="De la première demande au suivi après intervention."
       />
 
-      <Stagger as="ol" className="mb-10 grid gap-6 sm:mb-14 sm:grid-cols-2 lg:grid-cols-3">
+      <Stagger as="ol" className="mb-10 grid gap-x-8 sm:mb-14 sm:grid-cols-2 lg:grid-cols-3">
         {steps.map((step, index) => (
-          <StaggerItem as="li" key={step.title}>
-            <Card className="h-full overflow-hidden">
-              <span aria-hidden="true" className="absolute right-5 top-3 font-display text-display text-brand-100">
-                {index + 1}
+          <StaggerItem as="li" key={step.title} className="border-t border-ink-200 py-6">
+            <div className="flex items-center justify-between">
+              <span aria-hidden="true" className="font-mono text-h3 tabular-nums text-pillar-proprete">
+                {String(index + 1).padStart(2, '0')}
               </span>
-              <IconBadge icon={step.icon} tone="proprete" className="relative mb-5 self-start" />
-              <h3 className="relative font-display text-h3 text-ink-900">{step.title}</h3>
-              <p className="relative mt-2 text-small text-ink-600">{step.description}</p>
-            </Card>
+              <step.icon className="h-5 w-5 text-pillar-proprete" aria-hidden="true" />
+            </div>
+            <h3 className="mt-4 text-h3 text-ink-900">{step.title}</h3>
+            <p className="mt-2 text-small text-ink-600">{step.description}</p>
           </StaggerItem>
         ))}
       </Stagger>
 
-      <div className="text-center">
-        <Button href={getWhatsAppLink(whatsappMessage)} variant="whatsapp" size="lg" whatsappIcon>
-          Démarrer ma demande
-        </Button>
-      </div>
+      <Button href={getWhatsAppLink(whatsappMessage)} size="lg" whatsappIcon>
+        Démarrer ma demande
+      </Button>
     </Section>
   );
 }

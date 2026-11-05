@@ -12,7 +12,7 @@ export const TAILLE_MIN = 10;
 export const MARGE = 48;
 
 export const COULEURS = {
-  marque: rgb(0.05, 0.45, 0.35),
+  marque: rgb(0.071, 0.208, 0.357), // navy-light #12355B (charte « Institution claire »)
   encre: rgb(0.12, 0.14, 0.17),
   gris: rgb(0.4, 0.42, 0.45),
   filet: rgb(0.82, 0.84, 0.86),

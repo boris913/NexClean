@@ -336,7 +336,7 @@ export function EnvoyerWhatsApp({ dossierId, numero, modeles }: { dossierId: num
             onClick={() => {
               void lancer(() => actions.noterWhatsApp(dossierId, modele.nom, texte));
             }}
-            className={`${classeBouton('principal', true)} !bg-[#25D366] text-center`}
+            className={`${classeBouton('principal', true)} !bg-whatsapp !text-ink-900 hover:!bg-whatsapp-hover text-center`}
           >
             Ouvrir WhatsApp
           </a>

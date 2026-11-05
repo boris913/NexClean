@@ -21,7 +21,7 @@ function useAction() {
 }
 
 const classeFichier = 'block w-full text-sm file:mr-3 file:min-h-11 file:px-4 file:rounded-lg file:border-0 file:bg-primary-light file:text-primary-dark';
-const classeWhatsApp = `${classeBouton('principal', true)} !bg-[#25D366] text-center`;
+const classeWhatsApp = `${classeBouton('principal', true)} !bg-whatsapp !text-ink-900 hover:!bg-whatsapp-hover text-center`;
 const aujourdhui = () => new Date(Date.now() + 3_600_000).toISOString().slice(0, 10);
 
 /** Bloc repliable : garde la carte compacte sur mobile. */

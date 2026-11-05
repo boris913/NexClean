@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { lireCouverture } from '@/lib/geo/couverture';
-import Image from 'next/image';
 import PageHero from '@/components/ui/PageHero';
 import Section from '@/components/ui/Section';
+import PhotoTraitee from '@/components/ui/PhotoTraitee';
 import SectionHeader from '@/components/ui/SectionHeader';
 import CTASection from '@/components/sections/CTASection';
 import RealisationsGallery from './RealisationsGallery';
@@ -38,9 +38,7 @@ export default function RealisationsPage() {
         <SectionHeader id="equipes-titre" title="Nos équipes en intervention" className="!mb-8" />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {fieldPhotos.map((p) => (
-            <div key={p.src} className="relative aspect-[3/4] overflow-hidden rounded-2xl">
-              <Image src={p.src} alt={p.alt} fill className="object-cover" sizes="(max-width: 640px) 50vw, 33vw" />
-            </div>
+            <PhotoTraitee key={p.src} src={p.src} alt={p.alt} sizes="(max-width: 640px) 50vw, 33vw" className="aspect-[3/4]" />
           ))}
         </div>
       </Section>

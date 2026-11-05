@@ -7,7 +7,7 @@ interface SectionProps {
   children: React.ReactNode;
   /**
    * `default` blanc · `muted` ink-50 · `brand` brand-50 (fond teinté) ·
-   * `dark` vert profond `forest` avec texte blanc (anneau de focus lime automatique).
+   * `dark` vert profond `navy` avec texte blanc (anneau de focus lime automatique).
    */
   tone?: SectionTone;
   id?: string;
@@ -25,7 +25,7 @@ export const sectionToneClasses: Record<SectionTone, string> = {
   default: 'bg-white text-ink-900',
   muted: 'bg-ink-50 text-ink-900',
   brand: 'bg-brand-50 text-ink-900',
-  dark: 'surface-dark bg-forest text-white',
+  dark: 'surface-dark bg-navy text-white',
 };
 
 const spacingClasses = {

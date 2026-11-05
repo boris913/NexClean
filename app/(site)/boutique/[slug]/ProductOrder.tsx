@@ -96,7 +96,6 @@ export default function ProductOrder({ product }: { product: Product }) {
       <Button
         href={getWhatsAppLink(message)}
         onClick={() => trackEvent('product_order_click', { product: product.slug, quantity: qty, format: format.label })}
-        variant="whatsapp"
         size="lg"
         whatsappIcon
         fullWidth

@@ -24,12 +24,14 @@ interface ClientProcessProps {
 export default function ClientProcess({ eyebrow = 'Processus & paiement', title = 'De la demande au suivi' }: ClientProcessProps) {
   return (
     <Section id="processus-client" tone="muted" labelledBy="processus-client-titre" className="scroll-mt-20">
-      <SectionHeader id="processus-client-titre" align="center" eyebrow={eyebrow} title={title} />
+      <SectionHeader id="processus-client-titre" eyebrow={eyebrow} title={title} />
 
-      <ol className="mb-10 flex flex-wrap justify-center gap-2 sm:mb-14">
+      <ol className="mb-10 grid gap-x-8 border-b border-ink-200 sm:mb-14 sm:grid-cols-2 lg:grid-cols-3">
         {STEPS.map((step, i) => (
-          <li key={step} className="flex items-center gap-2 rounded-full border border-ink-200 bg-white py-1.5 pl-1.5 pr-4 text-small text-ink-700">
-            <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-cta text-xs font-bold text-ink-900">{i + 1}</span>
+          <li key={step} className="flex items-baseline gap-4 border-t border-ink-200 py-3 text-body text-ink-900">
+            <span aria-hidden="true" className="font-mono text-small tabular-nums text-primary">
+              {String(i + 1).padStart(2, '0')}
+            </span>
             {step}
           </li>
         ))}
@@ -47,7 +49,7 @@ export default function ClientProcess({ eyebrow = 'Processus & paiement', title 
           </Card>
         ))}
       </div>
-      <p className="mt-6 text-center text-small text-muted">Moyens de paiement acceptés : {PAYMENT_TERMS.methods.join(' · ')}</p>
+      <p className="mt-6 text-small text-muted">Moyens de paiement acceptés : {PAYMENT_TERMS.methods.join(' · ')}</p>
     </Section>
   );
 }

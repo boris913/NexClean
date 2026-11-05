@@ -137,7 +137,7 @@ function accuseReception(p: {
 ${lieu ? `<p>Lieu : ${h(lieu)}</p>` : ''}
 <p><strong>${h(texteEstimation(p.estimation))}</strong><br><span style="color:#6b7280">${h(MENTION_ESTIMATION)}</span></p>
 <p>${h(DELAI_RAPPEL)} Nous vous écrirons sur WhatsApp au ${h(formaterTelephone(p.whatsapp))}.</p>
-<p><a href="${h(p.lienSuivi)}" style="display:inline-block;background:#3d7a1e;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">Suivre ma demande</a></p>
+<p><a href="${h(p.lienSuivi)}" style="display:inline-block;background:#1F5FD1;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">Suivre ma demande</a></p>
 <p>NEXCLEAN SARL</p>
 </div>`;
   return { to: p.email, subject: `Votre demande de personnel n° ${p.numero} — ${formaterFCFA(p.estimation.montant)} estimés`, text, html };

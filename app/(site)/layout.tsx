@@ -4,7 +4,6 @@ import WhatsAppButton from '@/components/ui/WhatsAppButton';
 import MobileCTABar from '@/components/ui/MobileCTABar';
 import Analytics from '@/components/analytics/Analytics';
 import JsonLd from '@/components/ui/JsonLd';
-import { MotionProvider } from '@/components/ui/Reveal';
 import { localBusinessSchema, servicesSchema, websiteSchema } from '@/lib/seo';
 import { lireCouverture } from '@/lib/geo/couverture';
 
@@ -22,7 +21,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       </a>
       <Header />
       <main id="main-content" tabIndex={-1} className="pt-20 overflow-x-clip outline-none">
-        <MotionProvider>{children}</MotionProvider>
+        {children}
       </main>
       <Footer villes={couverture.libelle} />
       <WhatsAppButton />

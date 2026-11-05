@@ -3,6 +3,7 @@ import { lireCouverture } from '@/lib/geo/couverture';
 import { notFound } from 'next/navigation';
 import { Check } from 'lucide-react';
 import PageHero from '@/components/ui/PageHero';
+import type { NomIllustration } from '@/components/illustrations/Illustrations';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import JsonLd from '@/components/ui/JsonLd';
@@ -14,6 +15,13 @@ import CTASection from '@/components/sections/CTASection';
 import { servicePages, getServiceBySlug, services } from '@/content/services-data';
 import { getWhatsAppLink, PAYMENT_TERMS } from '@/lib/constants';
 import { pageMetadata, serviceSchema, breadcrumbSchema } from '@/lib/seo';
+
+/** Illustration d'en-tête par prestation (audit design M5) ; propreté générique par défaut. */
+const ILLUSTRATIONS: Record<string, NomIllustration> = {
+  'nettoyage-maison-douala': 'maison',
+  'nettoyage-bureaux-douala': 'immeuble',
+  'entretien-espaces-verts-douala': 'jardin',
+};
 
 export function generateStaticParams() {
   return servicePages.map((s) => ({ slug: s.slug }));
@@ -37,13 +45,14 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
   return (
     <>
       <PageHero
+        illustration={ILLUSTRATIONS[service.slug] ?? 'proprete'}
         label={PILLARS.proprete.label}
         pillar="proprete"
         title={service.seo.h1}
         subtitle={service.seo.intro}
         breadcrumb={[{ name: 'Propreté', href: '/services' }, { name: service.name }]}
       >
-        <Button href={getWhatsAppLink(quoteMessage)} variant="whatsapp" size="lg" whatsappIcon>
+        <Button href={getWhatsAppLink(quoteMessage)} size="lg" whatsappIcon>
           Demander un devis pour cette prestation
         </Button>
         <Button href="/tarifs" variant="outline" size="lg">
@@ -52,7 +61,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
       </PageHero>
 
       <Section>
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-3 md:items-start">
           <Card>
             <h2 className="mb-4 font-display text-h3 text-ink-900">Ce qui est inclus</h2>
             <ul className="space-y-2.5">
@@ -75,9 +84,9 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
               ))}
             </ul>
           </Card>
-          <div className="surface-dark rounded-card bg-forest p-6 text-white sm:p-7">
-            <h2 className="mb-2 font-display text-h3 text-white">Tarif</h2>
-            <p className="mb-3 text-2xl font-bold">{service.priceRange}</p>
+          <div className="surface-dark rounded-card bg-navy p-6 text-white sm:p-7">
+            <h2 className="mb-2 font-mono text-eyebrow uppercase text-brand-300">Tarif indicatif</h2>
+            <p className="mb-3 font-mono text-h3 tabular-nums">{service.priceRange}</p>
             <p className="mb-4 text-small text-brand-100">
               Prix indicatif : le devis final dépend de la surface, de l&apos;état, de l&apos;accès et des moyens nécessaires.
             </p>

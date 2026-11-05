@@ -21,7 +21,7 @@ export async function renderOgImage(villes: string) {
           flexDirection: 'column',
           justifyContent: 'space-between',
           padding: '64px 80px',
-          background: 'linear-gradient(135deg, #142A08 0%, #3D701C 55%, #66B32B 100%)',
+          background: 'linear-gradient(135deg, #0A1626 0%, #12355B 60%, #1A4FB0 100%)',
           fontFamily: 'system-ui, sans-serif',
           position: 'relative',
         }}
@@ -34,26 +34,26 @@ export async function renderOgImage(villes: string) {
             width: 520,
             height: 520,
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(163,222,110,0.45) 0%, rgba(163,222,110,0) 70%)',
+            background: 'radial-gradient(circle, rgba(46,124,246,0.40) 0%, rgba(46,124,246,0) 70%)',
           }}
         />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logoSrc} width={545} height={115} alt="" />
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: 64, fontWeight: 800, color: '#FFFFFF', lineHeight: 1.05, letterSpacing: -2 }}>
+          <div style={{ fontSize: 64, fontWeight: 700, color: '#FFFFFF', lineHeight: 1.08, letterSpacing: -1 }}>
             Propreté, recrutement & espaces verts
           </div>
-          <div style={{ fontSize: 30, color: '#E2F6CF', marginTop: 16 }}>{`${BRAND.signature} · ${villes}, Cameroun`}</div>
+          <div style={{ fontSize: 30, color: '#DBE7FC', marginTop: 16 }}>{`${BRAND.signature} · ${villes}, Cameroun`}</div>
         </div>
         <div style={{ display: 'flex', gap: 16 }}>
-          {['Propreté & hygiène', 'Recrutement', 'Espaces verts', 'Suivi en ligne'].map((b) => (
+          {['Propreté & hygiène', 'Recrutement', 'Espaces verts', 'Suivi en ligne'].map((b, i) => (
             <div
               key={b}
               style={{
                 display: 'flex',
-                background: '#84CC45',
-                color: '#131A12',
-                borderRadius: 999,
+                background: i === 0 ? '#84CC45' : 'rgba(255,255,255,0.12)',
+                color: i === 0 ? '#0A1626' : '#FFFFFF',
+                borderRadius: 8,
                 padding: '12px 24px',
                 fontSize: 22,
                 fontWeight: 700,
