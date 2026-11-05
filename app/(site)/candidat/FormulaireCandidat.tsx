@@ -365,7 +365,10 @@ export default function FormulaireCandidat(props: Props) {
           <li key={nom} aria-current={etape === i + 1 ? 'step' : undefined}>
             <button type="button" disabled={inscription && i + 1 > etape} onClick={() => allerA(i + 1)} className="block w-full text-left disabled:cursor-default">
               <span className={`block h-1.5 rounded-full ${i + 1 <= etape ? 'bg-primary' : 'bg-ink-200'}`} />
-              <span className={`block text-xs leading-tight mt-1 ${i + 1 === etape ? 'font-semibold text-ink-900' : 'text-muted'}`}>{i + 1 === etape ? nom : i + 1}</span>
+              <span className={`block text-xs leading-tight mt-1 ${i + 1 === etape ? 'font-semibold text-ink-900' : 'text-muted'}`}>
+                {i + 1}
+                <span className="sr-only"> {nom}</span>
+              </span>
             </button>
           </li>
         ))}
