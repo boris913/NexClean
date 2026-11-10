@@ -41,6 +41,21 @@ test.describe('Site public', () => {
     await page.close();
   });
 
+  test('pages par ville : quartiers, trio d’actions, ville non couverte en 404 (COM1-01 RG-11)', async () => {
+    const page = await visiteur.newPage();
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.locator('#zones').getByRole('link', { name: 'Nos services à Douala' }).click();
+    await expect(page).toHaveURL(/\/zones\/douala$/);
+    await expect(page.locator('h1')).toHaveText('Nettoyage et entretien à Douala');
+    await expect(page.locator('#quartiers')).toContainText('Bonapriso');
+    await expect(page.getByRole('link', { name: 'Devis sur WhatsApp' })).toBeInViewport();
+    await expect(page.getByRole('link', { name: 'Demander un devis' }).first()).toBeInViewport();
+    await sansDefilementHorizontal(page);
+    expect((await page.goto('/zones/yaounde', { waitUntil: 'domcontentloaded' }))?.status()).toBe(200);
+    expect((await page.goto('/zones/kribi', { waitUntil: 'domcontentloaded' }))?.status()).toBe(404);
+    await page.close();
+  });
+
   test('« Demander du personnel » : 4 étapes, validation, brouillon et numéro de dossier', async () => {
     const page = await visiteur.newPage();
     await page.goto('/recrutement');

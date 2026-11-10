@@ -262,6 +262,22 @@ export const serviceSchema = (s: Service, villes: string[]) => ({
   areaServed: villes.map((v) => ({ '@type': 'City', name: v })),
 });
 
+/** Page d'une ville (specs/COM1-01 RG-11) : chaque prestation, servie dans la ville et ses quartiers. */
+export const villeServicesSchema = (ville: string, quartiers: string[], path: string) => {
+  const zone = [{ '@type': 'City', name: ville }, ...quartiers.map((q) => ({ '@type': 'Place', name: `${q}, ${ville}` }))];
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: `Services NEXCLEAN à ${ville}`,
+    url: `${SITE_URL}${path}`,
+    itemListElement: services.map((s, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: { ...serviceSchema(s, [ville]), '@context': undefined, areaServed: zone },
+    })),
+  };
+};
+
 /** Service de recrutement & placement (page /recrutement/demander-du-personnel). */
 export const recrutementServiceSchema = (villes: string[]) => ({
   '@context': 'https://schema.org',
