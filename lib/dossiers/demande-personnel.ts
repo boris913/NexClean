@@ -1,5 +1,6 @@
 // Envoi du formulaire public « Demander du personnel » (MVP1-03 RG-03..09).
 // Séparé de l'action serveur pour être testable sans requête HTTP.
+import type { Attribution } from '@/lib/acquisition/source';
 import { journaliser } from '@/lib/audit';
 import { env } from '@/lib/env';
 import { echapperHtml, envoyerEmail } from '@/lib/email';
@@ -29,7 +30,7 @@ export type ResultatEnvoi =
   | { ok: true; numero: string; lienSuivi: string; estimation: Estimation; doublon: boolean }
   | { ok: false; erreur: string; erreurs?: Record<string, string> };
 
-export async function soumettreDemandePersonnel(entree: unknown, ctx: { ip: string | null }): Promise<ResultatEnvoi> {
+export async function soumettreDemandePersonnel(entree: unknown, ctx: { ip: string | null; attribution?: Attribution | null }): Promise<ResultatEnvoi> {
   const brut = (entree && typeof entree === 'object' ? entree : {}) as Record<string, unknown>;
 
   const refus = await controlerEnvoi(FORMULAIRE_PERSONNEL, brut.siteWeb, ctx.ip);
@@ -50,6 +51,8 @@ export async function soumettreDemandePersonnel(entree: unknown, ctx: { ip: stri
       type: 'REC',
       canal: 'site',
       formulaire: FORMULAIRE_PERSONNEL,
+      source: ctx.attribution?.premier.source ?? 'inconnue',
+      attribution: ctx.attribution ?? null,
       client: { type: d.clientType, nom: d.clientType === 'entreprise' && d.entreprise ? d.entreprise : d.contact, contact: d.contact, whatsapp: d.whatsapp!, autreTelephone: d.autreTelephone, email: d.email },
       villeId: d.villeId,
       villeAutre: d.villeId ? null : d.villeAutre,

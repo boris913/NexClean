@@ -8,6 +8,7 @@ import type { Statut } from '@/lib/dossiers/statuts';
 import ChampsLieu, { type ValeurLieu } from '@/components/backoffice/ChampsLieu';
 import EditeurPostes from '@/components/backoffice/EditeurPostes';
 import { Alerte, Carte, classeBouton, classeChamp, classeLibelle, type ResultatAction } from '@/components/backoffice/ui';
+import { SOURCES, SOURCE_CODES, type Source } from '@/lib/acquisition/source';
 import * as actions from '../actions';
 
 function useAction() {
@@ -138,6 +139,23 @@ export function Rattacher({ dossierId, demandeId, cibles }: { dossierId: number;
           {cibles.map((c) => <option key={c.id} value={c.id}>{c.numero}</option>)}
         </select>
         <button type="submit" disabled={envoi} className={classeBouton('secondaire')}>Rattacher</button>
+      </div>
+    </form>
+  );
+}
+
+/** COM1-01 RG-04 : correction de la source d'acquisition, historisée. */
+export function CorrigerSource({ dossierId, demandeId, source }: { dossierId: number; demandeId: number; source: Source }) {
+  const { lancer, envoi, retour } = useAction();
+  return (
+    <form className="mt-3 space-y-2" action={async (f) => void (await lancer(() => actions.corrigerSource(dossierId, demandeId, String(f.get('source')) as Source)))}>
+      {retour}
+      <label className={classeLibelle} htmlFor={`source-${demandeId}`}>Source d’acquisition</label>
+      <div className="flex gap-2">
+        <select id={`source-${demandeId}`} name="source" defaultValue={source} className={classeChamp}>
+          {SOURCE_CODES.map((s) => <option key={s} value={s}>{SOURCES[s]}</option>)}
+        </select>
+        <button type="submit" disabled={envoi} className={classeBouton('secondaire')}>Corriger</button>
       </div>
     </form>
   );

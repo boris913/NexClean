@@ -1,5 +1,6 @@
 // Enregistrement des demandes de devis du site avant l'ouverture de WhatsApp (MVP1-04).
 // Séparé de l'action serveur pour être testable sans requête HTTP.
+import type { Attribution } from '@/lib/acquisition/source';
 import { env } from '@/lib/env';
 import { FORMULAIRES_DEVIS } from '@/components/forms/quote-forms';
 import { creerDemande } from './service';
@@ -15,7 +16,7 @@ export type ResultatDevis =
 /** Types de site « Espaces verts » qui désignent une organisation plutôt qu'un particulier. */
 const SITES_ORGANISATION = ['Entreprise', 'Hôtel', 'Administration', 'Résidence'];
 
-export async function soumettreDemandeDevis(entree: unknown, ctx: { ip: string | null }): Promise<ResultatDevis> {
+export async function soumettreDemandeDevis(entree: unknown, ctx: { ip: string | null; attribution?: Attribution | null }): Promise<ResultatDevis> {
   const brut = (entree && typeof entree === 'object' ? entree : {}) as Record<string, unknown>;
   const config = typeof brut.formId === 'string' ? FORMULAIRES_DEVIS[brut.formId] : undefined;
   if (!config) return { ok: false, erreur: 'Formulaire inconnu.' };
@@ -40,6 +41,8 @@ export async function soumettreDemandeDevis(entree: unknown, ctx: { ip: string |
     type,
     canal: 'site',
     formulaire: config.formId,
+    source: ctx.attribution?.premier.source ?? 'inconnue',
+    attribution: ctx.attribution ?? null,
     client: { ...client, nom: client.nom.length >= 2 ? client.nom : `${client.nom} (client)`, whatsapp, autreTelephone: null, email: null },
     ...lieu,
     lieu: null,

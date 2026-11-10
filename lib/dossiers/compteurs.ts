@@ -1,5 +1,6 @@
 // Tableau de bord minimal (MVP1-05 RG-18, RG-19) : compteurs basés sur les phases (ADR 0007).
-import { and, eq, gte, inArray, lt, notInArray, or } from 'drizzle-orm';
+import { and, eq, gte, inArray, lt, notInArray, or, sql } from 'drizzle-orm';
+import { SOURCES, type Source } from '@/lib/acquisition/source';
 import { aliasedTable } from 'drizzle-orm';
 import { getDb, schema } from '@/lib/db';
 import { lireParametre } from '@/lib/parametres';
@@ -71,7 +72,9 @@ export async function compteursDirection(p: Periode, maintenant = new Date()) {
   const jours = await lireParametre('jours_sans_action');
   const referent = aliasedTable(schema.user, 'referent');
   const lignes = await getDb()
-    .select({ id: schema.dossier.id, type: schema.dossier.type, statut: schema.dossier.statut, villeNom: schema.ville.nom, villeAutre: schema.dossier.villeAutre, referentId: schema.dossier.referentId, referentNom: referent.name, creeLe: schema.dossier.creeLe, derniereActionLe: schema.dossier.derniereActionLe })
+    .select({ id: schema.dossier.id, type: schema.dossier.type, statut: schema.dossier.statut, villeNom: schema.ville.nom, villeAutre: schema.dossier.villeAutre, referentId: schema.dossier.referentId, referentNom: referent.name, creeLe: schema.dossier.creeLe, derniereActionLe: schema.dossier.derniereActionLe,
+      // Source du dossier = celle de sa première demande (COM1-01 §6).
+      source: sql<Source | null>`(select ${schema.demande.source} from ${schema.demande} where ${schema.demande.dossierId} = ${schema.dossier.id} order by ${schema.demande.id} limit 1)` })
     .from(schema.dossier)
     .leftJoin(schema.ville, eq(schema.ville.id, schema.dossier.villeId))
     .leftJoin(referent, eq(referent.id, schema.dossier.referentId))
@@ -90,6 +93,7 @@ export async function compteursDirection(p: Periode, maintenant = new Date()) {
     parPhase: agreger(lignes, (l) => phaseDe(l.statut), (l) => phaseDe(l.statut), ouvert, cree).sort((a, b) => ordrePhases.indexOf(a.cle as Phase) - ordrePhases.indexOf(b.cle as Phase)),
     parType: parOuverts(agreger(lignes, (l) => l.type, (l) => l.type as DossierType, ouvert, cree)),
     parVille: parOuverts(agreger(lignes, (l) => l.villeNom ?? `autre:${l.villeAutre ?? ''}`, (l) => l.villeNom ?? (l.villeAutre ? `${l.villeAutre} (hors référentiel)` : 'Non précisée'), ouvert, cree)),
+    parSource: parOuverts(agreger(lignes, (l) => l.source ?? 'inconnue', (l) => SOURCES[l.source ?? 'inconnue'], ouvert, cree)),
     parReferent: parOuverts(agreger(lignes, (l) => l.referentId ?? 'aucun', (l) => l.referentNom ?? 'Non attribués', ouvert, cree)),
     nonAttribues: lignes.filter((l) => !l.referentId && !STATUTS_FINAUX.includes(l.statut)).length,
     sansAction: lignes.filter((l) => l.referentId && ouvert(l) && l.derniereActionLe.getTime() < limite).length,

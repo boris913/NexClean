@@ -9,6 +9,7 @@ import { ErreurMetier } from '@/lib/collaborateurs/service';
 import * as svc from '@/lib/dossiers/service';
 import type { Statut } from '@/lib/dossiers/statuts';
 import type { DossierType } from '@/lib/domain/referentiels';
+import type { Source } from '@/lib/acquisition/source';
 
 async function acteur() {
   const c = await exigerCollaborateur({ permission: 'dossier.traiter' });
@@ -64,6 +65,14 @@ export async function supprimerDocument(dossierId: number, documentId: number) {
     await svc.supprimerDocument(documentId, await acteur());
     rafraichir(dossierId);
     return 'Document supprimé.';
+  });
+}
+
+export async function corrigerSource(dossierId: number, demandeId: number, source: Source) {
+  return executer(async () => {
+    await svc.corrigerSource(demandeId, source, await acteur());
+    rafraichir(dossierId);
+    return 'Source corrigée.';
   });
 }
 

@@ -1,0 +1,3 @@
+CREATE TYPE "public"."source_acquisition" AS ENUM('google_naturel', 'google_ads', 'google_maps', 'facebook', 'instagram', 'tiktok', 'whatsapp_direct', 'bouche_a_oreille', 'prospection', 'partenaire', 'autre', 'inconnue');--> statement-breakpoint
+ALTER TABLE "demande" ADD COLUMN "source" "source_acquisition" DEFAULT 'inconnue' NOT NULL;--> statement-breakpoint
+ALTER TABLE "demande" ADD COLUMN "attribution" jsonb;

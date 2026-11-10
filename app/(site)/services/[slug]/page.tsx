@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { lireCouverture } from '@/lib/geo/couverture';
 import { notFound } from 'next/navigation';
-import { Check } from 'lucide-react';
+import { Check, Phone } from 'lucide-react';
 import PageHero from '@/components/ui/PageHero';
 import type { NomIllustration } from '@/components/illustrations/Illustrations';
 import Button from '@/components/ui/Button';
@@ -13,7 +13,7 @@ import ServicesSection from '@/components/sections/ServicesSection';
 import ProcessSection from '@/components/sections/ProcessSection';
 import CTASection from '@/components/sections/CTASection';
 import { servicePages, getServiceBySlug, services } from '@/content/services-data';
-import { getWhatsAppLink, PAYMENT_TERMS } from '@/lib/constants';
+import { getWhatsAppLink, PAYMENT_TERMS, CONTACT, TEL_LINK } from '@/lib/constants';
 import { pageMetadata, serviceSchema, breadcrumbSchema } from '@/lib/seo';
 
 /** Illustration d'en-tête par prestation (audit design M5) ; propreté générique par défaut. */
@@ -54,6 +54,10 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
       >
         <Button href={getWhatsAppLink(quoteMessage)} size="lg" whatsappIcon>
           Demander un devis pour cette prestation
+        </Button>
+        {/* Sur mobile, « Appeler » est déjà dans la barre fixe (MobileCTABar). */}
+        <Button href={TEL_LINK} variant="outline" size="lg" icon={Phone} className="hidden lg:inline-flex">
+          Appeler le {CONTACT.phoneDisplay}
         </Button>
         <Button href="/tarifs" variant="outline" size="lg">
           Voir les tarifs

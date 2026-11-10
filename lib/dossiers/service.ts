@@ -10,6 +10,7 @@ import { DOSSIER_TYPE_CODES, type DossierType } from '@/lib/domain/referentiels'
 import { getStockage, nouvelleCle } from '@/lib/fichiers/stockage';
 import { validerFichier } from '@/lib/fichiers/validation';
 import { normaliserTelephone } from '@/lib/telephone';
+import { CANAUX_SOURCE_OBLIGATOIRE, SOURCE_CODES, SOURCES, schemaAttribution, type Source } from '@/lib/acquisition/source';
 import { peutTraiter, peutVoir, type Demandeur } from './acces';
 import { anneeDouala, formaterNumero } from './numero';
 import { estCircuitDevis, estFinal, STATUTS, verifierTransition, type Statut } from './statuts';
@@ -79,6 +80,10 @@ export const schemaNouvelleDemande = schemaLieu.extend({
   type: z.enum(DOSSIER_TYPE_CODES),
   canal: z.enum(['site', 'whatsapp', 'telephone', 'email', 'visite', 'autre']),
   formulaire: z.string().trim().min(1).max(40),
+  /** Source d'acquisition (COM1-01) : déduite sur le site, choisie en saisie manuelle. */
+  source: z.enum(SOURCE_CODES).default('inconnue'),
+  /** Premier et dernier contact relevés par le site (cookie de première partie). */
+  attribution: schemaAttribution.nullable().optional(),
   client: schemaClient,
   lignes: z.array(schemaLignePoste).max(10, '10 postes maximum').default([]),
   /** Données brutes conservées telles quelles dans la Demande (RG-06). */
@@ -155,6 +160,9 @@ export async function creerDemande(entree: NouvelleDemande, auteur?: Acteur | nu
   if (d.client.autreTelephone && !autreTelephone) throw new ErreurMetier('Autre téléphone invalide.');
   if (d.type !== 'REC' && d.lignes.length > 0) throw new ErreurMetier('Les lignes de poste ne concernent que les dossiers de recrutement.');
   if (d.type === 'REC' && d.lignes.length === 0 && !d.dossierExistantId) throw new ErreurMetier('Indiquez au moins un poste.');
+  // COM1-01 RG-03 : au téléphone ou en visite, on demande « comment nous avez-vous connus ? ».
+  if (auteur && d.source === 'inconnue' && (CANAUX_SOURCE_OBLIGATOIRE as readonly string[]).includes(d.canal))
+    throw new ErreurMetier('Indiquez comment le client a connu NEXCLEAN.');
   const empreinte = empreinteDonnees(d.donnees);
 
   const resultat = await getDb().transaction(async (tx) => {
@@ -187,7 +195,7 @@ export async function creerDemande(entree: NouvelleDemande, auteur?: Acteur | nu
 
     // Instantané des coordonnées saisies, pour proposer leur mise à jour au référent (RG-04).
     const donneesDemande = { ...d.donnees, client: { ...d.client, whatsapp, autreTelephone } };
-    const valeursDemande = { clientId, canal: d.canal, formulaire: d.formulaire, donnees: donneesDemande, empreinte, auteurId: auteur?.id ?? null };
+    const valeursDemande = { clientId, canal: d.canal, source: d.source, attribution: d.attribution ?? null, formulaire: d.formulaire, donnees: donneesDemande, empreinte, auteurId: auteur?.id ?? null };
 
     // Rattachement direct à un dossier existant (saisie manuelle).
     if (d.dossierExistantId) {
@@ -421,6 +429,20 @@ export async function rattacherDemande(demandeId: number, dossierCibleId: number
       await evenement(tx, { dossierId: source.id, auteurId: a.id, type: 'transition', deStatut: source.statut, versStatut: 'sans_suite', commentaire: `Fusionné dans ${cible.numero}` });
     }
     await journaliser({ ...auteurAudit(a), action: 'dossier.demande_rattachee', objetType: 'demande', objetId: demandeId, avant: { dossierId: source.id }, apres: { dossierId: cible.id } }, tx);
+  });
+}
+
+/** COM1-01 RG-04 : correction de la source d'une Demande. Les données soumises restent immuables. */
+export async function corrigerSource(demandeId: number, source: Source, a: Acteur): Promise<void> {
+  const nouvelle = z.enum(SOURCE_CODES).parse(source);
+  await getDb().transaction(async (tx) => {
+    const [dem] = await tx.select().from(schema.demande).where(eq(schema.demande.id, demandeId)).for('update');
+    if (!dem) throw new ErreurMetier('Demande introuvable.');
+    await chargerPourEcriture(tx, dem.dossierId, a);
+    if (dem.source === nouvelle) return;
+    await tx.update(schema.demande).set({ source: nouvelle }).where(eq(schema.demande.id, demandeId));
+    await evenement(tx, { dossierId: dem.dossierId, auteurId: a.id, type: 'modification', commentaire: `Source de la demande n° ${demandeId} : ${SOURCES[dem.source]} → ${SOURCES[nouvelle]}` });
+    await journaliser({ ...auteurAudit(a), action: 'demande.source_corrigee', objetType: 'demande', objetId: demandeId, avant: { source: dem.source }, apres: { source: nouvelle } }, tx);
   });
 }
 
