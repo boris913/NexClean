@@ -1,6 +1,6 @@
 # ADR 0005 – Messagerie V1 : WhatsApp en clic (wa.me), e-mail transactionnel, notifications internes
 
-- **Statut :** accepté
+- **Statut :** accepté — partiellement remplacé par l'ADR 0025 (proposé) pour l'API WhatsApp Business
 - **Date :** 2026-11-02
 - **Décideur :** Ange
 
