@@ -201,7 +201,7 @@ export async function rendezVousACloturer(a: Demandeur, maintenant = new Date())
     .where(
       and(
         eq(schema.rendezVous.statut, 'prevu'),
-        sql`${schema.rendezVous.debut} + make_interval(mins => ${schema.rendezVous.dureeMinutes}) <= ${new Date(maintenant.getTime() - DELAI_A_CLOTURER_MS)}`,
+        sql`${schema.rendezVous.debut} + make_interval(mins => ${schema.rendezVous.dureeMinutes}) <= ${new Date(maintenant.getTime() - DELAI_A_CLOTURER_MS).toISOString()}::timestamptz`,
         filtreVisibilite(a),
       ),
     )
