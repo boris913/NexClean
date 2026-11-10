@@ -197,6 +197,7 @@ test.describe('Back-Office', () => {
   test('saisie manuelle, changement de statut et page de suivi du client', async () => {
     await bo.goto('/admin/dossiers/nouveau');
     await bo.selectOption('#type', 'REC');
+    await bo.selectOption('#source', 'bouche_a_oreille'); // COM1-01 RG-03 : source obligatoire en saisie
     await bo.getByLabel('Entreprise / nom').fill('Résidence Saisie E2E');
     await bo.getByLabel('Nom du contact').fill('M. Ngando');
     await bo.getByLabel('Numéro WhatsApp').fill('690 77 88 99');
