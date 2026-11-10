@@ -233,6 +233,22 @@ test.describe('Back-Office', () => {
     await expect(bo.locator('main')).toContainText('En qualification');
     await sansDefilementHorizontal(bo);
 
+    // COM1-02 RG-01 / RG-03 : rendez-vous planifié sur le dossier, visible dans l'agenda.
+    const urlDossier = bo.url();
+    const numero = (await bo.locator('h1').first().textContent())!.match(/REC-\d{4}-\d{5}/)![0];
+    const demain = new Date(Date.now() + 25 * 3600_000 + 3600_000).toISOString().slice(0, 10);
+    await bo.locator('#rdv-jour').fill(demain);
+    await bo.locator('#rdv-heure').fill('10:30');
+    await bo.locator('#rdv-lieu').fill('Bonapriso, face pharmacie');
+    await bo.getByRole('button', { name: 'Planifier le rendez-vous' }).click();
+    await expect(bo.locator('#rendez-vous')).toContainText('Visite sur site');
+    await expect(bo.locator('#rendez-vous')).toContainText('10:30');
+    await sansDefilementHorizontal(bo);
+    await bo.goto(`/admin/agenda?vue=jour&jour=${demain}`);
+    await expect(bo.locator('main')).toContainText(numero);
+    await sansDefilementHorizontal(bo);
+    await bo.goto(urlDossier);
+
     // Le client suit son dossier sans compte ; le salaire proposé n'y apparaît pas.
     const lienSuivi = await bo.getByLabel('Lien de suivi').inputValue();
     const client = await visiteur.newPage();

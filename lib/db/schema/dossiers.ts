@@ -26,6 +26,7 @@ export const evenementTypeEnum = pgEnum('type_evenement', [
   'client',
   'proposition',
   'placement',
+  'rendez_vous',
 ]);
 
 export const client = pgTable('client', {

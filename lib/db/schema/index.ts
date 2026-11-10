@@ -9,3 +9,4 @@ export * from './candidats';
 export * from './propositions';
 export * from './devis';
 export * from './encaissements';
+export * from './rendezvous';

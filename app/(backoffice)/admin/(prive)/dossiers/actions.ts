@@ -10,6 +10,8 @@ import * as svc from '@/lib/dossiers/service';
 import type { Statut } from '@/lib/dossiers/statuts';
 import type { DossierType } from '@/lib/domain/referentiels';
 import type { Source } from '@/lib/acquisition/source';
+import * as rdv from '@/lib/rendezvous/service';
+import type { RdvStatut } from '@/lib/rendezvous/domaine';
 
 async function acteur() {
   const c = await exigerCollaborateur({ permission: 'dossier.traiter' });
@@ -143,5 +145,34 @@ export async function noterWhatsApp(id: number, modele: string, texte: string) {
     await svc.noterMessageWhatsApp(id, modele, texte, await acteur());
     rafraichir(id);
     return 'Message enregistré dans l’historique.';
+  });
+}
+
+// ─── Rendez-vous (COM1-02 RG-01) ──────────────────────────────
+
+export async function planifierRendezVous(dossierId: number, entree: rdv.SaisieRendezVous) {
+  return executer(async () => {
+    await rdv.planifierRendezVous(dossierId, entree, await acteur());
+    rafraichir(dossierId);
+    revalidatePath('/admin/agenda');
+    return 'Rendez-vous planifié.';
+  });
+}
+
+export async function modifierRendezVous(dossierId: number, id: number, entree: rdv.SaisieRendezVous) {
+  return executer(async () => {
+    await rdv.modifierRendezVous(id, entree, await acteur());
+    rafraichir(dossierId);
+    revalidatePath('/admin/agenda');
+    return 'Rendez-vous modifié.';
+  });
+}
+
+export async function cloturerRendezVous(dossierId: number, id: number, statut: Exclude<RdvStatut, 'prevu'>, compteRendu: string) {
+  return executer(async () => {
+    await rdv.cloturerRendezVous(id, statut, compteRendu || null, await acteur());
+    rafraichir(dossierId);
+    revalidatePath('/admin/agenda');
+    return 'Rendez-vous clôturé.';
   });
 }

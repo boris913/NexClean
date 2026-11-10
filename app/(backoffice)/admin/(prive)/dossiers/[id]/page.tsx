@@ -33,6 +33,7 @@ import SectionPropositions from './SectionPropositions';
 import SectionDevis from './SectionDevis';
 import SectionFactures from './SectionFactures';
 import SectionFinances from './SectionFinances';
+import SectionRendezVous from './SectionRendezVous';
 
 /** MVP1-03 RG-06 : estimation enregistrée dans la Demande (preuve de ce qui a été affiché). */
 function estimationMontree(donnees: unknown): string | null {
@@ -227,6 +228,7 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
                 </Carte>
               </section>
             )}
+            <SectionRendezVous dossierId={d.id} traiter={traiter} ouvert={!estFinal(d.statut)} referentId={d.referentId} />
             <Carte titre="Suivi client">
               <p className="text-sm text-ink-600 mb-2">Phase affichée au client : <strong>{PHASES[phaseDe(d.statut)]}</strong></p>
               <A.LienSuivi dossierId={d.id} lien={lienSuivi} peutRegenerer={traiter} />
