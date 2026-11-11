@@ -10,7 +10,7 @@ ADR de référence : 0005, 0025. Dépend de COM2-01.
 
 ## 2. Envoi
 
-**RG-01** Zone de réponse dans le fil : texte libre, pièce jointe (document du Dossier via **lien d'accès temporaire**, ADR 0003 — jamais le fichier brut pour un devis ou une facture), modèle de message (MVP1-05 RG-14).
+**RG-01** Zone de réponse dans le fil : texte libre, pièce jointe (document du Dossier via **lien d'accès temporaire**, ADR 0003 — jamais le fichier brut pour un devis ou une facture), modèle de message (MVP1-05 RG-14). *Mise en œuvre : le « lien d'accès temporaire » est celui de l'espace de suivi du client (page de suivi, vérification des 4 derniers chiffres, expiration 90 jours après la fermeture du Dossier), qui donne déjà accès aux devis, factures, reçus et attestations ; aucun fichier n'est envoyé par WhatsApp.*
 
 **RG-02** **Fenêtre de service** : si le dernier message entrant date de moins de 24 h, texte libre autorisé. Au-delà, seul l'envoi d'un **modèle approuvé par Meta** est possible ; l'interface l'indique et propose les modèles éligibles.
 

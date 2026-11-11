@@ -167,4 +167,30 @@ describe.skipIf(!baseDisponible)('WhatsApp, réponses (intégration)', async () 
       process.env.WHATSAPP_ACCESS_TOKEN = jeton;
     }
   });
+
+  it('RG-05 : envoi au client — fenêtre ouverte → texte ; fermée → modèle approuvé du même nom, sinon manuel', async () => {
+    const c = await conv('+237690100001');
+    const base = { numero: c.numero, dossierId: c.dossierId!, texte: 'Votre devis est prêt : https://nexclean.xyz/suivi/x', nomModeleInterne: 'Envoi du devis', ctx: { 'client.nom': 'Client', 'devis.montant': '50 000 FCFA' } };
+    envois.length = 0;
+    expect(await envoi.envoyerAuClient(base, ref, t('2026-11-20T10:00:00'))).toEqual({ statut: 'envoye' }); // STOP de 9 h ouvre la fenêtre
+    expect(envois[0]!.corps).toMatchObject({ type: 'text' });
+    expect(await envoi.envoyerAuClient(base, ref, t('2026-11-25T10:00:00'))).toMatchObject({ statut: 'manuel' });
+    // Le modèle « Envoi du devis » existe (migration 0012) : on le relie à son modèle Meta approuvé.
+    await getDb().update(schema.modeleMessage).set({ metaNom: 'envoi_devis', metaParametres: ['client.nom', 'devis.montant'], metaStatut: 'APPROVED', metaCategorie: 'utility' }).where(eq(schema.modeleMessage.nom, 'Envoi du devis'));
+    expect(await envoi.envoyerAuClient(base, ref, t('2026-11-25T10:00:00'))).toEqual({ statut: 'envoye' });
+    expect(envois.at(-1)!.corps).toMatchObject({ type: 'template', template: { name: 'envoi_devis', components: [{ parameters: [{ text: 'Client' }, { text: '50 000 FCFA' }] }] } });
+    echecMeta = true;
+    expect(await envoi.envoyerAuClient(base, ref, t('2026-11-25T11:00:00'))).toMatchObject({ statut: 'echec' });
+  });
+
+  it('RG-01 : documents partagés par lien vers l’espace de suivi, jamais le fichier', async () => {
+    const c = await conv('+237690100001');
+    await getDb().insert(schema.document).values([
+      { dossierId: c.dossierId!, cle: 'x/devis.pdf', nomOrigine: 'DEV-2026-00001.pdf', mime: 'application/pdf', taille: 10, categorie: 'devis' },
+      { dossierId: c.dossierId!, cle: 'x/piece.pdf', nomOrigine: 'piece-identite.pdf', mime: 'application/pdf', taille: 10, categorie: 'piece_client' },
+    ]);
+    const docs = await envoi.documentsPartageables(c.dossierId!);
+    expect(docs.map((d) => d.libelle)).toEqual(['Devis — DEV-2026-00001.pdf']);
+    expect(docs[0]!.texte).toMatch(/\/suivi\/[\w-]+ \(code demandé : les 4 derniers chiffres/);
+  });
 });

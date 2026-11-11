@@ -6,6 +6,7 @@ import { TitrePage } from '@/components/backoffice/ui';
 import Formulaires from './Formulaires';
 import GrilleTarifaire from './GrilleTarifaire';
 import ParametresAttribution from './ParametresAttribution';
+import ParametresWhatsApp from './ParametresWhatsApp';
 import { CLES_GRILLE, historiqueParametres } from './grille';
 
 export const metadata = { title: 'Paramètres' };
@@ -47,9 +48,16 @@ export default async function PageParametres() {
     lireParametre('jours_sans_action'),
     historiqueParametres(CLES_GRILLE),
   ]);
+  const [accuseOuvert, accuseFerme, reponses, suspensionHeures, plafondMarketing] = await Promise.all([
+    lireParametre('wa_accuse_ouvert'),
+    lireParametre('wa_accuse_ferme'),
+    lireParametre('wa_reponses_rapides'),
+    lireParametre('wa_suspension_heures'),
+    lireParametre('wa_plafond_marketing_semaine'),
+  ]);
   return (
     <>
-      <TitrePage titre="Paramètres" description="Grille tarifaire, documents, métiers suggérés et attribution." />
+      <TitrePage titre="Paramètres" description="Grille tarifaire, documents, métiers suggérés, attribution et réponses automatiques WhatsApp." />
       <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-500 mb-3">Grille tarifaire et documents</h2>
       <GrilleTarifaire
         valeurs={{ commission, commissionsParCategorie, tvaTaux, acompteTauxDefaut, acompteBornes, delaiRechercheJours, garantieJours, validiteDevisJours, mentionsLegales, conditionsDevis, minimumFacturation }}
@@ -61,6 +69,8 @@ export default async function PageParametres() {
       <div className="mt-4">
         <ParametresAttribution heures={heures} delai={delai} jours={jours} />
       </div>
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-500 mt-8 mb-3">WhatsApp</h2>
+      <ParametresWhatsApp valeurs={{ accuseOuvert, accuseFerme, reponses, suspensionHeures, plafondMarketing }} />
     </>
   );
 }

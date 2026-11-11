@@ -289,3 +289,58 @@ export async function entrantPrecedent(conversationId: number, waIdCourant: stri
     .limit(1);
   return m?.horodatage ?? null;
 }
+
+// ─── Envoi par un autre module : devis (COM2-02 RG-05) ────────
+
+export type IssueEnvoiClient = { statut: 'envoye' } | { statut: 'manuel' | 'echec'; raison: string };
+
+/**
+ * Envoie au client un message préparé ailleurs (ex. « Envoi du devis »), l'appelant ayant déjà
+ * vérifié les droits. Dans la fenêtre de 24 h : texte ; sinon le modèle Meta approuvé du même nom
+ * interne s'il existe (paramètres tirés de `ctx`) ; sinon « manuel » (wa.me, comme avant).
+ */
+export async function envoyerAuClient(
+  p: { numero: string; dossierId: number; texte: string; nomModeleInterne?: string; ctx?: Record<string, string | undefined> },
+  a: Acteur,
+  maintenant = new Date(),
+): Promise<IssueEnvoiClient> {
+  if (!envoiActif()) return { statut: 'manuel', raison: 'Envoi WhatsApp depuis le Back-Office non activé.' };
+  const db = getDb();
+  await db.insert(schema.conversation).values({ numero: p.numero, dossierId: p.dossierId }).onConflictDoNothing({ target: schema.conversation.numero });
+  const [c] = await db.select().from(schema.conversation).where(eq(schema.conversation.numero, p.numero));
+  const conv = { id: c!.id, dossierId: c!.dossierId ?? p.dossierId };
+  try {
+    if (fenetreOuverte(c!.dernierEntrantLe, maintenant)) {
+      const waId = await posterMessage(p.numero, { type: 'text', text: { body: p.texte, preview_url: true } });
+      await enregistrerSortant(conv, { waId, texte: p.texte, auteurId: a.id, automatique: false }, maintenant);
+      return { statut: 'envoye' };
+    }
+    const [m] = p.nomModeleInterne
+      ? await db.select().from(schema.modeleMessage).where(and(eq(schema.modeleMessage.nom, p.nomModeleInterne), eq(schema.modeleMessage.metaStatut, 'APPROVED'), sql`${schema.modeleMessage.metaNom} is not null`))
+      : [];
+    if (!m || m.metaCategorie === 'marketing') return { statut: 'manuel', raison: 'Le client n’a pas écrit depuis plus de 24 h et aucun modèle Meta approuvé ne correspond.' };
+    const params = m.metaParametres.map((v) => ({ type: 'text', text: (p.ctx?.[v] ?? '').slice(0, 1000) || '-' }));
+    const waId = await posterMessage(p.numero, { type: 'template', template: { name: m.metaNom!, language: { code: m.metaLangue }, ...(params.length ? { components: [{ type: 'body', parameters: params }] } : {}) } });
+    await enregistrerSortant(conv, { waId, texte: p.texte, auteurId: a.id, automatique: false, modele: m.metaNom, categorie: (m.metaCategorie as 'utility' | null) ?? 'utility' }, maintenant);
+    return { statut: 'envoye' };
+  } catch (e) {
+    console.error('[whatsapp] envoi au client', p.dossierId, e);
+    return { statut: 'echec', raison: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+// ─── Documents (COM2-02 RG-01) ────────────────────────────────
+
+/** Documents consultables sur la page de suivi (jamais le fichier brut par WhatsApp, ADR 0003). */
+export const CATEGORIES_PARTAGEABLES = { devis: 'Devis', facture: 'Facture', recu: 'Reçu de paiement', attestation: 'Attestation' } as const;
+
+export async function documentsPartageables(dossierId: number) {
+  const docs = await getDb()
+    .select({ id: schema.document.id, nom: schema.document.nomOrigine, categorie: schema.document.categorie })
+    .from(schema.document)
+    .where(and(eq(schema.document.dossierId, dossierId), sql`${schema.document.supprimeLe} is null`, sql`${schema.document.categorie} in ('devis', 'facture', 'recu', 'attestation')`))
+    .orderBy(desc(schema.document.id));
+  const [d] = await getDb().select({ jeton: schema.dossier.jetonSuivi }).from(schema.dossier).where(eq(schema.dossier.id, dossierId));
+  const lien = d ? `${env().BETTER_AUTH_URL}/suivi/${d.jeton}` : null;
+  return docs.map((x) => ({ id: x.id, libelle: `${CATEGORIES_PARTAGEABLES[x.categorie as keyof typeof CATEGORIES_PARTAGEABLES]} — ${x.nom}`, texte: `📄 ${CATEGORIES_PARTAGEABLES[x.categorie as keyof typeof CATEGORIES_PARTAGEABLES]} « ${x.nom} » : à consulter et télécharger sur votre espace de suivi sécurisé ${lien} (code demandé : les 4 derniers chiffres de votre numéro WhatsApp).` }));
+}
