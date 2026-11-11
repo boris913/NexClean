@@ -15,7 +15,7 @@ function Retour({ r }: { r: ResultatAction | null }) {
   return r ? r.ok ? r.message ? <Alerte type="succes">{r.message}</Alerte> : null : <Alerte>{r.erreur}</Alerte> : null;
 }
 
-export function ModeAgent({ mode, iaConfiguree }: { mode: Mode; iaConfiguree: boolean }) {
+export function ModeAgent({ mode, iaConfiguree, evaluee }: { mode: Mode; iaConfiguree: boolean; evaluee: boolean }) {
   const [r, setR] = useState<ResultatAction | null>(null);
   const [choix, setChoix] = useState<Mode>(mode);
   const [envoi, setEnvoi] = useState(false);
@@ -24,17 +24,21 @@ export function ModeAgent({ mode, iaConfiguree }: { mode: Mode; iaConfiguree: bo
       <div className="space-y-3">
         <Retour r={r} />
         {!iaConfiguree && <Alerte type="info">La clé de l’API IA n’est pas configurée : l’agent reste inactif quel que soit le mode.</Alerte>}
+        {!evaluee && <p className="text-sm text-ink-600">Les modes « Hors heures » et « Permanent » exigent une évaluation réussie avec le prompt, la base de connaissances et le modèle en vigueur.</p>}
         <fieldset className="grid gap-2 sm:grid-cols-2">
           <legend className="sr-only">Mode de l’agent</legend>
-          {MODES.map((m) => (
-            <label key={m.code} className={`flex cursor-pointer gap-2 rounded-lg border p-3 text-sm ${choix === m.code ? 'border-primary bg-brand-50' : 'border-ink-200'}`}>
-              <input type="radio" name="mode" value={m.code} checked={choix === m.code} onChange={() => setChoix(m.code)} className="mt-0.5 accent-primary" />
+          {MODES.map((m) => {
+            const bloque = !evaluee && (m.code === 'hors_heures' || m.code === 'permanent') && m.code !== mode;
+            return (
+            <label key={m.code} className={`flex gap-2 rounded-lg border p-3 text-sm ${bloque ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'} ${choix === m.code ? 'border-primary bg-brand-50' : 'border-ink-200'}`}>
+              <input type="radio" name="mode" value={m.code} checked={choix === m.code} disabled={bloque} onChange={() => setChoix(m.code)} className="mt-0.5 accent-primary" />
               <span>
                 <span className="block font-semibold text-ink-900">{m.titre}</span>
                 <span className="text-ink-600">{m.aide}</span>
               </span>
             </label>
-          ))}
+            );
+          })}
         </fieldset>
         <button
           type="button"
@@ -103,5 +107,28 @@ export function Fiche({ fiche }: { fiche: { id: number; titre: string; contenu: 
         </div>
       </form>
     </Carte>
+  );
+}
+
+export function LancerEvaluation({ nbCas, enCours, iaConfiguree }: { nbCas: number; enCours: boolean; iaConfiguree: boolean }) {
+  const [r, setR] = useState<ResultatAction | null>(null);
+  const [envoi, setEnvoi] = useState(false);
+  return (
+    <div className="space-y-2">
+      <Retour r={r} />
+      <button
+        type="button"
+        disabled={envoi || enCours || !iaConfiguree}
+        onClick={async () => {
+          if (!window.confirm(`Jouer les ${nbCas} conversations du jeu d’évaluation avec le modèle en vigueur ? Les appels sont facturés par le fournisseur IA (quelques centaines d’appels).`)) return;
+          setEnvoi(true);
+          setR(await actions.lancerEvaluation());
+          setEnvoi(false);
+        }}
+        className={classeBouton('principal')}
+      >
+        {enCours ? 'Évaluation en cours…' : 'Lancer l’évaluation'}
+      </button>
+    </div>
   );
 }

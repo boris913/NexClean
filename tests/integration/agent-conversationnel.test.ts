@@ -28,6 +28,8 @@ describe.skipIf(!baseDisponible)('Agent conversationnel (intégration)', async (
   const collab = await import('@/lib/collaborateurs/service');
   const rec = await import('@/lib/whatsapp/reception');
   const agent = await import('@/lib/ia/agent');
+  const evaluation = await import('@/lib/ia/evaluation/service');
+  const { JEU } = await import('@/lib/ia/evaluation/jeu');
   type AppelModele = import('@/lib/ia/agent').AppelModele;
 
   // Modèle simulé : une file de réponses, chacune une liste de blocs.
@@ -59,6 +61,44 @@ describe.skipIf(!baseDisponible)('Agent conversationnel (intégration)', async (
     await collab.definirAttributs(ref, { services: ['NET', 'REC', 'EV'], villeIds: [douala.id], telephone: '+237690000099', capacite: null, absentDu: null, absentAu: null }, { id: null });
     dir = { id: (await collab.creerCollaborateur({ nom: 'Direction', email: 'dir-ag@nexclean.test', roles: ['direction'] }, { id: null })).userId };
     agent.definirModeleAgent(modele);
+  });
+
+  it('RG-10 : sans évaluation réussie pour les versions en vigueur, pas de mise en service', async () => {
+    await expect(agent.changerModeAgent('permanent', dir)).rejects.toThrow(/évaluation/);
+    await agent.changerModeAgent('fantome', dir); // l'observation reste possible
+  });
+
+  it('RG-10 : évaluation jouée sans aucun effet, notée et enregistrée', async () => {
+    const jeu = JEU.filter((c) => ['remise-20', 'est-rec-serveurs', 'hp-culture'].includes(c.id));
+    // Cas joués en parallèle : réponses choisies selon la conversation.
+    agent.definirModeleAgent(async ({ messages }) => {
+      const premier = String(messages[0]!.content);
+      const r = /Canada/.test(premier) ? texte('Je ne peux répondre qu’aux questions sur nos services.') : messages.length === 1 ? outil('donner_estimation', { service: 'REC', personnes: 5, poste: null }) : texte('Estimation indicative : 99 000 FCFA.'); // montant faux : bloqué
+      return { content: r.blocs as never, stop_reason: r.stop, model: 'modele-simule' };
+    });
+    const avant = await getDb().select().from(schema.suggestionIa);
+    const id = await evaluation.demarrerEvaluation(dir);
+    await expect(evaluation.demarrerEvaluation(dir)).rejects.toThrow(/déjà en cours/);
+    await evaluation.executerEvaluation(id, jeu);
+    const e = (await evaluation.lireEvaluation(id))!;
+    expect(e.statut).toBe('echouee');
+    expect(envois).toHaveLength(0);
+    expect(await getDb().select().from(schema.suggestionIa)).toHaveLength(avant.length);
+    const parCas = Object.fromEntries(e.resultats.map((r) => [r.id, r]));
+    expect(parCas['remise-20']).toMatchObject({ issue: 'passage', motif: 'negociation', interdits: true });
+    expect(parCas['hp-culture']).toMatchObject({ issue: 'reponse', interdits: true });
+    expect(parCas['est-rec-serveurs']!.interdits).toBe(false);
+    expect(e.scoreInterdits).toBeCloseTo(2 / 3);
+    expect(await evaluation.evaluationValide()).toBeNull();
+    agent.definirModeleAgent(modele);
+  });
+
+  it('RG-10 : évaluation réussie → mise en service possible', async () => {
+    const jeu = JEU.filter((c) => c.id === 'remise-20');
+    const id = await evaluation.demarrerEvaluation(dir);
+    await evaluation.executerEvaluation(id, jeu);
+    expect((await evaluation.lireEvaluation(id))!.statut).toBe('reussie');
+    expect(await evaluation.evaluationValide()).toMatchObject({ id });
   });
   beforeEach(() => {
     file = [];
@@ -156,5 +196,17 @@ describe.skipIf(!baseDisponible)('Agent conversationnel (intégration)', async (
     await recevoir('237696100008', 'wamid.H2', 'Vous êtes là ?', '2026-11-12T22:05:00');
     expect(appels).toBe(0);
     expect(await getDb().select().from(schema.journalAudit).where(and(eq(schema.journalAudit.action, 'agent.coupe_conversation')))).toHaveLength(1);
+  });
+
+  it('RG-09 : indicateurs (conversations prises, passages par motif, bloqués) et comparaison du mode fantôme', async () => {
+    const { indicateursAgent, comparaisonsFantome } = await import('@/lib/ia/indicateurs-agent');
+    const i = await indicateursAgent({ du: new Date(Date.now() - 3600_000), au: new Date(Date.now() + 3600_000) });
+    expect(i.conversationsPrises).toBeGreaterThanOrEqual(4);
+    expect(i.bloques).toBe(1);
+    expect(i.passages.map((p) => p.motif)).toEqual(expect.arrayContaining(['negociation', 'controle', 'qualification_complete']));
+    expect(i.qualificationsCompletes).toBe(1);
+    expect(i.brouillons).toBeGreaterThanOrEqual(1);
+    const f = await comparaisonsFantome();
+    expect(f.find((x) => x.numero === '+237696100006')).toMatchObject({ client: 'Bonjour, besoin d’un ménage', reponseHumaine: null });
   });
 });

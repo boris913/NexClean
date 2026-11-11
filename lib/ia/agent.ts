@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { getDb, schema } from '@/lib/db';
 import { env } from '@/lib/env';
 import { journaliser } from '@/lib/audit';
+import { ErreurMetier } from '@/lib/collaborateurs/service';
 import { lireParametre } from '@/lib/parametres';
 import { CONTACT } from '@/lib/constants';
 import { services } from '@/content/services-data';
@@ -95,6 +96,8 @@ interface Etat {
   qualificationComplete: boolean;
   traces: { outil: string; entree: unknown; sortie: unknown }[];
   maintenant: Date;
+  /** Évaluation (RG-10) : outils exécutés sans aucun effet (ni écriture, ni notification, ni envoi). */
+  simulation?: boolean;
 }
 
 const lienSuivi = (jeton: string) => `${env().BETTER_AUTH_URL}/suivi/${jeton}`;
@@ -104,6 +107,7 @@ async function executerOutil(nom: string, entree: Record<string, unknown>, e: Et
   switch (nom) {
     case 'lire_dossier': {
       if (!d) return { dossier: null };
+      if (e.simulation) return { numero: d.numero, type: DOSSIER_TYPES[d.type], statut: STATUTS[d.statut], ville: d.ville, besoin: (d.description ?? '').slice(0, 1000), rendez_vous: [] };
       const rdv = await getDb().select({ type: schema.rendezVous.type, debut: schema.rendezVous.debut }).from(schema.rendezVous).where(and(eq(schema.rendezVous.dossierId, d.id), eq(schema.rendezVous.statut, 'prevu'), gte(schema.rendezVous.debut, e.maintenant)));
       return { numero: d.numero, type: DOSSIER_TYPES[d.type], statut: STATUTS[d.statut], ville: d.ville, besoin: (d.description ?? '').slice(0, 1000), rendez_vous: rdv.map((r) => `${r.type} le ${libelleDebut(r.debut)}`) };
     }
@@ -113,8 +117,9 @@ async function executerOutil(nom: string, entree: Record<string, unknown>, e: Et
       const lieu = rapprocherLieu(q, (await listesLieux()).map((v) => ({ id: v.id, nom: v.nom, quartiers: v.quartiers })));
       const type = q.type ?? d.type;
       const complete = !!(q.besoin && (lieu.villeId || q.ville) && (type !== 'REC' || q.effectif));
-      await getDb().insert(schema.suggestionIa).values({ dossierId: d.id, tache: 'qualification', contenu: { ...q, type, urgence: 'normale', budget: null, besoin: q.besoin ?? '', date_debut: q.date_debut && /^\d{4}-\d{2}-\d{2}$/.test(q.date_debut) ? q.date_debut : null, demandeId: 0, source: 'agent', ...lieu }, versionPrompt: PROMPT_AGENT.version });
       if (complete) e.qualificationComplete = true;
+      if (e.simulation) return { enregistre: true, complete };
+      await getDb().insert(schema.suggestionIa).values({ dossierId: d.id, tache: 'qualification', contenu: { ...q, type, urgence: 'normale', budget: null, besoin: q.besoin ?? '', date_debut: q.date_debut && /^\d{4}-\d{2}-\d{2}$/.test(q.date_debut) ? q.date_debut : null, demandeId: 0, source: 'agent', ...lieu }, versionPrompt: PROMPT_AGENT.version });
       return { enregistre: true, complete };
     }
     case 'donner_estimation': {
@@ -133,12 +138,13 @@ async function executerOutil(nom: string, entree: Record<string, unknown>, e: Et
     case 'proposer_creneau_rappel': {
       if (!d) return { creneaux: [] };
       const horaires = await lireParametre('heures_ouvrees');
-      const occupes = d.referentId
+      const occupes = d.referentId && !e.simulation
         ? (await getDb().select({ debut: schema.rendezVous.debut }).from(schema.rendezVous).innerJoin(schema.dossier, eq(schema.dossier.id, schema.rendezVous.dossierId)).where(and(eq(schema.dossier.referentId, d.referentId), eq(schema.rendezVous.statut, 'prevu'), gte(schema.rendezVous.debut, e.maintenant)))).map((r) => r.debut)
         : [];
       const creneaux = creneauxRappel(e.maintenant, horaires, occupes);
       const choisi = typeof entree.creneau === 'string' ? creneaux.find((c) => c.toISOString() === entree.creneau) : undefined;
       if (!choisi) return { creneaux: creneaux.map((c) => ({ valeur: c.toISOString(), libelle: libelleDebut(c) })) };
+      if (e.simulation) return { reserve: true, creneau: libelleDebut(choisi), mention: 'Le conseiller confirmera ce rappel.' };
       await getDb().insert(schema.rendezVous).values({ dossierId: d.id, type: 'appel', debut: choisi, planifieLe: e.maintenant, dureeMinutes: 30, lieu: 'Rappel demandé sur WhatsApp — à confirmer par le conseiller' });
       await getDb().insert(schema.evenementDossier).values({ dossierId: d.id, auteurId: null, type: 'rendez_vous', commentaire: `Rappel demandé via l’assistant WhatsApp : ${libelleDebut(choisi)} (à confirmer)` });
       await notifier({ destinataires: d.referentId ? [d.referentId] : await idsDirection(), type: 'rendez_vous', dossierId: d.id, titre: `Rappel à confirmer : ${d.numero}`, texte: `Le client a choisi un rappel le ${libelleDebut(choisi)} via l’assistant WhatsApp.`, lien: `/admin/dossiers/${d.id}`, email: true });
@@ -203,6 +209,68 @@ async function passerLaMain(etat: Etat, motif: MotifPassage, resume: string, fan
   });
 }
 
+/** Prompt système : consignes + base de connaissances (en cache), puis contexte du jour. */
+async function construireSysteme(maintenant: Date, dossier: Etat['dossier']): Promise<Anthropic.Beta.BetaTextBlockParam[]> {
+  const o = ouverture(maintenant, await lireParametre('heures_ouvrees'));
+  return [
+    { type: 'text', text: `${PROMPT_AGENT.systeme}\n\n# Base de connaissances\n\n${await texteBase()}`, cache_control: { type: 'ephemeral' } },
+    { type: 'text', text: `Date du jour : ${maintenant.toISOString().slice(0, 10)}. NEXCLEAN est actuellement ${o.ouvert ? 'ouvert' : 'fermé'}.${dossier ? ` Dossier du client : ${dossier.numero} (${DOSSIER_TYPES[dossier.type]}).` : ''}` },
+  ];
+}
+
+/** Décision de l'agent pour un message du client, identique en production et en évaluation. */
+export type Decision =
+  | { issue: 'passage'; motif: MotifPassage; resume: string; modele: string | null }
+  | { issue: 'bloque'; raison: string; texte: string; modele: string }
+  | { issue: 'reponse'; texte: string; modele: string }
+  | { issue: 'silence' };
+
+/**
+ * Déclencheurs (sans IA), puis boucle d'outils (6 tours au plus), puis contrôle avant envoi.
+ * `messages` : la conversation, terminée par le message du client ; complétée en place.
+ */
+async function deciderTour(texteClient: string, messages: MessageParam[], etat: Etat, tache: string): Promise<Decision> {
+  const declencheur = declencheurPassage(texteClient);
+  if (declencheur) return { issue: 'passage', motif: declencheur, resume: `Message du client : « ${texteClient.slice(0, 500)} »`, modele: null };
+  const systeme = await construireSysteme(etat.maintenant, etat.dossier);
+  let texte = '';
+  let modele = env().IA_MODELE_AGENT;
+  const debut = Date.now();
+  for (let tour = 0; tour < 6; tour++) {
+    const r = await appelModele({ systeme, messages, outils: OUTILS });
+    modele = r.model;
+    await journaliserIa({ ctx: { tache, dossierId: etat.simulation ? null : (etat.dossier?.id ?? null) }, modele, version: PROMPT_AGENT.version, debut, issue: r.stop_reason === 'refusal' ? 'refus' : 'ok', usage: r.usage });
+    if (r.stop_reason === 'refusal') {
+      etat.passage = { motif: 'hors_perimetre', resume: `Message du client : « ${texteClient.slice(0, 500)} »` };
+      break;
+    }
+    const appels = r.content.filter((b): b is Anthropic.Beta.BetaToolUseBlock => b.type === 'tool_use');
+    texte = r.content.map((b) => (b.type === 'text' ? b.text : '')).join('').trim();
+    if (!appels.length || r.stop_reason !== 'tool_use') break;
+    messages.push({ role: 'assistant', content: r.content as Anthropic.Beta.BetaContentBlockParam[] });
+    const resultats: Anthropic.Beta.BetaToolResultBlockParam[] = [];
+    for (const a of appels) {
+      let sortie: unknown;
+      try {
+        sortie = await executerOutil(a.name, (a.input ?? {}) as Record<string, unknown>, etat);
+      } catch (err) {
+        sortie = { erreur: err instanceof Error ? err.message : 'erreur' };
+      }
+      etat.traces.push({ outil: a.name, entree: a.input, sortie });
+      resultats.push({ type: 'tool_result', tool_use_id: a.id, content: JSON.stringify(sortie) });
+    }
+    messages.push({ role: 'user', content: resultats });
+    if (etat.passage) break;
+  }
+  if (etat.passage) return { issue: 'passage', ...etat.passage, modele };
+  if (!texte) return { issue: 'silence' };
+  const controle = controlerMessage(texte, etat.autorisations);
+  if (!controle.ok) return { issue: 'bloque', raison: controle.raison, texte, modele };
+  return { issue: 'reponse', texte, modele };
+}
+
+const autorisationsDeBase = (): Autorisations => ({ montants: [], liens: [env().BETTER_AUTH_URL, 'https://nexclean.xyz'], telephones: [CONTACT.phone] });
+
 /**
  * Point d'entrée, appelé à la réception d'un message client. Renvoie vrai si l'agent a pris la
  * conversation en charge (les réponses automatiques de COM2-02 ne partent alors pas).
@@ -223,95 +291,100 @@ export async function agentRepond(conversationId: number, texteClient: string, m
     const etat: Etat = {
       conv: { id: charge.c.id, numero: charge.c.numero, dossierId: charge.c.dossierId },
       dossier: charge.d,
-      autorisations: { montants: [], liens: [env().BETTER_AUTH_URL, 'https://nexclean.xyz'], telephones: [CONTACT.phone] },
+      autorisations: autorisationsDeBase(),
       passage: null,
       qualificationComplete: false,
       traces: [],
       maintenant,
     };
 
-    // RG-05 : plafond quotidien, puis déclencheurs détectés sans appel à l'IA.
+    // RG-05 : plafond quotidien.
     const [{ n }] = (await getDb().select({ n: sql<number>`count(*)::int` }).from(schema.evenementAgent).where(and(eq(schema.evenementAgent.conversationId, conversationId), eq(schema.evenementAgent.type, 'reponse'), gte(schema.evenementAgent.creeLe, new Date(maintenant.getTime() - 24 * 3600_000))))) as [{ n: number }];
     if (n >= PLAFOND_MESSAGES_JOUR) {
       await passerLaMain(etat, 'plafond', `Plafond de ${PLAFOND_MESSAGES_JOUR} messages atteint. Dernier message : « ${texteClient.slice(0, 300)} »`, fantome);
       return !fantome;
     }
-    const declencheur = declencheurPassage(texteClient);
-    if (declencheur) {
-      await passerLaMain(etat, declencheur, `Message du client : « ${texteClient.slice(0, 500)} »`, fantome);
-      return !fantome;
-    }
 
-    // Conversation (20 derniers messages) et contexte.
-    const historique = await getDb().select({ sens: schema.messageWhatsapp.sens, texte: schema.messageWhatsapp.texte, type: schema.messageWhatsapp.type, automatique: schema.messageWhatsapp.automatique }).from(schema.messageWhatsapp).where(eq(schema.messageWhatsapp.conversationId, conversationId)).orderBy(desc(schema.messageWhatsapp.horodatage), desc(schema.messageWhatsapp.id)).limit(20);
+    // Conversation (20 derniers messages).
+    const historique = await getDb().select({ sens: schema.messageWhatsapp.sens, texte: schema.messageWhatsapp.texte, type: schema.messageWhatsapp.type }).from(schema.messageWhatsapp).where(eq(schema.messageWhatsapp.conversationId, conversationId)).orderBy(desc(schema.messageWhatsapp.horodatage), desc(schema.messageWhatsapp.id)).limit(20);
     const messages: MessageParam[] = historique.reverse().map((m) => ({ role: m.sens === 'entrant' ? 'user' : 'assistant', content: m.texte || `[${m.type}]` }));
     while (messages[0]?.role === 'assistant') messages.shift();
     if (!messages.length || messages.at(-1)!.role !== 'user') return false;
     const dejaPresente = (await getDb().select({ id: schema.evenementAgent.id }).from(schema.evenementAgent).where(and(eq(schema.evenementAgent.conversationId, conversationId), eq(schema.evenementAgent.type, fantome ? 'brouillon' : 'reponse'))).limit(1)).length > 0;
-    const o = ouverture(maintenant, await lireParametre('heures_ouvrees'));
-    const systeme: Anthropic.Beta.BetaTextBlockParam[] = [
-      { type: 'text', text: `${PROMPT_AGENT.systeme}\n\n# Base de connaissances\n\n${await texteBase()}`, cache_control: { type: 'ephemeral' } },
-      { type: 'text', text: `Date du jour : ${maintenant.toISOString().slice(0, 10)}. NEXCLEAN est actuellement ${o.ouvert ? 'ouvert' : 'fermé'}.${etat.dossier ? ` Dossier du client : ${etat.dossier.numero} (${DOSSIER_TYPES[etat.dossier.type]}).` : ''}` },
-    ];
 
-    // Boucle d'outils (6 tours au plus).
-    let texte = '';
-    let modele = env().IA_MODELE_AGENT;
-    const debut = Date.now();
-    for (let tour = 0; tour < 6; tour++) {
-      const r = await appelModele({ systeme, messages, outils: OUTILS });
-      modele = r.model;
-      await journaliserIa({ ctx: { tache: 'agent', dossierId: etat.dossier?.id ?? null }, modele, version: PROMPT_AGENT.version, debut, issue: r.stop_reason === 'refusal' ? 'refus' : 'ok', usage: r.usage });
-      if (r.stop_reason === 'refusal') {
-        etat.passage = { motif: 'hors_perimetre', resume: `Message du client : « ${texteClient.slice(0, 500)} »` };
-        break;
-      }
-      const appels = r.content.filter((b): b is Anthropic.Beta.BetaToolUseBlock => b.type === 'tool_use');
-      texte = r.content.map((b) => (b.type === 'text' ? b.text : '')).join('').trim();
-      if (!appels.length || r.stop_reason !== 'tool_use') break;
-      messages.push({ role: 'assistant', content: r.content as Anthropic.Beta.BetaContentBlockParam[] });
-      const resultats: Anthropic.Beta.BetaToolResultBlockParam[] = [];
-      for (const a of appels) {
-        let sortie: unknown;
-        try {
-          sortie = await executerOutil(a.name, (a.input ?? {}) as Record<string, unknown>, etat);
-        } catch (err) {
-          sortie = { erreur: err instanceof Error ? err.message : 'erreur' };
+    const d = await deciderTour(texteClient, messages, etat, 'agent');
+    const dossierId = etat.dossier?.id ?? null;
+    switch (d.issue) {
+      case 'silence':
+        return false; // rien à dire : COM2-02 prend le relais
+      case 'passage':
+        await passerLaMain(etat, d.motif, d.resume, fantome);
+        return !fantome;
+      case 'bloque': // RG-02 : bloqué et main passée.
+        await journal({ conversationId, dossierId, type: 'bloque', motif: d.raison, texte: d.texte, outils: etat.traces, modele: d.modele });
+        await journaliser({ acteurType: 'systeme', action: 'agent.message_bloque', objetType: 'conversation', objetId: conversationId, details: { raison: d.raison } });
+        await passerLaMain(etat, 'controle', `Réponse de l’assistant bloquée (${d.raison}). Dernier message du client : « ${texteClient.slice(0, 300)} »`, fantome);
+        return !fantome;
+      case 'reponse': {
+        const final = avecPresentation(d.texte, !dejaPresente);
+        await journal({ conversationId, dossierId, type: fantome ? 'brouillon' : 'reponse', texte: final, outils: etat.traces, modele: d.modele });
+        if (fantome) return false;
+        if (!(await envoyerParAgent(etat.conv, final, maintenant))) return false;
+        if (etat.qualificationComplete) {
+          await journal({ conversationId, dossierId, type: 'qualification_complete', outils: etat.traces, modele: d.modele });
+          await passerLaMain(etat, 'qualification_complete', `Qualification complète par l’assistant. Dernier message du client : « ${texteClient.slice(0, 300)} »`, false);
         }
-        etat.traces.push({ outil: a.name, entree: a.input, sortie });
-        resultats.push({ type: 'tool_result', tool_use_id: a.id, content: JSON.stringify(sortie) });
+        return true;
       }
-      messages.push({ role: 'user', content: resultats });
-      if (etat.passage) break;
     }
-
-    if (etat.passage) {
-      await passerLaMain(etat, etat.passage.motif, etat.passage.resume, fantome);
-      return !fantome;
-    }
-    if (!texte) return false; // rien à dire : COM2-02 prend le relais
-
-    // RG-02 : contrôle avant envoi ; échec → bloqué et main passée.
-    const controle = controlerMessage(texte, etat.autorisations);
-    if (!controle.ok) {
-      await journal({ conversationId, dossierId: etat.dossier?.id ?? null, type: 'bloque', motif: controle.raison, texte, outils: etat.traces, modele });
-      await journaliser({ acteurType: 'systeme', action: 'agent.message_bloque', objetType: 'conversation', objetId: conversationId, details: { raison: controle.raison } });
-      await passerLaMain(etat, 'controle', `Réponse de l’assistant bloquée (${controle.raison}). Dernier message du client : « ${texteClient.slice(0, 300)} »`, fantome);
-      return !fantome;
-    }
-    const final = avecPresentation(texte, !dejaPresente);
-    await journal({ conversationId, dossierId: etat.dossier?.id ?? null, type: fantome ? 'brouillon' : 'reponse', texte: final, outils: etat.traces, modele });
-    if (fantome) return false;
-    if (!(await envoyerParAgent(etat.conv, final, maintenant))) return false;
-    if (etat.qualificationComplete) {
-      await journal({ conversationId, dossierId: etat.dossier?.id ?? null, type: 'qualification_complete', outils: etat.traces, modele });
-      await passerLaMain(etat, 'qualification_complete', `Qualification complète par l’assistant. Dernier message du client : « ${texteClient.slice(0, 300)} »`, false);
-    }
-    return true;
   } catch (e) {
     console.error('[agent]', conversationId, e);
     return false;
   }
+}
+
+// ─── Évaluation (RG-10) ───────────────────────────────────────
+
+export interface DossierSimule {
+  numero: string;
+  type: keyof typeof DOSSIER_TYPES;
+  statut: keyof typeof STATUTS;
+  ville: string | null;
+  description: string | null;
+}
+export interface TourSimule {
+  client: string;
+  decision: Decision;
+  qualificationComplete: boolean;
+  outils: { outil: string; entree: unknown; sortie: unknown }[];
+}
+
+/**
+ * Joue une conversation scriptée avec le vrai modèle, les vraies règles et les vrais outils, mais
+ * sans aucun effet. S'arrête comme en production : passage, blocage ou qualification complète.
+ */
+export async function simulerConversation(clients: string[], maintenant: Date, dossier: DossierSimule | null): Promise<TourSimule[]> {
+  const tours: TourSimule[] = [];
+  const historique: MessageParam[] = [];
+  for (const client of clients) {
+    const etat: Etat = {
+      conv: { id: 0, numero: '+237600000000', dossierId: null },
+      dossier: dossier ? { ...dossier, id: 0, referentId: null, jeton: 'EVALUATION' } : null,
+      autorisations: autorisationsDeBase(),
+      passage: null,
+      qualificationComplete: false,
+      traces: [],
+      maintenant,
+      simulation: true,
+    };
+    historique.push({ role: 'user', content: client });
+    const decision = await deciderTour(client, [...historique], etat, 'agent_evaluation');
+    tours.push({ client, decision, qualificationComplete: etat.qualificationComplete, outils: etat.traces });
+    if (decision.issue !== 'reponse' || etat.qualificationComplete) break;
+    // Historique comme en production : textes seuls, sans les échanges d'outils.
+    historique.push({ role: 'assistant', content: decision.texte });
+  }
+  return tours;
 }
 
 // ─── Interrupteurs (RG-07, RG-08), journalisés ────────────────
@@ -320,6 +393,11 @@ type Auteur = { id: string; ip?: string | null };
 
 export async function changerModeAgent(mode: 'desactive' | 'fantome' | 'hors_heures' | 'permanent', a: Auteur) {
   const { definirParametre } = await import('@/lib/parametres');
+  // RG-10 : l'agent ne répond seul qu'après une évaluation réussie avec les versions en vigueur.
+  if (mode === 'hors_heures' || mode === 'permanent') {
+    const { evaluationValide } = await import('./evaluation/service');
+    if (!(await evaluationValide())) throw new ErreurMetier('Mise en service impossible : aucune évaluation réussie pour le prompt, la base de connaissances et le modèle en vigueur. Lancez l’évaluation.');
+  }
   await definirParametre('mode_agent', mode, a);
   await journaliser({ acteurType: 'collaborateur', acteurId: a.id, ip: a.ip ?? null, action: 'agent.mode', details: { mode } });
 }

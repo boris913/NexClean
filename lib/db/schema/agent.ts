@@ -1,5 +1,5 @@
 // Agent conversationnel WhatsApp (specs/COM3-02, ADR 0026).
-import { bigserial, boolean, index, integer, jsonb, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import { bigserial, boolean, index, integer, jsonb, pgTable, real, serial, text, timestamp } from 'drizzle-orm/pg-core';
 import { user } from './auth';
 import { dossier } from './dossiers';
 import { conversation } from './whatsapp';
@@ -40,3 +40,27 @@ export const evenementAgent = pgTable(
   },
   (t) => [index('evenement_agent_conversation_idx').on(t.conversationId, t.creeLe), index('evenement_agent_type_idx').on(t.type, t.creeLe)],
 );
+
+/**
+ * RG-10 : passages du jeu d'évaluation. Une évaluation réussie n'autorise la mise en service que
+ * pour les versions (jeu, prompt, base de connaissances, modèle) avec lesquelles elle a été passée.
+ */
+export const evaluationAgent = pgTable('evaluation_agent', {
+  id: serial('id').primaryKey(),
+  /** en_cours | reussie | echouee | erreur */
+  statut: text('statut').notNull().default('en_cours'),
+  versionJeu: text('version_jeu').notNull(),
+  versionPrompt: text('version_prompt').notNull(),
+  versionBase: text('version_base').notNull(),
+  modele: text('modele').notNull(),
+  nbCas: integer('nb_cas').notNull(),
+  scoreInterdits: real('score_interdits'),
+  scoreQualification: real('score_qualification'),
+  scoreComportement: real('score_comportement'),
+  /** Résultat de chaque cas : issue, écarts, réponses de l'agent. */
+  resultats: jsonb('resultats'),
+  erreur: text('erreur'),
+  lanceePar: text('lancee_par').references(() => user.id),
+  lanceeLe: timestamp('lancee_le', { withTimezone: true }).notNull().defaultNow(),
+  termineeLe: timestamp('terminee_le', { withTimezone: true }),
+});
