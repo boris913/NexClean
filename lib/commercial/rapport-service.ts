@@ -13,6 +13,8 @@ import { agenda, rendezVousACloturer } from '@/lib/rendezvous/service';
 import { partiesDouala } from '@/lib/rendezvous/domaine';
 import { demandesEnAttente, totaux, ventiler } from './indicateurs';
 import { lignesCommerciales } from './service';
+import { iaActive } from '@/lib/ia/client';
+import { commentaireRapport } from '@/lib/ia/copilote';
 import { semaineDue, texteRapport, titreRapport, topSources, type ContenuRapport, type SemaineRapport } from './rapport';
 
 const JOUR_MS = 24 * 60 * 60 * 1000;
@@ -77,6 +79,8 @@ export async function genererRapportsHebdomadaires(maintenant = new Date()): Pro
   for (const p of portees) {
     if (deja.has(p.portee)) continue;
     const contenu = await construireRapport(s, p.dem, maintenant);
+    // COM3-01 RG-11 : commentaire IA, en complément des chiffres ; rejeté s'il cite un nombre inventé.
+    if (iaActive()) contenu.commentaire = await commentaireRapport(contenu).catch(() => null);
     const genere = await getDb().transaction(async (tx) => {
       const [r] = await tx.insert(schema.rapportHebdomadaire).values({ semaine: s.semaine, portee: p.portee, contenu, genereLe: maintenant }).onConflictDoNothing().returning({ id: schema.rapportHebdomadaire.id });
       if (!r) return false;

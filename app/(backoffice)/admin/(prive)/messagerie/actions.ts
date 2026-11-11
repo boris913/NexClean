@@ -79,3 +79,15 @@ export async function enregistrerAccord(conversationId: number, numero: string, 
     return 'Accord enregistré.';
   });
 }
+
+/** COM3-01 RG-08 : brouillon de réponse rédigé par l'IA ; il arrive dans la zone de réponse, rien n'est envoyé. */
+export async function brouillonIa(conversationId: number): Promise<{ ok: true; texte: string } | { ok: false; erreur: string }> {
+  try {
+    const { brouillonReponse } = await import('@/lib/ia/copilote');
+    const texte = await brouillonReponse(conversationId, await acteurMessagerie());
+    return texte ? { ok: true, texte } : { ok: false, erreur: 'Suggestion indisponible pour le moment : rédigez la réponse vous-même.' };
+  } catch (e) {
+    if (e instanceof ErreurMetier) return { ok: false, erreur: e.message };
+    throw e;
+  }
+}

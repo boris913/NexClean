@@ -134,6 +134,13 @@
       "when": 1794417670663,
       "tag": "0018_whatsapp_reponses",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1794420425716,
+      "tag": "0019_copilote_ia",
+      "breakpoints": true
     }
   ]
 }

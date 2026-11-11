@@ -23,6 +23,12 @@ const schema = z.object({
   WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
   WHATSAPP_WABA_ID: z.string().optional(),
   WHATSAPP_GRAPH_VERSION: z.string().default('v21.0'),
+  // Copilote IA (COM3-01, ADR 0026). Absente : les fonctions IA sont masquées, tout fonctionne sans.
+  /** Clé de l'API Claude (compte au nom de NEXCLEAN). */
+  IA_API_KEY: z.string().optional(),
+  /** Modèle léger (extraction, classification) et modèle de rédaction (brouillons, résumés, rapport). */
+  IA_MODELE_LEGER: z.string().default('claude-haiku-5-5'),
+  IA_MODELE_REDACTION: z.string().default('claude-sonnet-5-5'),
 });
 
 export type Env = z.infer<typeof schema>;
