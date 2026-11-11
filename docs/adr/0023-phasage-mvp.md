@@ -1,6 +1,6 @@
 # ADR 0023 – Phasage : MVP-1 (réception et attribution), MVP-2 (cycle recrutement complet)
 
-- **Statut :** accepté
+- **Statut :** accepté — complété par les lots COM (ADR 0025–0027, `specs/README.md`) qui avancent le point 7
 - **Date :** 2026-11-02
 - **Décideur :** Ange
 - **Remplace :** le découpage L0–L9 du §9 du brief
