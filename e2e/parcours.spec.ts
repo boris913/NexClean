@@ -247,6 +247,16 @@ test.describe('Back-Office', () => {
     await bo.goto(`/admin/agenda?vue=jour&jour=${demain}`);
     await expect(bo.locator('main')).toContainText(numero);
     await sansDefilementHorizontal(bo);
+
+    // COM1-02 RG-05..08 : tableau de bord commercial et export CSV.
+    await bo.goto('/admin/commercial');
+    await expect(bo.getByRole('heading', { name: 'Commercial' })).toBeVisible();
+    await expect(bo.locator('main')).toContainText('Nouveaux prospects');
+    await expect(bo.locator('main')).toContainText('Bouche-à-oreille');
+    await sansDefilementHorizontal(bo);
+    const exportCsv = await bo.request.get('/admin/commercial/export?periode=mois');
+    expect(exportCsv.status()).toBe(200);
+    expect(await exportCsv.text()).toContain(numero);
     await bo.goto(urlDossier);
 
     // Le client suit son dossier sans compte ; le salaire proposé n'y apparaît pas.

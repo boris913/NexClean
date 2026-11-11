@@ -22,6 +22,8 @@ export const PERMISSIONS = {
   'encaissement.enregistrer': ['referent', 'finances', 'direction'],
   'remboursement.valider': ['direction'],
   'finances.tableau_de_bord': ['finances', 'direction'],
+  /** Tableau de bord commercial (COM1-02 RG-05) : un Référent n'y voit que ses Dossiers. */
+  'commercial.tableau_de_bord': ['referent', 'direction'],
   'export.donnees': ['finances', 'direction'],
   'tarifs.modifier': ['direction', 'admin'],
   'modeles.gerer': ['direction', 'admin'],
