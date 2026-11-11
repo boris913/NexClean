@@ -9,6 +9,12 @@ import { formatHorodatage } from '@/lib/audit-lecture';
 import { Alerte, Carte, EtatVide, TitrePage } from '@/components/backoffice/ui';
 import Rafraichir from '../Rafraichir';
 import Rattacher from './Rattacher';
+import Repondre, { Accord, Automate } from './Repondre';
+import { envoiActif, etatConsentement, modelesMetaApprouves } from '@/lib/whatsapp/envoi';
+import { automateSuspendu, fenetreOuverte, FENETRE_SERVICE_MS } from '@/lib/whatsapp/automate';
+import { listerModeles, contexteDossier } from '@/lib/modeles/service';
+import { rendreMessage } from '@/lib/modeles/variables';
+import { lireParametre } from '@/lib/parametres';
 
 export const dynamic = 'force-dynamic';
 const STATUT = { envoye: 'envoyé', remis: 'remis', lu: 'lu', echec: 'échec' } as const;
@@ -21,6 +27,17 @@ export default async function Conversation({ params }: { params: Promise<{ id: s
   const conv = Number.isInteger(id) ? await lireConversation(id, c) : null;
   if (!conv) notFound();
   const titre = conv.clientNom ?? conv.nomProfil ?? formaterTelephone(conv.numero);
+  const maintenant = new Date();
+  const ouverte = fenetreOuverte(conv.dernierEntrantLe, maintenant);
+  const [modelesMeta, internes, consentement, suspension, ctx] = await Promise.all([
+    modelesMetaApprouves(),
+    // Mêmes modèles que sur la fiche dossier (sans les modèles candidat, proposition, devis…).
+    conv.dossierType ? listerModeles({ actifsSeulement: true, type: conv.dossierType }) : Promise.resolve([]),
+    etatConsentement(conv.numero),
+    lireParametre('wa_suspension_heures'),
+    conv.dossierId ? contexteDossier(conv.dossierId, { id: c.id, nom: c.nom }) : Promise.resolve({}),
+  ]);
+  const suspenduJusqua = conv.automate === 'actif' && automateSuspendu(conv, maintenant, suspension) && conv.dernierSortantLe ? formatHorodatage(new Date(conv.dernierSortantLe.getTime() + suspension * 3600_000)) : null;
   return (
     <div className="space-y-4">
       <Rafraichir />
@@ -70,7 +87,8 @@ export default async function Conversation({ params }: { params: Promise<{ id: s
                 {m.texte && <p className="whitespace-pre-line break-words">{m.texte}</p>}
                 <p className="mt-1 text-right text-[11px] text-ink-500">
                   {formatHorodatage(m.horodatage)}
-                  {ORIGINE[m.origine] && ` · ${ORIGINE[m.origine]}`}
+                  {m.automatique ? ' · réponse automatique' : ORIGINE[m.origine] && ` · ${ORIGINE[m.origine]}`}
+                  {m.modele && ` · modèle ${m.modele}`}
                   {m.statut && ` · ${STATUT[m.statut]}`}
                 </p>
                 {m.erreur && <p className="text-[11px] text-red-700">{m.erreur}</p>}
@@ -79,6 +97,27 @@ export default async function Conversation({ params }: { params: Promise<{ id: s
           );
         })}
       </ol>
+      {!conv.candidatId && (
+        <Carte titre="Répondre" description={envoiActif() ? undefined : 'Envoi depuis le Back-Office pas encore activé : en cas d’échec, un lien ouvre WhatsApp sur votre téléphone avec le message prérempli.'}>
+          <Repondre
+            conversationId={conv.id}
+            fenetreOuverte={ouverte}
+            finFenetre={conv.dernierEntrantLe ? formatHorodatage(new Date(conv.dernierEntrantLe.getTime() + FENETRE_SERVICE_MS)) : null}
+            modelesInternes={internes.map((m) => ({ id: m.id, nom: m.nom, texte: rendreMessage(m.texte, ctx) }))}
+            modelesMeta={modelesMeta.map((m) => ({ id: m.id, nom: m.nom, categorie: m.metaCategorie }))}
+          />
+        </Carte>
+      )}
+      {!conv.candidatId && (
+        <div className="grid gap-4 md:grid-cols-2 md:items-start">
+          <Carte titre="Réponses automatiques">
+            <Automate conversationId={conv.id} mode={conv.automate} suspenduJusqua={suspenduJusqua} />
+          </Carte>
+          <Carte titre="Messages promotionnels">
+            <Accord conversationId={conv.id} numero={conv.numero} etat={{ accordLe: consentement?.accordLe?.toISOString() ?? null, retireLe: consentement?.retireLe?.toISOString() ?? null, formulation: consentement?.formulation ?? null }} />
+          </Carte>
+        </div>
+      )}
       {!conv.candidatId && (
         <Carte titre="Rattacher à un autre dossier" description="Si ce client écrit pour un dossier existant (autre numéro, dossier déjà ouvert…).">
           <Rattacher conversationId={conv.id} />

@@ -129,6 +129,16 @@ async function ouvrirDossier(m: MessageNormalise): Promise<{ dossierId: number; 
 }
 
 export async function appliquerMessage(m: MessageNormalise, maintenant = new Date()): Promise<void> {
+  const conversationId = await enregistrerMessage(m, maintenant);
+  // COM2-02 RG-06..09 : STOP, accusé de réception, réponses par mot-clé (jamais bloquant).
+  if (conversationId && m.sens === 'entrant') {
+    const { entrantPrecedent, repondreAutomatiquement } = await import('./envoi');
+    await repondreAutomatiquement(conversationId, m.texte, await entrantPrecedent(conversationId, m.waId), maintenant);
+  }
+}
+
+/** Enregistre le message et le rattache ; renvoie l'id de conversation, ou null s'il était déjà reçu. */
+async function enregistrerMessage(m: MessageNormalise, maintenant: Date): Promise<number | null> {
   const db = getDb();
   let conv = await conversationDe(m.numero, m.nomProfil);
   const media: MediaWhatsapp | null = m.media ? { ...m.media, cle: null, essais: 0 } : null;
@@ -137,14 +147,14 @@ export async function appliquerMessage(m: MessageNormalise, maintenant = new Dat
     .values({ conversationId: conv.id, waId: m.waId, sens: m.sens, origine: m.origine, type: m.type, texte: m.texte, media, horodatage: m.horodatage, recuLe: maintenant })
     .onConflictDoNothing({ target: schema.messageWhatsapp.waId })
     .returning({ id: schema.messageWhatsapp.id });
-  if (!insere) return; // RG-02 : déjà reçu
+  if (!insere) return null; // RG-02 : déjà reçu
 
   await db
     .update(schema.conversation)
     .set(m.sens === 'entrant' ? { dernierEntrantLe: sql`greatest(${schema.conversation.dernierEntrantLe}, ${m.horodatage.toISOString()}::timestamptz)` } : { dernierSortantLe: sql`greatest(${schema.conversation.dernierSortantLe}, ${m.horodatage.toISOString()}::timestamptz)` })
     .where(eq(schema.conversation.id, conv.id));
 
-  if (conv.candidatId) return;
+  if (conv.candidatId) return conv.id;
   if (!conv.clientId) {
     // Client créé entre-temps par un autre canal (formulaire du site, saisie) : on rattache.
     const [cli] = await db.select({ id: schema.client.id }).from(schema.client).where(eq(schema.client.whatsapp, m.numero));
@@ -173,9 +183,9 @@ export async function appliquerMessage(m: MessageNormalise, maintenant = new Dat
       throw err;
     }
     await db.update(schema.conversation).set({ dossierId: o.dossierId, clientId: o.clientId }).where(eq(schema.conversation.id, conv.id));
-    return; // le message est déjà dans la Demande
+    return conv.id; // le message est déjà dans la Demande
   }
-  if (!dossierId) return;
+  if (!dossierId) return conv.id;
   if (dossierId !== conv.dossierId) {
     await db.update(schema.conversation).set({ dossierId }).where(eq(schema.conversation.id, conv.id));
     conv = { ...conv, dossierId };
@@ -188,6 +198,7 @@ export async function appliquerMessage(m: MessageNormalise, maintenant = new Dat
     horodatage: m.horodatage,
     commentaire: `${m.sens === 'entrant' ? 'WhatsApp reçu' : 'WhatsApp envoyé depuis le téléphone'} : ${extrait(m.texte || m.type)}`,
   });
+  return conv.id;
 }
 
 export async function appliquerStatut(s: StatutNormalise): Promise<void> {

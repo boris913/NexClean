@@ -26,9 +26,11 @@ const colonnes = {
   candidatId: schema.conversation.candidatId,
   dossierId: schema.conversation.dossierId,
   dossierNumero: schema.dossier.numero,
+  dossierType: schema.dossier.type,
   referentId: schema.dossier.referentId,
   dernierEntrantLe: schema.conversation.dernierEntrantLe,
   dernierSortantLe: schema.conversation.dernierSortantLe,
+  automate: schema.conversation.automate,
   nonTraitee: sql<boolean>`coalesce(${conditionNonTraitee}, false)`,
   dernierTexte: sql<string | null>`(select ${schema.messageWhatsapp.texte} from ${schema.messageWhatsapp} where ${schema.messageWhatsapp.conversationId} = ${schema.conversation.id} order by ${schema.messageWhatsapp.horodatage} desc limit 1)`,
 };
@@ -65,7 +67,7 @@ export async function lireConversation(id: number, a: Demandeur) {
     .where(and(eq(schema.conversation.id, id), visibilite(a)));
   if (!c) return null;
   const messages = await getDb()
-    .select({ id: schema.messageWhatsapp.id, sens: schema.messageWhatsapp.sens, origine: schema.messageWhatsapp.origine, type: schema.messageWhatsapp.type, texte: schema.messageWhatsapp.texte, media: schema.messageWhatsapp.media, horodatage: schema.messageWhatsapp.horodatage, statut: schema.messageWhatsapp.statut, erreur: schema.messageWhatsapp.erreur })
+    .select({ id: schema.messageWhatsapp.id, sens: schema.messageWhatsapp.sens, origine: schema.messageWhatsapp.origine, automatique: schema.messageWhatsapp.automatique, modele: schema.messageWhatsapp.modele, type: schema.messageWhatsapp.type, texte: schema.messageWhatsapp.texte, media: schema.messageWhatsapp.media, horodatage: schema.messageWhatsapp.horodatage, statut: schema.messageWhatsapp.statut, erreur: schema.messageWhatsapp.erreur })
     .from(schema.messageWhatsapp)
     .where(eq(schema.messageWhatsapp.conversationId, id))
     .orderBy(asc(schema.messageWhatsapp.horodatage), asc(schema.messageWhatsapp.id));

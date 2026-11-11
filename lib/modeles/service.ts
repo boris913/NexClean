@@ -10,7 +10,7 @@ import { ErreurMetier, type Auteur } from '@/lib/collaborateurs/service';
 import { formaterTelephone } from '@/lib/telephone';
 import { formaterMontant } from '@/lib/devis/domaine';
 import { encaissementsNets } from '@/lib/encaissements/domaine';
-import { estModeleCandidat, estModeleDevis, estModeleProposition, estModeleSolde, variableInconnue, type ContexteMessage } from './variables';
+import { estModeleCandidat, estModeleDevis, estModeleProposition, estModeleSolde, variableInconnue, VARIABLES, type ContexteMessage } from './variables';
 
 export const schemaModele = z.object({
   nom: z.string().trim().min(2, 'Nom trop court').max(80),
@@ -18,11 +18,17 @@ export const schemaModele = z.object({
   langue: z.string().trim().min(2).max(5).default('fr'),
   texte: z.string().trim().min(5, 'Texte trop court').max(2000, '2 000 caractères maximum'),
   actif: z.boolean().default(true),
+  // COM2-02 RG-03 : nom et langue du modèle Meta correspondant, et variables passées en {{1}}, {{2}}…
+  metaNom: z.string().trim().regex(/^[a-z0-9_]{1,512}$/, 'Nom Meta : minuscules, chiffres et « _ » uniquement').nullable().optional().transform((v) => v || null),
+  metaLangue: z.string().trim().min(2).max(10).default('fr'),
+  metaParametres: z.array(z.string()).max(20).default([]),
 });
 
-function verifierTexte(texte: string) {
+function verifierTexte(texte: string, parametres: string[] = []) {
   const v = variableInconnue(texte);
   if (v !== null) throw new ErreurMetier(`Variable inconnue : ${v}`);
+  const p = parametres.find((x) => !(x in VARIABLES));
+  if (p) throw new ErreurMetier(`Paramètre Meta inconnu : ${p}`);
 }
 
 /**
@@ -41,7 +47,7 @@ export async function listerModeles(options: { type?: DossierType; actifsSeuleme
 
 export async function enregistrerModele(id: number | null, entree: z.input<typeof schemaModele>, auteur: Auteur): Promise<number> {
   const m = schemaModele.parse(entree);
-  verifierTexte(m.texte);
+  verifierTexte(m.texte, m.metaParametres);
   return getDb().transaction(async (tx) => {
     const [doublon] = await tx.select({ id: schema.modeleMessage.id }).from(schema.modeleMessage).where(eq(schema.modeleMessage.nom, m.nom));
     if (doublon && doublon.id !== id) throw new ErreurMetier('Un modèle porte déjà ce nom.');

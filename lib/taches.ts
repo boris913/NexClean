@@ -17,6 +17,7 @@ import { relancerSoldesImpayes } from '@/lib/encaissements/regularisation';
 import { rappelerRendezVous } from '@/lib/rendezvous/service';
 import { genererRapportsHebdomadaires } from '@/lib/commercial/rapport-service';
 import { alerterConversationsNonTraitees, telechargerMediasEnAttente, traiterWebhooksEnAttente } from '@/lib/whatsapp/reception';
+import { synchroniserModeles, synchroniserQualite } from '@/lib/whatsapp/envoi';
 
 const JOUR_MS = 24 * 60 * 60 * 1000;
 
@@ -113,7 +114,14 @@ export async function executerTaches(maintenant = new Date()) {
   // COM1-02 RG-09 : rapport commercial de la semaine écoulée, dès le lundi 7 h (une seule fois).
   const rapports = await genererRapportsHebdomadaires(maintenant);
   // COM2-01 : reprise des webhooks WhatsApp et des médias en échec, conversations sans réponse.
-  const whatsapp = { webhooks: await traiterWebhooksEnAttente(200, maintenant), medias: await telechargerMediasEnAttente(50), nonTraitees: await alerterConversationsNonTraitees(maintenant) };
+  const whatsapp = { webhooks: await traiterWebhooksEnAttente(200, maintenant), medias: await telechargerMediasEnAttente(50), nonTraitees: await alerterConversationsNonTraitees(maintenant), modeles: 0, qualite: null as string | null };
+  // COM2-02 RG-03, RG-10 : statut des modèles Meta et note de qualité du numéro (un échec côté Meta n'arrête pas les tâches).
+  try {
+    whatsapp.qualite = await synchroniserQualite(maintenant);
+    if (maintenant.getUTCMinutes() < 15) whatsapp.modeles = await synchroniserModeles(maintenant); // une fois par heure
+  } catch (e) {
+    console.error('[whatsapp] synchronisation Meta', e);
+  }
   const emails = await envoyerNotificationsEnAttente(200);
   return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, devisExpires, soldesRelances, rendezVous, rapports, whatsapp, emails };
 }

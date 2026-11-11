@@ -19,6 +19,9 @@ const schema = z.object({
   WHATSAPP_VERIFY_TOKEN: z.string().min(16).optional(),
   /** Jeton d'accès (utilisateur système) : téléchargement des médias, puis envoi (COM2-02). */
   WHATSAPP_ACCESS_TOKEN: z.string().optional(),
+  /** Identifiant du numéro (envoi des messages, COM2-02) et du compte WhatsApp Business (synchronisation des modèles). */
+  WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
+  WHATSAPP_WABA_ID: z.string().optional(),
   WHATSAPP_GRAPH_VERSION: z.string().default('v21.0'),
 });
 
