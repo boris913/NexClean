@@ -76,6 +76,8 @@ export const dossier = pgTable(
     description: text('description'),
     /** Jeton de la page de suivi (≥ 128 bits), RG-24. */
     jetonSuivi: text('jeton_suivi').notNull().unique(),
+    /** COM3-02 RG-07 : agent conversationnel coupé pour ce Dossier. */
+    agentCoupe: boolean('agent_coupe').notNull().default(false),
     /** Date de passage à un statut final (expiration du lien de suivi, RG-29). */
     fermeLe: timestamp('ferme_le', { withTimezone: true }),
     creeLe: timestamp('cree_le', { withTimezone: true }).notNull().defaultNow(),

@@ -26,6 +26,8 @@ export const PERMISSIONS = {
   'commercial.tableau_de_bord': ['referent', 'direction'],
   /** Messagerie WhatsApp (COM2-01 RG-10) : toutes les conversations. Un Référent voit celles de ses Dossiers. */
   'messagerie.voir_tout': ['direction'],
+  /** COM3-02 : mode de l'agent conversationnel, base de connaissances, indicateurs de l'agent. */
+  'agent.gerer': ['direction'],
   'export.donnees': ['finances', 'direction'],
   'tarifs.modifier': ['direction', 'admin'],
   'modeles.gerer': ['direction', 'admin'],

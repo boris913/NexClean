@@ -91,3 +91,18 @@ export async function brouillonIa(conversationId: number): Promise<{ ok: true; t
     throw e;
   }
 }
+
+/** COM3-02 RG-07 : interrupteurs de l'agent, par conversation et par Dossier (journalisés). */
+export async function interrupteurAgent(conversationId: number, cible: 'conversation' | 'dossier', actif: boolean) {
+  return executer(async () => {
+    const a = await acteurMessagerie();
+    const lec = await import('@/lib/whatsapp/lecture');
+    const conv = await lec.lireConversation(conversationId, a);
+    if (!conv) throw new ErreurMetier('Accès refusé.');
+    const agent = await import('@/lib/ia/agent');
+    if (cible === 'conversation') await agent.changerAgentConversation(conversationId, actif ? 'actif' : 'coupe', a);
+    else if (conv.dossierId) await agent.changerAgentDossier(conv.dossierId, !actif, a);
+    revalidatePath(`/admin/messagerie/${conversationId}`);
+    return actif ? 'Assistant virtuel réactivé.' : 'Assistant virtuel coupé.';
+  });
+}

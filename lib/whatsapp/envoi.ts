@@ -170,8 +170,9 @@ async function verifierMarketing(numero: string, conversationId: number, mainten
 
 // ─── Réponses automatiques (RG-06..09), appelées à la réception ──
 
-async function envoyerAutomatique(conv: { id: number; numero: string; dossierId: number | null }, texte: string, maintenant: Date): Promise<boolean> {
-  if (!envoiActif() || contientPrix(texte)) return false;
+async function envoyerAutomatique(conv: { id: number; numero: string; dossierId: number | null }, texte: string, maintenant: Date, options: { autoriserMontants?: boolean } = {}): Promise<boolean> {
+  // Les réponses automatiques n'annoncent jamais de prix ; l'agent (COM3-02) contrôle les siens lui-même.
+  if (!envoiActif() || (!options.autoriserMontants && contientPrix(texte))) return false;
   try {
     const waId = await posterMessage(conv.numero, { type: 'text', text: { body: texte, preview_url: true } });
     await enregistrerSortant(conv, { waId, texte, auteurId: null, automatique: true }, maintenant);
@@ -343,4 +344,9 @@ export async function documentsPartageables(dossierId: number) {
   const [d] = await getDb().select({ jeton: schema.dossier.jetonSuivi }).from(schema.dossier).where(eq(schema.dossier.id, dossierId));
   const lien = d ? `${env().BETTER_AUTH_URL}/suivi/${d.jeton}` : null;
   return docs.map((x) => ({ id: x.id, libelle: `${CATEGORIES_PARTAGEABLES[x.categorie as keyof typeof CATEGORIES_PARTAGEABLES]} — ${x.nom}`, texte: `📄 ${CATEGORIES_PARTAGEABLES[x.categorie as keyof typeof CATEGORIES_PARTAGEABLES]} « ${x.nom} » : à consulter et télécharger sur votre espace de suivi sécurisé ${lien} (code demandé : les 4 derniers chiffres de votre numéro WhatsApp).` }));
+}
+
+/** COM3-02 : message de l'agent conversationnel (réponse automatique tracée comme telle). */
+export async function envoyerParAgent(conv: { id: number; numero: string; dossierId: number | null }, texte: string, maintenant = new Date()): Promise<boolean> {
+  return envoyerAutomatique(conv, texte, maintenant, { autoriserMontants: true });
 }

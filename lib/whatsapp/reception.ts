@@ -132,6 +132,10 @@ export async function appliquerMessage(m: MessageNormalise, maintenant = new Dat
   const conversationId = await enregistrerMessage(m, maintenant);
   // COM2-02 RG-06..09 : STOP, accusé de réception, réponses par mot-clé (jamais bloquant).
   if (conversationId && m.sens === 'entrant') {
+    // COM3-02 : l'agent conversationnel passe en premier ; s'il ne prend pas la conversation (mode,
+    // interrupteurs, STOP, réponse humaine récente…), les réponses automatiques de COM2-02 s'appliquent.
+    const { agentRepond } = await import('@/lib/ia/agent');
+    if (await agentRepond(conversationId, m.texte, maintenant)) return;
     const { entrantPrecedent, repondreAutomatiquement } = await import('./envoi');
     await repondreAutomatiquement(conversationId, m.texte, await entrantPrecedent(conversationId, m.waId), maintenant);
   }

@@ -183,3 +183,33 @@ export function Accord({ conversationId, numero, etat }: { conversationId: numbe
     </div>
   );
 }
+
+export function AssistantVirtuel({ conversationId, etat, dossierCoupe, aDossier }: { conversationId: number; etat: 'actif' | 'coupe' | 'passe'; dossierCoupe: boolean; aDossier: boolean }) {
+  const [r, setR] = useState<ResultatAction | null>(null);
+  const [envoi, setEnvoi] = useState(false);
+  const agir = async (cible: 'conversation' | 'dossier', actif: boolean) => {
+    setEnvoi(true);
+    setR(await actions.interrupteurAgent(conversationId, cible, actif));
+    setEnvoi(false);
+  };
+  return (
+    <div className="space-y-2">
+      <Retour r={r} />
+      <p className="text-sm text-ink-700">
+        {dossierCoupe ? 'Coupé pour tout le dossier.' : etat === 'actif' ? 'Peut répondre sur cette conversation (selon le mode choisi par la Direction).' : etat === 'passe' ? 'A passé la main à un conseiller.' : 'Coupé pour cette conversation.'}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {etat === 'actif' ? (
+          <button type="button" disabled={envoi} onClick={() => agir('conversation', false)} className={classeBouton('secondaire')}>Couper sur cette conversation</button>
+        ) : (
+          <button type="button" disabled={envoi} onClick={() => agir('conversation', true)} className={classeBouton('secondaire')}>Rendre la conversation à l’assistant</button>
+        )}
+        {aDossier && (
+          <button type="button" disabled={envoi} onClick={() => agir('dossier', dossierCoupe)} className={classeBouton('fantome')}>
+            {dossierCoupe ? 'Réactiver pour le dossier' : 'Couper pour tout le dossier'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}

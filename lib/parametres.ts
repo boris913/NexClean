@@ -111,6 +111,8 @@ const DEFINITIONS = {
   wa_suspension_heures: { defaut: 12, schema: z.number().int('Nombre entier').min(0).max(168) },
   /** RG-10 : modèles marketing par client et par semaine. */
   wa_plafond_marketing_semaine: { defaut: 1, schema: z.number().int('Nombre entier').min(0).max(14) },
+  /** COM3-02 RG-08 : mise en service progressive de l'agent (décision Direction, journalisée). */
+  mode_agent: { defaut: 'desactive' as 'desactive' | 'fantome' | 'hors_heures' | 'permanent', schema: z.enum(['desactive', 'fantome', 'hors_heures', 'permanent']) },
   metiers: {
     defaut: METIERS_PAR_DEFAUT,
     schema: z.array(z.string().trim().min(2).max(80)).max(200).transform((l) => [...new Set(l)]),
