@@ -1,6 +1,6 @@
 // COM1-02 RG-05..08 : tableau de bord commercial. Période et ventilation dans l'URL.
 import Link from 'next/link';
-import { AlertTriangle, Download } from 'lucide-react';
+import { AlertTriangle, Download, FileBarChart } from 'lucide-react';
 import { exigerCollaborateur } from '@/lib/authz/session';
 import { peut } from '@/lib/authz/permissions';
 import { bornesPeriode, PERIODES, type Periode } from '@/lib/dossiers/compteurs';
@@ -66,6 +66,9 @@ export default async function Commercial({ searchParams }: { searchParams: Promi
   return (
     <div className="space-y-5">
       <TitrePage titre="Commercial" description={voitTout(c) ? 'Prospects, devis, contrats et chiffre d’affaires.' : 'Vos dossiers : prospects, devis, contrats et chiffre d’affaires.'}>
+        <Link href="/admin/commercial/rapports" className={classeBouton('secondaire')}>
+          <FileBarChart aria-hidden className="h-4 w-4" /> Rapports hebdomadaires
+        </Link>
         {peut(c.roles, 'export.donnees') && (
           <a href={`/admin/commercial/export?periode=${periode}`} className={classeBouton('secondaire')}>
             <Download aria-hidden className="h-4 w-4" /> Export CSV
