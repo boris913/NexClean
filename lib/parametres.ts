@@ -112,6 +112,10 @@ const DEFINITIONS = {
   /** RG-10 : modèles marketing par client et par semaine. */
   wa_plafond_marketing_semaine: { defaut: 1, schema: z.number().int('Nombre entier').min(0).max(14) },
   /** COM3-02 RG-08 : mise en service progressive de l'agent (décision Direction, journalisée). */
+  /** COM4-01 RG-02, RG-10 : purge des pistes non converties, plafond de contacts par jour, délai de relance. */
+  veille_purge_jours: { defaut: 90, schema: z.number().int('Nombre entier').min(7).max(730) },
+  veille_plafond_contacts_jour: { defaut: 30, schema: z.number().int('Nombre entier').min(1).max(500) },
+  veille_delai_relance_jours: { defaut: 5, schema: z.number().int('Nombre entier').min(1).max(60) },
   mode_agent: { defaut: 'desactive' as 'desactive' | 'fantome' | 'hors_heures' | 'permanent', schema: z.enum(['desactive', 'fantome', 'hors_heures', 'permanent']) },
   metiers: {
     defaut: METIERS_PAR_DEFAUT,
