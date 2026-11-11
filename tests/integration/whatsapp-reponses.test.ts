@@ -12,13 +12,14 @@ vi.spyOn(console, 'error').mockImplementation(() => {});
 // Meta simulée : chaque envoi reçoit un wamid ; les corps envoyés sont conservés.
 const envois: { url: string; corps: Record<string, unknown> }[] = [];
 let echecMeta = false;
+let compteur = 0;
 vi.stubGlobal(
   'fetch',
   vi.fn(async (url: string, init?: { body?: string }) => {
     if (echecMeta) return new Response(JSON.stringify({ error: { code: 131047, message: 'Re-engagement message' } }), { status: 400 });
     const corps = init?.body ? JSON.parse(init.body) : {};
     envois.push({ url: String(url), corps });
-    return new Response(JSON.stringify({ messages: [{ id: `wamid.OUT${envois.length}` }] }), { status: 200 });
+    return new Response(JSON.stringify({ messages: [{ id: `wamid.OUT${++compteur}` }] }), { status: 200 });
   }),
 );
 
@@ -71,7 +72,7 @@ describe.skipIf(!baseDisponible)('WhatsApp, réponses (intégration)', async () 
   });
 
   it('RG-06 : la nuit, variante « nous vous répondons dès demain à 07:00 »', async () => {
-    await recevoir(texte('237690100002', 'wamid.R2', 'Bonsoir', '2026-11-12T22:30:00'), t('2026-11-12T22:30:10'));
+    await recevoir(texte('237690100002', 'wamid.R2', 'Bonsoir, un ménage à Bonapriso', '2026-11-12T22:30:00'), t('2026-11-12T22:30:10'));
     const auto = await automatiques((await conv('+237690100002')).id);
     expect(auto[0]!.texte).toContain('dès demain à 07:00');
   });

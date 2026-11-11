@@ -10,7 +10,8 @@ import { peut } from '@/lib/authz/permissions';
 import { peutTraiter, type Demandeur } from '@/lib/dossiers/acces';
 import { lireParametre } from '@/lib/parametres';
 import { idsDirection, notifier } from '@/lib/notifications';
-import { lireCouverture } from '@/lib/geo/couverture';
+// Lecture directe du référentiel (pas lib/geo/couverture : next/cache n'existe pas dans la tâche planifiée).
+import { couverturePublique } from '@/lib/geo/service';
 import { services } from '@/content/services-data';
 import { contexteDossier } from '@/lib/modeles/service';
 import { rendreMessage, type Variable } from '@/lib/modeles/variables';
@@ -182,7 +183,8 @@ async function envoyerAutomatique(conv: { id: number; numero: string; dossierId:
 }
 
 async function variablesAutomatiques(dossierId: number | null, maintenant: Date) {
-  const [horaires, couverture] = await Promise.all([lireParametre('heures_ouvrees'), lireCouverture()]);
+  const [horaires, villes] = await Promise.all([lireParametre('heures_ouvrees'), couverturePublique().then((c) => c.villes).catch(() => [] as string[])]);
+  const zones = villes.length > 1 ? `${villes.slice(0, -1).join(', ')} et ${villes.at(-1)}` : (villes[0] ?? 'Douala et Yaoundé');
   const [d] = dossierId ? await getDb().select({ numero: schema.dossier.numero, jeton: schema.dossier.jetonSuivi }).from(schema.dossier).where(eq(schema.dossier.id, dossierId)) : [];
   const o = ouverture(maintenant, horaires);
   return {
@@ -193,7 +195,7 @@ async function variablesAutomatiques(dossierId: number | null, maintenant: Date)
       suivi: d ? `${env().BETTER_AUTH_URL}/suivi/${d.jeton}` : null,
       horaires: libelleHoraires(horaires),
       ouverture: libelleOuverture(o.prochaine, maintenant),
-      zones: couverture.libelle,
+      zones,
       services: services.map((s) => s.name).join(', '),
     },
   };
