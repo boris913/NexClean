@@ -12,6 +12,14 @@ const schema = z.object({
   RESEND_API_KEY: z.string().optional(),
   /** Expéditeur des e-mails du Back-Office. */
   BACKOFFICE_FROM_EMAIL: z.string().default('NexClean <no-reply@nexclean.xyz>'),
+  // WhatsApp Cloud API (COM2-01, ADR 0025). Absentes : le webhook répond 404, rien n'est appelé.
+  /** Secret de l'application Meta : vérifie la signature X-Hub-Signature-256 des webhooks. */
+  WHATSAPP_APP_SECRET: z.string().min(16).optional(),
+  /** Jeton choisi par nous, saisi dans la console Meta pour le défi de vérification du webhook. */
+  WHATSAPP_VERIFY_TOKEN: z.string().min(16).optional(),
+  /** Jeton d'accès (utilisateur système) : téléchargement des médias, puis envoi (COM2-02). */
+  WHATSAPP_ACCESS_TOKEN: z.string().optional(),
+  WHATSAPP_GRAPH_VERSION: z.string().default('v21.0'),
 });
 
 export type Env = z.infer<typeof schema>;

@@ -27,7 +27,7 @@ ADR de référence : 0005, 0006, 0025. Étape A : **réception seule**. Stéphan
 
 **RG-05** Entité **Conversation** : un numéro WhatsApp (E.164) ↔ un Client (identifié par son numéro, CONTEXT.md). Premier message d'un numéro inconnu → création du Client (nom = nom de profil WhatsApp, à corriger).
 
-**RG-06** Premier message d'une conversation sans Dossier ouvert → création d'une **Demande** `canal = whatsapp`, `source` déduite de la référence du texte prérempli (COM1-01 RG-05) sinon `whatsapp_direct`, puis d'un Dossier de type « à qualifier » et attribution (MVP1-05). Messages suivants du même client → ajoutés à la conversation ; s'il a un Dossier ouvert, ils apparaissent dans son historique, sans nouvelle Demande.
+**RG-06** Premier message d'une conversation sans Dossier ouvert → création d'une **Demande** `canal = whatsapp`, `source` déduite de la référence du texte prérempli (COM1-01 RG-05) sinon `whatsapp_direct`, puis d'un Dossier et attribution (MVP1-05). Le Dossier reste en phase *Nouveau* (« à qualifier ») ; son **type** est déduit des mots du message (« ménagère » → Recrutement, « gazon » → Espaces verts, Nettoyage par défaut) et la **ville / le quartier** cités sont reconnus dans le référentiel, pour que l'attribution automatique fonctionne. Le référent corrige le type si besoin (RG-07). *Pas de type « à qualifier » : aucun référent ne le traiterait (attribution impossible) et le préfixe du numéro ne change jamais.* Messages suivants du même client → ajoutés à la conversation ; s'il a un Dossier ouvert, ils apparaissent dans son historique, sans nouvelle Demande.
 
 **RG-07** Le référent peut **rattacher** une conversation à un autre Dossier ou **requalifier** le type du Dossier ; journalisé.
 
