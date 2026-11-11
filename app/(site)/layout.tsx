@@ -3,6 +3,7 @@ import Footer from '@/components/navigation/Footer';
 import WhatsAppButton from '@/components/ui/WhatsAppButton';
 import MobileCTABar from '@/components/ui/MobileCTABar';
 import Analytics from '@/components/analytics/Analytics';
+import SuiviSource from '@/components/analytics/SuiviSource';
 import JsonLd from '@/components/ui/JsonLd';
 import { localBusinessSchema, servicesSchema, websiteSchema } from '@/lib/seo';
 import { lireCouverture } from '@/lib/geo/couverture';
@@ -27,6 +28,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <WhatsAppButton />
       <MobileCTABar />
       <Analytics />
+      <SuiviSource />
       <JsonLd data={localBusinessSchema(couverture)} />
       <JsonLd data={servicesSchema(couverture.villes)} />
       <JsonLd data={websiteSchema(couverture.libelle)} />

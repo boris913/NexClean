@@ -7,6 +7,7 @@ import type { LignePosteSaisie } from '@/lib/dossiers/service';
 import ChampsLieu, { type ValeurLieu } from '@/components/backoffice/ChampsLieu';
 import EditeurPostes, { ligneVide } from '@/components/backoffice/EditeurPostes';
 import { Alerte, Carte, classeBouton, classeChamp, classeLibelle } from '@/components/backoffice/ui';
+import { SOURCES, SOURCE_CODES, type Source } from '@/lib/acquisition/source';
 import { saisirDemande } from '../actions';
 
 const CANAUX = { whatsapp: 'WhatsApp', telephone: 'Téléphone', email: 'E-mail', visite: 'Visite', autre: 'Autre' } as const;
@@ -34,6 +35,7 @@ export default function FormulaireSaisie({ listes }: { listes: ListesLieux }) {
     const r = await saisirDemande({
       type,
       canal,
+      source: String(f.get('source')) as Source,
       formulaire: 'saisie',
       client,
       ...lieu,
@@ -64,6 +66,13 @@ export default function FormulaireSaisie({ listes }: { listes: ListesLieux }) {
             <label htmlFor="canal" className={classeLibelle}>Reçue par</label>
             <select id="canal" name="canal" defaultValue="whatsapp" className={classeChamp}>
               {Object.entries(CANAUX).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label htmlFor="source" className={classeLibelle}>Comment nous a-t-il connus ?</label>
+            <select id="source" name="source" required defaultValue="" className={classeChamp}>
+              <option value="" disabled>Choisir…</option>
+              {SOURCE_CODES.map((s) => <option key={s} value={s}>{SOURCES[s]}</option>)}
             </select>
           </div>
         </div>

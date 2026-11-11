@@ -190,6 +190,7 @@ export default async function Accueil({ searchParams }: { searchParams: Promise<
               <Tableau titre="Par phase" lignes={dir.parPhase} libelle={(l) => PHASES[l.cle as Phase]} />
               <Tableau titre="Par type" lignes={dir.parType} libelle={(l) => DOSSIER_TYPES[l.cle as DossierType]} />
               <Tableau titre="Par ville" lignes={dir.parVille} />
+              <Tableau titre="Par source" lignes={dir.parSource} />
               <Tableau titre="Par référent" lignes={dir.parReferent} />
             </div>
           </section>

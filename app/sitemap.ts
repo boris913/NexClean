@@ -4,9 +4,11 @@ import { getAllPostSlugs } from '@/lib/blog';
 import { servicePages } from '@/content/services-data';
 import { products } from '@/content/products-data';
 import { openJobs } from '@/content/jobs-data';
+import { lireCouverture } from '@/lib/geo/couverture';
+import { cheminVille } from '@/lib/geo/slug';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const slugs = await getAllPostSlugs();
+  const [slugs, { villes }] = await Promise.all([getAllPostSlugs(), lireCouverture()]);
   const now = new Date();
 
   const page = (
@@ -24,6 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page('', 1.0, 'weekly'),
     page('/services', 0.9),
     ...servicePages.map((s) => page(`/services/${s.slug}`, 0.9)),
+    ...villes.map((v) => page(cheminVille(v), 0.9)),
     page('/espaces-verts', 0.9),
     page('/particuliers', 0.8),
     page('/professionnels', 0.8),
