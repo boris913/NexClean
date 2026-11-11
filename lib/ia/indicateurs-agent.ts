@@ -73,8 +73,8 @@ export async function comparaisonsFantome(limite = 20) {
       creeLe: e.creeLe,
       brouillon: e.texte,
       motif: e.motif,
-      client: sql<string | null>`(select m.texte from message_whatsapp m where m.conversation_id = ${e.conversationId} and m.sens = 'entrant' and m.horodatage <= ${e.creeLe} order by m.horodatage desc limit 1)`,
-      reponseHumaine: sql<string | null>`(select m.texte from message_whatsapp m where m.conversation_id = ${e.conversationId} and m.sens = 'sortant' and m.automatique = false and m.horodatage >= ${e.creeLe} order by m.horodatage limit 1)`,
+      client: sql<string | null>`(select m.texte from message_whatsapp m where m.conversation_id = ${e.conversationId} and m.sens = 'entrant' and m.recu_le <= ${e.creeLe} order by m.recu_le desc, m.id desc limit 1)`,
+      reponseHumaine: sql<string | null>`(select m.texte from message_whatsapp m where m.conversation_id = ${e.conversationId} and m.sens = 'sortant' and m.automatique = false and m.recu_le >= ${e.creeLe} order by m.recu_le, m.id limit 1)`,
     })
     .from(e)
     .innerJoin(schema.conversation, eq(schema.conversation.id, e.conversationId))
