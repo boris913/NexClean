@@ -61,6 +61,8 @@ describe.skipIf(!baseDisponible)('WhatsApp, réception (intégration)', async ()
     expect(c.clientId).not.toBeNull();
     const [d] = await getDb().select().from(schema.dossier).where(eq(schema.dossier.id, c.dossierId!));
     expect(d).toMatchObject({ type: 'REC', referentId, statut: 'attribuee' });
+    const postes = await getDb().select().from(schema.lignePoste).where(eq(schema.lignePoste.dossierId, d!.id));
+    expect(postes.map((p) => [p.intitule, p.nombre])).toEqual([['Ménagère', 1]]);
     const [dem] = await getDb().select().from(schema.demande).where(eq(schema.demande.dossierId, d!.id));
     expect(dem).toMatchObject({ canal: 'whatsapp', source: 'facebook' });
     const [cli] = await getDb().select().from(schema.client).where(eq(schema.client.id, c.clientId!));

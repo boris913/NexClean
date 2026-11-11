@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { signatureValide, signer } from '@/lib/whatsapp/signature';
 import { lireWebhook, texteDuMessage } from '@/lib/whatsapp/evenements';
-import { lieuProbable, typeProbable } from '@/lib/whatsapp/qualification';
+import { lieuProbable, posteProbable, typeProbable } from '@/lib/whatsapp/qualification';
 
 const SECRET = 'secret-application-meta-test';
 
@@ -77,6 +77,12 @@ describe('pré-qualification (RG-06)', () => {
     expect(typeProbable('Grand ménage de fin de chantier')).toBe('NET');
     expect(typeProbable('Bonsoir')).toBe('NET');
     expect(typeProbable('Je veux faire une réclamation sur la prestation')).toBe('RCL');
+  });
+
+  it('premier poste d’un dossier de recrutement', () => {
+    expect(posteProbable('je cherche une ménagère à Bonamoussadi')).toBe('Ménagère');
+    expect(posteProbable('Il me faut une aide ménagère')).toBe('Aide ménagère');
+    expect(posteProbable('je recrute du personnel')).toBe('Poste à préciser');
   });
 
   const lieux = [

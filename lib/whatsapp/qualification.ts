@@ -28,6 +28,31 @@ export function typeProbable(texte: string): DossierType {
   return 'NET';
 }
 
+/** Intitulés reconnus pour un premier poste de recrutement (un Dossier REC exige au moins un poste). */
+const POSTES: [string, string][] = [
+  ['aide menagere', 'Aide ménagère'],
+  ['menagere', 'Ménagère'],
+  ['menager', 'Agent ménager'],
+  ['nounou', 'Nounou'],
+  ['baby sitter', 'Baby-sitter'],
+  ['gardien', 'Gardien'],
+  ['vigile', 'Vigile'],
+  ['agent de securite', 'Agent de sécurité'],
+  ['chauffeur', 'Chauffeur'],
+  ['cuisiniere', 'Cuisinière'],
+  ['cuisinier', 'Cuisinier'],
+  ['serveuse', 'Serveuse'],
+  ['serveur', 'Serveur'],
+  ['caissiere', 'Caissière'],
+  ['receptionniste', 'Réceptionniste'],
+];
+
+/** Intitulé du poste cité, sinon « Poste à préciser » (le référent complète). */
+export function posteProbable(texte: string): string {
+  const t = normaliser(texte);
+  return POSTES.find(([m]) => t.includes(` ${m}`))?.[1] ?? 'Poste à préciser';
+}
+
 export interface ListeLieux {
   id: number;
   nom: string;

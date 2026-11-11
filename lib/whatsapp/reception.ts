@@ -14,7 +14,7 @@ import { ajouterHeuresOuvrees } from '@/lib/dossiers/heures-ouvrees';
 import { getStockage, nouvelleCle } from '@/lib/fichiers/stockage';
 import type { MediaWhatsapp } from '@/lib/db/schema/whatsapp';
 import { lireWebhook, type MessageNormalise, type StatutNormalise } from './evenements';
-import { lieuProbable, typeProbable } from './qualification';
+import { lieuProbable, posteProbable, typeProbable } from './qualification';
 
 export const MAX_ESSAIS = 3;
 /** Même limite que le reste du système (ADR 0003). */
@@ -106,8 +106,11 @@ async function ouvrirDossier(m: MessageNormalise): Promise<{ dossierId: number; 
   const lieux = await listesLieux();
   const lieu = lieuProbable(m.texte, lieux.map((v) => ({ id: v.id, nom: v.nom, quartiers: v.quartiers })));
   const ref = referenceDepuisTexte(m.texte);
+  const type = typeProbable(m.texte);
   const r = await creerDemande({
-    type: typeProbable(m.texte),
+    type,
+    // Un Dossier de recrutement exige un poste : premier poste pré-rempli, à compléter par le référent.
+    lignes: type === 'REC' ? [{ intitule: posteProbable(m.texte), nombre: 1, missions: 'À préciser avec le client (demande reçue sur WhatsApp).' }] : [],
     canal: 'whatsapp',
     formulaire: 'whatsapp',
     source: ref?.source ?? 'whatsapp_direct',
@@ -160,7 +163,15 @@ export async function appliquerMessage(m: MessageNormalise, maintenant = new Dat
   }
   if (!dossierId && conv.clientId) dossierId = await dossierOuvert(conv.clientId);
   if (!dossierId && m.sens === 'entrant') {
-    const o = await ouvrirDossier(m);
+    let o: Awaited<ReturnType<typeof ouvrirDossier>>;
+    try {
+      o = await ouvrirDossier(m);
+    } catch (err) {
+      // Le message est retiré pour que la reprise (tâche planifiée) le retraite : sinon l'idempotence
+      // le considérerait comme déjà reçu et la demande serait perdue.
+      await db.delete(schema.messageWhatsapp).where(eq(schema.messageWhatsapp.id, insere.id));
+      throw err;
+    }
     await db.update(schema.conversation).set({ dossierId: o.dossierId, clientId: o.clientId }).where(eq(schema.conversation.id, conv.id));
     return; // le message est déjà dans la Demande
   }
