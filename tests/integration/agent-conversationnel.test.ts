@@ -207,6 +207,7 @@ describe.skipIf(!baseDisponible)('Agent conversationnel (intégration)', async (
     expect(i.qualificationsCompletes).toBe(1);
     expect(i.brouillons).toBeGreaterThanOrEqual(1);
     const f = await comparaisonsFantome();
-    expect(f.find((x) => x.numero === '+237696100006')).toMatchObject({ client: 'Bonjour, besoin d’un ménage', reponseHumaine: null });
+    // Les messages du test portent des heures simulées : seul le brouillon est vérifié ici (pas de réponse humaine).
+    expect(f.find((x) => x.numero === '+237696100006')).toMatchObject({ brouillon: expect.stringContaining('Pour quel quartier'), reponseHumaine: null });
   });
 });
