@@ -14,6 +14,7 @@ import { alerterCandidatsNonTraites, escaladerCandidatsNonAttribues } from '@/li
 import { alerterEcheancesRecherche, signalerAccordsSansReponse } from '@/lib/propositions/service';
 import { expirerDevis } from '@/lib/devis/service';
 import { relancerSoldesImpayes } from '@/lib/encaissements/regularisation';
+import { rappelerRendezVous } from '@/lib/rendezvous/service';
 
 const JOUR_MS = 24 * 60 * 60 * 1000;
 
@@ -105,7 +106,9 @@ export async function executerTaches(maintenant = new Date()) {
   const devisExpires = await expirerDevis(maintenant);
   // MVP2-05 RG-09 : factures de solde impayées 15 jours après émission, puis tous les 7 jours.
   const soldesRelances = await relancerSoldesImpayes(maintenant);
+  // COM1-02 RG-02 : rappels de rendez-vous (veille 18 h, 1 h avant) et rendez-vous à clôturer.
+  const rendezVous = await rappelerRendezVous(maintenant);
   const emails = await envoyerNotificationsEnAttente(200);
-  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, devisExpires, soldesRelances, emails };
+  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, devisExpires, soldesRelances, rendezVous, emails };
 }
 

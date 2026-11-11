@@ -57,6 +57,7 @@ export default async function LayoutPrive({ children }: { children: React.ReactN
       titre: 'Activité',
       liens: filtrer([
         { href: '/admin/dossiers', libelle: 'Dossiers', icone: 'dossiers', visible: peut(c.roles, 'dossier.voir_siens') || peut(c.roles, 'dossier.voir_tous') },
+        { href: '/admin/agenda', libelle: 'Agenda', icone: 'agenda', visible: peut(c.roles, 'dossier.voir_siens') || peut(c.roles, 'dossier.voir_tous') },
         { href: '/admin/attribution', libelle: 'Attribution', icone: 'attribution', visible: peut(c.roles, 'dossier.reaffecter') },
         { href: '/admin/candidats', libelle: 'Candidats', icone: 'candidats', visible: vivier },
         { href: '/admin/candidatures', libelle: 'Candidatures', icone: 'candidatures', visible: vivier },

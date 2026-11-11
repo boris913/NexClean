@@ -6,13 +6,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Banknote, Bell, Briefcase, ClipboardList, FolderOpen, LayoutDashboard, MapPin, Menu, MessageSquare, ScrollText, Settings, ShieldCheck, Shuffle, UserCog, Users, X, type LucideIcon } from 'lucide-react';
+import { Banknote, Bell, Briefcase, CalendarDays, ClipboardList, FolderOpen, LayoutDashboard, MapPin, Menu, MessageSquare, ScrollText, Settings, ShieldCheck, Shuffle, UserCog, Users, X, type LucideIcon } from 'lucide-react';
 
 export const ICONES = {
   accueil: LayoutDashboard,
   notifications: Bell,
   dossiers: FolderOpen,
   attribution: Shuffle,
+  agenda: CalendarDays,
   candidats: Users,
   candidatures: Briefcase,
   finances: Banknote,
