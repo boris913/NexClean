@@ -29,8 +29,10 @@ export default function Repondre({
   finFenetre,
   modelesInternes,
   modelesMeta,
+  documents,
 }: {
   conversationId: number;
+  documents: { id: number; libelle: string; texte: string }[];
   fenetreOuverte: boolean;
   finFenetre: string | null;
   modelesInternes: { id: number; nom: string; texte: string }[];
@@ -64,6 +66,17 @@ export default function Repondre({
             <select aria-label="Insérer un modèle" value="" onChange={(e) => setTexte(modelesInternes.find((m) => String(m.id) === e.target.value)?.texte ?? texte)} className={classeChamp}>
               <option value="">Insérer un modèle de message…</option>
               {modelesInternes.map((m) => <option key={m.id} value={m.id}>{m.nom}</option>)}
+            </select>
+          )}
+          {documents.length > 0 && (
+            <select aria-label="Joindre un document" value="" onChange={(e) => {
+              const d = documents.find((x) => String(x.id) === e.target.value);
+              if (d) setTexte((t) => (t.trim() ? `${t.trim()}
+
+${d.texte}` : d.texte));
+            }} className={classeChamp}>
+              <option value="">Joindre un document (lien sécurisé vers l’espace de suivi)…</option>
+              {documents.map((d) => <option key={d.id} value={d.id}>{d.libelle}</option>)}
             </select>
           )}
           <label htmlFor="reponse" className="sr-only">Votre réponse</label>

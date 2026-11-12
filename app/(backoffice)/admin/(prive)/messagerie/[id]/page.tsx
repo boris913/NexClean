@@ -10,7 +10,7 @@ import { Alerte, Carte, EtatVide, TitrePage } from '@/components/backoffice/ui';
 import Rafraichir from '../Rafraichir';
 import Rattacher from './Rattacher';
 import Repondre, { Accord, Automate } from './Repondre';
-import { envoiActif, etatConsentement, modelesMetaApprouves } from '@/lib/whatsapp/envoi';
+import { documentsPartageables, envoiActif, etatConsentement, modelesMetaApprouves } from '@/lib/whatsapp/envoi';
 import { automateSuspendu, fenetreOuverte, FENETRE_SERVICE_MS } from '@/lib/whatsapp/automate';
 import { listerModeles, contexteDossier } from '@/lib/modeles/service';
 import { rendreMessage } from '@/lib/modeles/variables';
@@ -29,13 +29,14 @@ export default async function Conversation({ params }: { params: Promise<{ id: s
   const titre = conv.clientNom ?? conv.nomProfil ?? formaterTelephone(conv.numero);
   const maintenant = new Date();
   const ouverte = fenetreOuverte(conv.dernierEntrantLe, maintenant);
-  const [modelesMeta, internes, consentement, suspension, ctx] = await Promise.all([
+  const [modelesMeta, internes, consentement, suspension, ctx, documents] = await Promise.all([
     modelesMetaApprouves(),
     // Mêmes modèles que sur la fiche dossier (sans les modèles candidat, proposition, devis…).
     conv.dossierType ? listerModeles({ actifsSeulement: true, type: conv.dossierType }) : Promise.resolve([]),
     etatConsentement(conv.numero),
     lireParametre('wa_suspension_heures'),
     conv.dossierId ? contexteDossier(conv.dossierId, { id: c.id, nom: c.nom }) : Promise.resolve({}),
+    conv.dossierId ? documentsPartageables(conv.dossierId) : Promise.resolve([]),
   ]);
   const suspenduJusqua = conv.automate === 'actif' && automateSuspendu(conv, maintenant, suspension) && conv.dernierSortantLe ? formatHorodatage(new Date(conv.dernierSortantLe.getTime() + suspension * 3600_000)) : null;
   return (
@@ -105,6 +106,7 @@ export default async function Conversation({ params }: { params: Promise<{ id: s
             finFenetre={conv.dernierEntrantLe ? formatHorodatage(new Date(conv.dernierEntrantLe.getTime() + FENETRE_SERVICE_MS)) : null}
             modelesInternes={internes.map((m) => ({ id: m.id, nom: m.nom, texte: rendreMessage(m.texte, ctx) }))}
             modelesMeta={modelesMeta.map((m) => ({ id: m.id, nom: m.nom, categorie: m.metaCategorie }))}
+            documents={documents}
           />
         </Carte>
       )}

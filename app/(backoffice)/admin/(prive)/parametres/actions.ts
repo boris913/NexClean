@@ -5,6 +5,7 @@ import { executer } from '@/lib/actions';
 import { definirParametre } from '@/lib/parametres';
 import { revaliderCommissionPublique } from '@/lib/commission-publique';
 import { ErreurMetier } from '@/lib/collaborateurs/service';
+import { contientPrix } from '@/lib/whatsapp/automate';
 import { commissionsDepuisPaires, verifierAcompte, type PaireCategorie } from './grille';
 
 async function auteur() {
@@ -98,5 +99,31 @@ export async function enregistrerTexte(cle: 'mentions_legales' | 'conditions_dev
     return cle === 'mentions_legales'
       ? 'Mentions légales enregistrées. Elles figurent sur les nouveaux documents ; les documents déjà émis restent inchangés.'
       : `Conditions générales enregistrées. ${RAPPEL}`;
+  });
+}
+
+/** COM2-02 : réponses automatiques WhatsApp (règles « mots => réponse », une par ligne). */
+export async function enregistrerWhatsApp(v: { accuseOuvert: string; accuseFerme: string; reponses: string; suspensionHeures: number; plafondMarketing: number }) {
+  return executer(async () => {
+    const regles = String(v.reponses ?? '')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .map((l, i) => {
+        const [mots, ...reste] = l.split('=>');
+        const reponse = reste.join('=>').trim();
+        if (!mots?.trim() || !reponse) throw new ErreurMetier(`Ligne ${i + 1} : écrivez « mots-clés => réponse ».`);
+        return { mots: mots.split(',').map((m) => m.trim()).filter(Boolean), reponse };
+      });
+    const prix = [v.accuseOuvert, v.accuseFerme, ...regles.map((r) => r.reponse)].find((t) => contientPrix(t));
+    if (prix) throw new ErreurMetier(`Une réponse automatique ne doit pas annoncer de prix : « ${prix.slice(0, 60)}… »`);
+    const a = await auteur();
+    await definirParametre('wa_accuse_ouvert', v.accuseOuvert, a);
+    await definirParametre('wa_accuse_ferme', v.accuseFerme, a);
+    await definirParametre('wa_reponses_rapides', regles, a);
+    await definirParametre('wa_suspension_heures', Number(v.suspensionHeures), a);
+    await definirParametre('wa_plafond_marketing_semaine', Number(v.plafondMarketing), a);
+    revalidatePath('/admin/parametres');
+    return `Réponses automatiques enregistrées (${regles.length} règle(s) par mots-clés).`;
   });
 }
