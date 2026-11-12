@@ -28,6 +28,10 @@ export const PERMISSIONS = {
   'messagerie.voir_tout': ['direction'],
   /** COM3-02 : mode de l'agent conversationnel, base de connaissances, indicateurs de l'agent. */
   'agent.gerer': ['direction'],
+  /** COM4-01 : écran Veille (ajout, qualification, approche des pistes). */
+  'veille.utiliser': ['referent', 'direction'],
+  /** COM4-01 RG-04 : référentiel des sources de veille, pistes de tous les collaborateurs. */
+  'veille.gerer': ['direction'],
   'export.donnees': ['finances', 'direction'],
   'tarifs.modifier': ['direction', 'admin'],
   'modeles.gerer': ['direction', 'admin'],

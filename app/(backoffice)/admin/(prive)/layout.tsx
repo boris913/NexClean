@@ -63,6 +63,7 @@ export default async function LayoutPrive({ children }: { children: React.ReactN
         { href: '/admin/attribution', libelle: 'Attribution', icone: 'attribution', visible: peut(c.roles, 'dossier.reaffecter') },
         { href: '/admin/candidats', libelle: 'Candidats', icone: 'candidats', visible: vivier },
         { href: '/admin/candidatures', libelle: 'Candidatures', icone: 'candidatures', visible: vivier },
+        { href: '/admin/veille', libelle: 'Veille', icone: 'veille', visible: peut(c.roles, 'veille.utiliser') },
         { href: '/admin/commercial', libelle: 'Commercial', icone: 'commercial', visible: peut(c.roles, 'commercial.tableau_de_bord') },
         { href: '/admin/finances', libelle: 'Finances', icone: 'finances', visible: peut(c.roles, 'finances.tableau_de_bord') },
       ]),
