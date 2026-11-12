@@ -10,3 +10,4 @@ export * from './propositions';
 export * from './devis';
 export * from './encaissements';
 export * from './rendezvous';
+export * from './rapports';

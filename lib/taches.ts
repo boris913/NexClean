@@ -15,6 +15,7 @@ import { alerterEcheancesRecherche, signalerAccordsSansReponse } from '@/lib/pro
 import { expirerDevis } from '@/lib/devis/service';
 import { relancerSoldesImpayes } from '@/lib/encaissements/regularisation';
 import { rappelerRendezVous } from '@/lib/rendezvous/service';
+import { genererRapportsHebdomadaires } from '@/lib/commercial/rapport-service';
 
 const JOUR_MS = 24 * 60 * 60 * 1000;
 
@@ -108,7 +109,9 @@ export async function executerTaches(maintenant = new Date()) {
   const soldesRelances = await relancerSoldesImpayes(maintenant);
   // COM1-02 RG-02 : rappels de rendez-vous (veille 18 h, 1 h avant) et rendez-vous à clôturer.
   const rendezVous = await rappelerRendezVous(maintenant);
+  // COM1-02 RG-09 : rapport commercial de la semaine écoulée, dès le lundi 7 h (une seule fois).
+  const rapports = await genererRapportsHebdomadaires(maintenant);
   const emails = await envoyerNotificationsEnAttente(200);
-  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, devisExpires, soldesRelances, rendezVous, emails };
+  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, devisExpires, soldesRelances, rendezVous, rapports, emails };
 }
 
