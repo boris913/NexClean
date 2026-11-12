@@ -8,6 +8,8 @@ export interface Email {
   text: string;
   /** Pièces jointes (ex. PDF du devis, MVP2-04 RG-10), envoyées en base64 à Resend. */
   pieces?: { nom: string; contenu: Uint8Array }[];
+  /** Adresse de réponse (ex. collaborateur, COM4-01 RG-08). */
+  replyTo?: string;
 }
 
 export const echapperHtml = (s: string) =>
@@ -31,7 +33,7 @@ export async function envoyerEmail(email: Email): Promise<void> {
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: BACKOFFICE_FROM_EMAIL, to: [email.to], subject: email.subject, html: email.html, text: email.text, ...(attachments?.length ? { attachments } : {}) }),
+        body: JSON.stringify({ from: BACKOFFICE_FROM_EMAIL, to: [email.to], subject: email.subject, html: email.html, text: email.text, ...(attachments?.length ? { attachments } : {}), ...(email.replyTo ? { reply_to: email.replyTo } : {}) }),
       });
       if (res.ok) return;
       derniereErreur = new Error(`Resend ${res.status}: ${await res.text()}`);

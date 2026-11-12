@@ -22,6 +22,16 @@ export const PERMISSIONS = {
   'encaissement.enregistrer': ['referent', 'finances', 'direction'],
   'remboursement.valider': ['direction'],
   'finances.tableau_de_bord': ['finances', 'direction'],
+  /** Tableau de bord commercial (COM1-02 RG-05) : un Référent n'y voit que ses Dossiers. */
+  'commercial.tableau_de_bord': ['referent', 'direction'],
+  /** Messagerie WhatsApp (COM2-01 RG-10) : toutes les conversations. Un Référent voit celles de ses Dossiers. */
+  'messagerie.voir_tout': ['direction'],
+  /** COM3-02 : mode de l'agent conversationnel, base de connaissances, indicateurs de l'agent. */
+  'agent.gerer': ['direction'],
+  /** COM4-01 : écran Veille (ajout, qualification, approche des pistes). */
+  'veille.utiliser': ['referent', 'direction'],
+  /** COM4-01 RG-04 : référentiel des sources de veille, pistes de tous les collaborateurs. */
+  'veille.gerer': ['direction'],
   'export.donnees': ['finances', 'direction'],
   'tarifs.modifier': ['direction', 'admin'],
   'modeles.gerer': ['direction', 'admin'],

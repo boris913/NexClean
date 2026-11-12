@@ -11,6 +11,7 @@ import { situationFinanciere } from '@/lib/encaissements/lecture';
 import { lienDevisDossier } from '@/lib/devis/effets';
 import { formaterMontant } from '@/lib/devis/domaine';
 import { DOSSIER_TYPES } from '@/lib/domain/referentiels';
+import { SOURCES } from '@/lib/acquisition/source';
 import { formatHorodatage } from '@/lib/audit-lecture';
 import { formaterTelephone } from '@/lib/telephone';
 import { listesLieux } from '@/lib/geo/service';
@@ -32,6 +33,8 @@ import SectionPropositions from './SectionPropositions';
 import SectionDevis from './SectionDevis';
 import SectionFactures from './SectionFactures';
 import SectionFinances from './SectionFinances';
+import SectionRendezVous from './SectionRendezVous';
+import SectionCopilote from './SectionCopilote';
 
 /** MVP1-03 RG-06 : estimation enregistrée dans la Demande (preuve de ce qui a été affiché). */
 function estimationMontree(donnees: unknown): string | null {
@@ -70,6 +73,12 @@ const LIBELLE_EVENEMENT: Record<string, string> = {
   proposition: 'Proposition',
   placement: 'Placement',
 };
+
+/** Campagne UTM du premier contact relevé sur le site (COM1-01 RG-02). */
+function campagne(attribution: unknown): string | null {
+  const c = (attribution as { premier?: { utmCampaign?: unknown } } | null)?.premier?.utmCampaign;
+  return typeof c === 'string' && c ? c : null;
+}
 
 export default async function PageDossier({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ onglet?: string }> }) {
   const c = await exigerCollaborateur();
@@ -157,6 +166,7 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
         <div className="grid gap-4 lg:grid-cols-3 lg:items-start">
           <div className="space-y-4 lg:col-span-2">
             {peutReaffecter && !d.referentId && reaffectation}
+            <SectionCopilote dossierId={d.id} traiter={traiter} derniereActionLe={d.derniereActionLe} />
             {traiter && <A.ChangerStatut dossierId={d.id} encaissementsIntegres={encaissementsIntegres} options={transitionsProposees(d.type, d.statut, direction, optionsTransition).map((s) => ({ code: s, libelle: STATUTS[s] }))} />}
             {traiter && optionsTransition.circuitDevis && ['en_qualification', 'devis_pret', 'devis_envoye'].includes(d.statut) && (
               <Alerte type="info">
@@ -220,6 +230,7 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
                 </Carte>
               </section>
             )}
+            <SectionRendezVous dossierId={d.id} traiter={traiter} ouvert={!estFinal(d.statut)} referentId={d.referentId} />
             <Carte titre="Suivi client">
               <p className="text-sm text-ink-600 mb-2">Phase affichée au client : <strong>{PHASES[phaseDe(d.statut)]}</strong></p>
               <A.LienSuivi dossierId={d.id} lien={lienSuivi} peutRegenerer={traiter} />
@@ -233,12 +244,13 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
         <div className="space-y-3">
           {fiche.demandes.map((dem) => (
             <Carte key={dem.id} titre={`Demande n° ${dem.id}`} actions={<span className="text-xs text-ink-500">{formatHorodatage(dem.creeLe)}</span>}>
-              <p className="text-sm text-ink-600 mb-2">Canal : {dem.canal} · Formulaire : {dem.formulaire}</p>
+              <p className="text-sm text-ink-600 mb-2">Canal : {dem.canal} · Formulaire : {dem.formulaire} · Source : <strong>{SOURCES[dem.source]}</strong>{campagne(dem.attribution) && ` (campagne « ${campagne(dem.attribution)} »)`}</p>
               {estimationMontree(dem.donnees) && <p className="text-sm text-ink-800 mb-2">Estimation montrée au client : {estimationMontree(dem.donnees)}</p>}
               <details>
                 <summary className="cursor-pointer text-sm text-primary py-1">Données reçues (non modifiables)</summary>
                 <pre className="mt-1 text-xs bg-ink-50 border border-ink-100 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-all text-ink-700">{JSON.stringify(dem.donnees, null, 2)}</pre>
               </details>
+              {traiter && <A.CorrigerSource dossierId={d.id} demandeId={dem.id} source={dem.source} />}
               {traiter && <A.Rattacher dossierId={d.id} demandeId={dem.id} cibles={cibles} />}
             </Carte>
           ))}

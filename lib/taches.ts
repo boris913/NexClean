@@ -14,6 +14,14 @@ import { alerterCandidatsNonTraites, escaladerCandidatsNonAttribues } from '@/li
 import { alerterEcheancesRecherche, signalerAccordsSansReponse } from '@/lib/propositions/service';
 import { expirerDevis } from '@/lib/devis/service';
 import { relancerSoldesImpayes } from '@/lib/encaissements/regularisation';
+import { rappelerRendezVous } from '@/lib/rendezvous/service';
+import { genererRapportsHebdomadaires } from '@/lib/commercial/rapport-service';
+import { alerterConversationsNonTraitees, telechargerMediasEnAttente, traiterWebhooksEnAttente } from '@/lib/whatsapp/reception';
+import { synchroniserModeles, synchroniserQualite } from '@/lib/whatsapp/envoi';
+import { qualifierEnAttente } from '@/lib/ia/copilote';
+import { iaActive } from '@/lib/ia/client';
+import { purgerPistes } from '@/lib/veille/service';
+import { collecterSourcesDues } from '@/lib/veille/sources';
 
 const JOUR_MS = 24 * 60 * 60 * 1000;
 
@@ -105,7 +113,37 @@ export async function executerTaches(maintenant = new Date()) {
   const devisExpires = await expirerDevis(maintenant);
   // MVP2-05 RG-09 : factures de solde impayées 15 jours après émission, puis tous les 7 jours.
   const soldesRelances = await relancerSoldesImpayes(maintenant);
+  // COM1-02 RG-02 : rappels de rendez-vous (veille 18 h, 1 h avant) et rendez-vous à clôturer.
+  const rendezVous = await rappelerRendezVous(maintenant);
+  // COM1-02 RG-09 : rapport commercial de la semaine écoulée, dès le lundi 7 h (une seule fois).
+  const rapports = await genererRapportsHebdomadaires(maintenant);
+  // COM2-01 : reprise des webhooks WhatsApp et des médias en échec, conversations sans réponse.
+  const whatsapp = { webhooks: await traiterWebhooksEnAttente(200, maintenant), medias: await telechargerMediasEnAttente(50), nonTraitees: await alerterConversationsNonTraitees(maintenant), modeles: 0, qualite: null as string | null };
+  // COM2-02 RG-03, RG-10 : statut des modèles Meta et note de qualité du numéro (un échec côté Meta n'arrête pas les tâches).
+  try {
+    whatsapp.qualite = await synchroniserQualite(maintenant);
+    if (maintenant.getUTCMinutes() < 15) whatsapp.modeles = await synchroniserModeles(maintenant); // une fois par heure
+  } catch (e) {
+    console.error('[whatsapp] synchronisation Meta', e);
+  }
+  // COM3-01 RG-06 : qualification IA des nouvelles demandes (jamais bloquante).
+  let qualifiees = 0;
+  if (iaActive()) {
+    try {
+      qualifiees = await qualifierEnAttente(20, maintenant);
+    } catch (e) {
+      console.error('[ia] qualification', e);
+    }
+  }
+  // COM4-01 RG-05 : collecte des sources automatisées échues (jamais bloquante) ; RG-02 : purge.
+  let pistesCollectees = 0;
+  try {
+    pistesCollectees = await collecterSourcesDues(maintenant);
+  } catch (e) {
+    console.error('[veille] collecte', e);
+  }
+  const pistesPurgees = await purgerPistes(maintenant);
   const emails = await envoyerNotificationsEnAttente(200);
-  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, devisExpires, soldesRelances, emails };
+  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, devisExpires, soldesRelances, rendezVous, rapports, whatsapp, qualifiees, pistesCollectees, pistesPurgees, emails };
 }
 

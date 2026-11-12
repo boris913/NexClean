@@ -74,7 +74,8 @@ export async function validerEtEnvoyer(dossierId: number, devisId: number) {
     const r = await svc.validerEtEnvoyer(devisId, await acteur());
     rafraichir(dossierId);
     const email = r.email === 'envoye' ? ' Un e-mail avec le PDF a été envoyé au client.' : r.email === 'echec' ? ' Attention : l’e-mail au client n’a pas pu partir.' : '';
-    return `Devis envoyé et PDF archivé.${email} Ouvrez WhatsApp pour transmettre le lien au client.`;
+    const whatsapp = r.whatsapp.statut === 'envoye' ? ' Le message WhatsApp avec le lien a été envoyé au client.' : r.whatsapp.statut === 'echec' ? ` L’envoi WhatsApp automatique a échoué (${r.whatsapp.raison}) : ouvrez WhatsApp pour transmettre le lien.` : ' Ouvrez WhatsApp pour transmettre le lien au client.';
+    return `Devis envoyé et PDF archivé.${email}${whatsapp}`;
   });
 }
 

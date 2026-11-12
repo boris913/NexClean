@@ -1,0 +1,6951 @@
+{
+  "id": "5cc230db-925d-4bd2-8dc2-fdd381383d6d",
+  "prevId": "ffad089d-c58e-40c1-8a4d-831aa51a4483",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.account": {
+      "name": "account",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_id": {
+          "name": "provider_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "access_token": {
+          "name": "access_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "refresh_token": {
+          "name": "refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id_token": {
+          "name": "id_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "access_token_expires_at": {
+          "name": "access_token_expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "refresh_token_expires_at": {
+          "name": "refresh_token_expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "account_user_id_idx": {
+          "name": "account_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "account_user_id_user_id_fk": {
+          "name": "account_user_id_user_id_fk",
+          "tableFrom": "account",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.rate_limit": {
+      "name": "rate_limit",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "count": {
+          "name": "count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_request": {
+          "name": "last_request",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "rate_limit_key_unique": {
+          "name": "rate_limit_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.session": {
+      "name": "session",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "session_user_id_idx": {
+          "name": "session_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "session_user_id_user_id_fk": {
+          "name": "session_user_id_user_id_fk",
+          "tableFrom": "session",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "session_token_unique": {
+          "name": "session_token_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "token"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.two_factor": {
+      "name": "two_factor",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "secret": {
+          "name": "secret",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "backup_codes": {
+          "name": "backup_codes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "verified": {
+          "name": "verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
+        },
+        "failed_verification_count": {
+          "name": "failed_verification_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
+        "locked_until": {
+          "name": "locked_until",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "two_factor_user_id_idx": {
+          "name": "two_factor_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "two_factor_secret_idx": {
+          "name": "two_factor_secret_idx",
+          "columns": [
+            {
+              "expression": "secret",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "two_factor_user_id_user_id_fk": {
+          "name": "two_factor_user_id_user_id_fk",
+          "tableFrom": "two_factor",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user": {
+      "name": "user",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email_verified": {
+          "name": "email_verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "image": {
+          "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "two_factor_enabled": {
+          "name": "two_factor_enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "active": {
+          "name": "active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "user_email_unique": {
+          "name": "user_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.verification": {
+      "name": "verification",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "identifier": {
+          "name": "identifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "verification_identifier_idx": {
+          "name": "verification_identifier_idx",
+          "columns": [
+            {
+              "expression": "identifier",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.arrondissement": {
+      "name": "arrondissement",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "ville_id": {
+          "name": "ville_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nom": {
+          "name": "nom",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actif": {
+          "name": "actif",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "arrondissement_ville_id_ville_id_fk": {
+          "name": "arrondissement_ville_id_ville_id_fk",
+          "tableFrom": "arrondissement",
+          "tableTo": "ville",
+          "columnsFrom": [
+            "ville_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "arrondissement_ville_nom_uq": {
+          "name": "arrondissement_ville_nom_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "ville_id",
+            "nom"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.quartier": {
+      "name": "quartier",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "ville_id": {
+          "name": "ville_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "arrondissement_id": {
+          "name": "arrondissement_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nom": {
+          "name": "nom",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "latitude": {
+          "name": "latitude",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "longitude": {
+          "name": "longitude",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "actif": {
+          "name": "actif",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "affiche_site": {
+          "name": "affiche_site",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {
+        "quartier_arrondissement_idx": {
+          "name": "quartier_arrondissement_idx",
+          "columns": [
+            {
+              "expression": "arrondissement_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "quartier_ville_id_ville_id_fk": {
+          "name": "quartier_ville_id_ville_id_fk",
+          "tableFrom": "quartier",
+          "tableTo": "ville",
+          "columnsFrom": [
+            "ville_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "quartier_arrondissement_id_arrondissement_id_fk": {
+          "name": "quartier_arrondissement_id_arrondissement_id_fk",
+          "tableFrom": "quartier",
+          "tableTo": "arrondissement",
+          "columnsFrom": [
+            "arrondissement_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "quartier_ville_nom_uq": {
+          "name": "quartier_ville_nom_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "ville_id",
+            "nom"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ville": {
+      "name": "ville",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nom": {
+          "name": "nom",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "couverte": {
+          "name": "couverte",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "actif": {
+          "name": "actif",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "ordre": {
+          "name": "ordre",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 100
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ville_nom_unique": {
+          "name": "ville_nom_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "nom"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.collaborateur_profil": {
+      "name": "collaborateur_profil",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "telephone": {
+          "name": "telephone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "capacite": {
+          "name": "capacite",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "absent_du": {
+          "name": "absent_du",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "absent_au": {
+          "name": "absent_au",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "derniere_attribution_le": {
+          "name": "derniere_attribution_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "collaborateur_profil_user_id_user_id_fk": {
+          "name": "collaborateur_profil_user_id_user_id_fk",
+          "tableFrom": "collaborateur_profil",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.collaborateur_role": {
+      "name": "collaborateur_role",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "role_collaborateur",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "collaborateur_role_user_id_user_id_fk": {
+          "name": "collaborateur_role_user_id_user_id_fk",
+          "tableFrom": "collaborateur_role",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "collaborateur_role_user_id_role_pk": {
+          "name": "collaborateur_role_user_id_role_pk",
+          "columns": [
+            "user_id",
+            "role"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.collaborateur_service": {
+      "name": "collaborateur_service",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type_dossier": {
+          "name": "type_dossier",
+          "type": "type_dossier",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "collaborateur_service_user_id_user_id_fk": {
+          "name": "collaborateur_service_user_id_user_id_fk",
+          "tableFrom": "collaborateur_service",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "collaborateur_service_user_id_type_dossier_pk": {
+          "name": "collaborateur_service_user_id_type_dossier_pk",
+          "columns": [
+            "user_id",
+            "type_dossier"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.collaborateur_ville": {
+      "name": "collaborateur_ville",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ville_id": {
+          "name": "ville_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "collaborateur_ville_user_id_user_id_fk": {
+          "name": "collaborateur_ville_user_id_user_id_fk",
+          "tableFrom": "collaborateur_ville",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "collaborateur_ville_ville_id_ville_id_fk": {
+          "name": "collaborateur_ville_ville_id_ville_id_fk",
+          "tableFrom": "collaborateur_ville",
+          "tableTo": "ville",
+          "columnsFrom": [
+            "ville_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "collaborateur_ville_user_id_ville_id_pk": {
+          "name": "collaborateur_ville_user_id_ville_id_pk",
+          "columns": [
+            "user_id",
+            "ville_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.jeton_activation": {
+      "name": "jeton_activation",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "empreinte": {
+          "name": "empreinte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expire_le": {
+          "name": "expire_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "utilise_le": {
+          "name": "utilise_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "jeton_activation_user_idx": {
+          "name": "jeton_activation_user_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "jeton_activation_user_id_user_id_fk": {
+          "name": "jeton_activation_user_id_user_id_fk",
+          "tableFrom": "jeton_activation",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "jeton_activation_empreinte_unique": {
+          "name": "jeton_activation_empreinte_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "empreinte"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.journal_audit": {
+      "name": "journal_audit",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "horodatage": {
+          "name": "horodatage",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "acteur_type": {
+          "name": "acteur_type",
+          "type": "type_acteur",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "acteur_id": {
+          "name": "acteur_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "objet_type": {
+          "name": "objet_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "objet_id": {
+          "name": "objet_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avant": {
+          "name": "avant",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "apres": {
+          "name": "apres",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "details": {
+          "name": "details",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ip": {
+          "name": "ip",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "journal_horodatage_idx": {
+          "name": "journal_horodatage_idx",
+          "columns": [
+            {
+              "expression": "horodatage",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "journal_action_horodatage_idx": {
+          "name": "journal_action_horodatage_idx",
+          "columns": [
+            {
+              "expression": "action",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "horodatage",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "journal_objet_idx": {
+          "name": "journal_objet_idx",
+          "columns": [
+            {
+              "expression": "objet_type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "objet_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "journal_acteur_idx": {
+          "name": "journal_acteur_idx",
+          "columns": [
+            {
+              "expression": "acteur_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.client": {
+      "name": "client",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "type_client",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nom": {
+          "name": "nom",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contact": {
+          "name": "contact",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "whatsapp": {
+          "name": "whatsapp",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "autre_telephone": {
+          "name": "autre_telephone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ville_id": {
+          "name": "ville_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "quartier_id": {
+          "name": "quartier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "maj_le": {
+          "name": "maj_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "client_ville_id_ville_id_fk": {
+          "name": "client_ville_id_ville_id_fk",
+          "tableFrom": "client",
+          "tableTo": "ville",
+          "columnsFrom": [
+            "ville_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "client_quartier_id_quartier_id_fk": {
+          "name": "client_quartier_id_quartier_id_fk",
+          "tableFrom": "client",
+          "tableTo": "quartier",
+          "columnsFrom": [
+            "quartier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "client_whatsapp_unique": {
+          "name": "client_whatsapp_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "whatsapp"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.demande": {
+      "name": "demande",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "dossier_id": {
+          "name": "dossier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "canal": {
+          "name": "canal",
+          "type": "canal_demande",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "source_acquisition",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'inconnue'"
+        },
+        "attribution": {
+          "name": "attribution",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "formulaire": {
+          "name": "formulaire",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "donnees": {
+          "name": "donnees",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "empreinte": {
+          "name": "empreinte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "auteur_id": {
+          "name": "auteur_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "demande_dossier_idx": {
+          "name": "demande_dossier_idx",
+          "columns": [
+            {
+              "expression": "dossier_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "demande_doublon_idx": {
+          "name": "demande_doublon_idx",
+          "columns": [
+            {
+              "expression": "client_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "formulaire",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "empreinte",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "cree_le",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "demande_dossier_id_dossier_id_fk": {
+          "name": "demande_dossier_id_dossier_id_fk",
+          "tableFrom": "demande",
+          "tableTo": "dossier",
+          "columnsFrom": [
+            "dossier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "demande_client_id_client_id_fk": {
+          "name": "demande_client_id_client_id_fk",
+          "tableFrom": "demande",
+          "tableTo": "client",
+          "columnsFrom": [
+            "client_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "demande_auteur_id_user_id_fk": {
+          "name": "demande_auteur_id_user_id_fk",
+          "tableFrom": "demande",
+          "tableTo": "user",
+          "columnsFrom": [
+            "auteur_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.document": {
+      "name": "document",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "dossier_id": {
+          "name": "dossier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cle": {
+          "name": "cle",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nom_origine": {
+          "name": "nom_origine",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mime": {
+          "name": "mime",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "taille": {
+          "name": "taille",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "categorie": {
+          "name": "categorie",
+          "type": "categorie_document",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "auteur_id": {
+          "name": "auteur_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "supprime_le": {
+          "name": "supprime_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "supprime_par": {
+          "name": "supprime_par",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "document_dossier_idx": {
+          "name": "document_dossier_idx",
+          "columns": [
+            {
+              "expression": "dossier_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "document_dossier_id_dossier_id_fk": {
+          "name": "document_dossier_id_dossier_id_fk",
+          "tableFrom": "document",
+          "tableTo": "dossier",
+          "columnsFrom": [
+            "dossier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "document_auteur_id_user_id_fk": {
+          "name": "document_auteur_id_user_id_fk",
+          "tableFrom": "document",
+          "tableTo": "user",
+          "columnsFrom": [
+            "auteur_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "document_supprime_par_user_id_fk": {
+          "name": "document_supprime_par_user_id_fk",
+          "tableFrom": "document",
+          "tableTo": "user",
+          "columnsFrom": [
+            "supprime_par"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "document_cle_unique": {
+          "name": "document_cle_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "cle"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.dossier": {
+      "name": "dossier",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "numero": {
+          "name": "numero",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "type_dossier",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "referent_id": {
+          "name": "referent_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "statut": {
+          "name": "statut",
+          "type": "statut_dossier",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'nouvelle_demande'"
+        },
+        "ville_id": {
+          "name": "ville_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ville_autre": {
+          "name": "ville_autre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "quartier_id": {
+          "name": "quartier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "quartier_autre": {
+          "name": "quartier_autre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lieu": {
+          "name": "lieu",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "secteur": {
+          "name": "secteur",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jeton_suivi": {
+          "name": "jeton_suivi",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ferme_le": {
+          "name": "ferme_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "derniere_action_le": {
+          "name": "derniere_action_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "en_file_depuis": {
+          "name": "en_file_depuis",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "derniere_relance_le": {
+          "name": "derniere_relance_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "delai_recherche_jours": {
+          "name": "delai_recherche_jours",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "alerte_echeance_le": {
+          "name": "alerte_echeance_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recherche_cloture_le": {
+          "name": "recherche_cloture_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recherche_cloture_motif": {
+          "name": "recherche_cloture_motif",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "placements_retenus": {
+          "name": "placements_retenus",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "acompte_complet_le": {
+          "name": "acompte_complet_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "derniere_relance_solde_le": {
+          "name": "derniere_relance_solde_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "montant_final_ttc": {
+          "name": "montant_final_ttc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "dossier_referent_idx": {
+          "name": "dossier_referent_idx",
+          "columns": [
+            {
+              "expression": "referent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "dossier_client_idx": {
+          "name": "dossier_client_idx",
+          "columns": [
+            {
+              "expression": "client_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "dossier_statut_idx": {
+          "name": "dossier_statut_idx",
+          "columns": [
+            {
+              "expression": "statut",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "dossier_cree_le_idx": {
+          "name": "dossier_cree_le_idx",
+          "columns": [
+            {
+              "expression": "cree_le",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "dossier_client_id_client_id_fk": {
+          "name": "dossier_client_id_client_id_fk",
+          "tableFrom": "dossier",
+          "tableTo": "client",
+          "columnsFrom": [
+            "client_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dossier_referent_id_user_id_fk": {
+          "name": "dossier_referent_id_user_id_fk",
+          "tableFrom": "dossier",
+          "tableTo": "user",
+          "columnsFrom": [
+            "referent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dossier_ville_id_ville_id_fk": {
+          "name": "dossier_ville_id_ville_id_fk",
+          "tableFrom": "dossier",
+          "tableTo": "ville",
+          "columnsFrom": [
+            "ville_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dossier_quartier_id_quartier_id_fk": {
+          "name": "dossier_quartier_id_quartier_id_fk",
+          "tableFrom": "dossier",
+          "tableTo": "quartier",
+          "columnsFrom": [
+            "quartier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "dossier_numero_unique": {
+          "name": "dossier_numero_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "numero"
+          ]
+        },
+        "dossier_jeton_suivi_unique": {
+          "name": "dossier_jeton_suivi_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "jeton_suivi"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.evenement_dossier": {
+      "name": "evenement_dossier",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "dossier_id": {
+          "name": "dossier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "horodatage": {
+          "name": "horodatage",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "auteur_id": {
+          "name": "auteur_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "type_evenement",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "de_statut": {
+          "name": "de_statut",
+          "type": "statut_dossier",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vers_statut": {
+          "name": "vers_statut",
+          "type": "statut_dossier",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "commentaire": {
+          "name": "commentaire",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avant": {
+          "name": "avant",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "apres": {
+          "name": "apres",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "evenement_dossier_idx": {
+          "name": "evenement_dossier_idx",
+          "columns": [
+            {
+              "expression": "dossier_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "horodatage",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "evenement_dossier_dossier_id_dossier_id_fk": {
+          "name": "evenement_dossier_dossier_id_dossier_id_fk",
+          "tableFrom": "evenement_dossier",
+          "tableTo": "dossier",
+          "columnsFrom": [
+            "dossier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "evenement_dossier_auteur_id_user_id_fk": {
+          "name": "evenement_dossier_auteur_id_user_id_fk",
+          "tableFrom": "evenement_dossier",
+          "tableTo": "user",
+          "columnsFrom": [
+            "auteur_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ligne_poste": {
+      "name": "ligne_poste",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "dossier_id": {
+          "name": "dossier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ordre": {
+          "name": "ordre",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "intitule": {
+          "name": "intitule",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "missions": {
+          "name": "missions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "competences": {
+          "name": "competences",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "experience": {
+          "name": "experience",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "salaire": {
+          "name": "salaire",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type_contrat": {
+          "name": "type_contrat",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "duree": {
+          "name": "duree",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "horaires": {
+          "name": "horaires",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jours_repos": {
+          "name": "jours_repos",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "avantages": {
+          "name": "avantages",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "date_prise_fonction": {
+          "name": "date_prise_fonction",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "des_que_possible": {
+          "name": "des_que_possible",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {
+        "ligne_poste_dossier_idx": {
+          "name": "ligne_poste_dossier_idx",
+          "columns": [
+            {
+              "expression": "dossier_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "ligne_poste_dossier_id_dossier_id_fk": {
+          "name": "ligne_poste_dossier_id_dossier_id_fk",
+          "tableFrom": "ligne_poste",
+          "tableTo": "dossier",
+          "columnsFrom": [
+            "dossier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.sequence_dossier": {
+      "name": "sequence_dossier",
+      "schema": "",
+      "columns": {
+        "type": {
+          "name": "type",
+          "type": "type_dossier",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "annee": {
+          "name": "annee",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dernier": {
+          "name": "dernier",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "sequence_dossier_type_annee_pk": {
+          "name": "sequence_dossier_type_annee_pk",
+          "columns": [
+            "type",
+            "annee"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.parametre": {
+      "name": "parametre",
+      "schema": "",
+      "columns": {
+        "cle": {
+          "name": "cle",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "valeur": {
+          "name": "valeur",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "modifie_le": {
+          "name": "modifie_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "modifie_par": {
+          "name": "modifie_par",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "parametre_modifie_par_user_id_fk": {
+          "name": "parametre_modifie_par_user_id_fk",
+          "tableFrom": "parametre",
+          "tableTo": "user",
+          "columnsFrom": [
+            "modifie_par"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.modele_message": {
+      "name": "modele_message",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nom": {
+          "name": "nom",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "types": {
+          "name": "types",
+          "type": "type_dossier[]",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "langue": {
+          "name": "langue",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'fr'"
+        },
+        "texte": {
+          "name": "texte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actif": {
+          "name": "actif",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "modifie_le": {
+          "name": "modifie_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "modifie_par": {
+          "name": "modifie_par",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "modele_message_modifie_par_user_id_fk": {
+          "name": "modele_message_modifie_par_user_id_fk",
+          "tableFrom": "modele_message",
+          "tableTo": "user",
+          "columnsFrom": [
+            "modifie_par"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "modele_message_nom_unique": {
+          "name": "modele_message_nom_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "nom"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.notification": {
+      "name": "notification",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "destinataire_id": {
+          "name": "destinataire_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dossier_id": {
+          "name": "dossier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "titre": {
+          "name": "titre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "texte": {
+          "name": "texte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lien": {
+          "name": "lien",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cle": {
+          "name": "cle",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "lu_le": {
+          "name": "lu_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "in_app": {
+          "name": "in_app",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "email": {
+          "name": "email",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "email_envoye_le": {
+          "name": "email_envoye_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_echec_le": {
+          "name": "email_echec_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_essais": {
+          "name": "email_essais",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "notification_destinataire_idx": {
+          "name": "notification_destinataire_idx",
+          "columns": [
+            {
+              "expression": "destinataire_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "lu_le",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "notification_cle_uq": {
+          "name": "notification_cle_uq",
+          "columns": [
+            {
+              "expression": "destinataire_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "cle",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "notification_email_idx": {
+          "name": "notification_email_idx",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "email_envoye_le",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "notification_destinataire_id_user_id_fk": {
+          "name": "notification_destinataire_id_user_id_fk",
+          "tableFrom": "notification",
+          "tableTo": "user",
+          "columnsFrom": [
+            "destinataire_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "notification_dossier_id_dossier_id_fk": {
+          "name": "notification_dossier_id_dossier_id_fk",
+          "tableFrom": "notification",
+          "tableTo": "dossier",
+          "columnsFrom": [
+            "dossier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.candidat": {
+      "name": "candidat",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "telephone": {
+          "name": "telephone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "whatsapp": {
+          "name": "whatsapp",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nom": {
+          "name": "nom",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prenom": {
+          "name": "prenom",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ville_id": {
+          "name": "ville_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ville_autre": {
+          "name": "ville_autre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "arrondissement_id": {
+          "name": "arrondissement_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "quartier_id": {
+          "name": "quartier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "quartier_autre": {
+          "name": "quartier_autre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "repere": {
+          "name": "repere",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "zones_toute_ville": {
+          "name": "zones_toute_ville",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "zones_arrondissement_ids": {
+          "name": "zones_arrondissement_ids",
+          "type": "integer[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::integer[]"
+        },
+        "zones_quartier_ids": {
+          "name": "zones_quartier_ids",
+          "type": "integer[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::integer[]"
+        },
+        "metiers": {
+          "name": "metiers",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "secteurs": {
+          "name": "secteurs",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "types_contrat": {
+          "name": "types_contrat",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "salaire_min": {
+          "name": "salaire_min",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "salaire_max": {
+          "name": "salaire_max",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "niveau_etudes": {
+          "name": "niveau_etudes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "qualifications": {
+          "name": "qualifications",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "competences": {
+          "name": "competences",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "disponibilite": {
+          "name": "disponibilite",
+          "type": "disponibilite_candidat",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "disponible_le": {
+          "name": "disponible_le",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "preavis": {
+          "name": "preavis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "horaires": {
+          "name": "horaires",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "statut": {
+          "name": "statut",
+          "type": "statut_candidat",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'nouveau'"
+        },
+        "statut_avant_indisponible": {
+          "name": "statut_avant_indisponible",
+          "type": "statut_candidat",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "referent_id": {
+          "name": "referent_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attribue_le": {
+          "name": "attribue_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "en_file_depuis": {
+          "name": "en_file_depuis",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "derniere_relance_le": {
+          "name": "derniere_relance_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "alerte_non_traite_le": {
+          "name": "alerte_non_traite_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "compte_leger": {
+          "name": "compte_leger",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "mot_de_passe": {
+          "name": "mot_de_passe",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "canal_inscription": {
+          "name": "canal_inscription",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'site'"
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "profil_mis_a_jour_le": {
+          "name": "profil_mis_a_jour_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "derniere_connexion_le": {
+          "name": "derniere_connexion_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "suppression_demandee_le": {
+          "name": "suppression_demandee_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "suppression_prevue_le": {
+          "name": "suppression_prevue_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "supprime_le": {
+          "name": "supprime_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "candidat_telephone_uq": {
+          "name": "candidat_telephone_uq",
+          "columns": [
+            {
+              "expression": "telephone",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "candidat_statut_idx": {
+          "name": "candidat_statut_idx",
+          "columns": [
+            {
+              "expression": "statut",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "candidat_referent_idx": {
+          "name": "candidat_referent_idx",
+          "columns": [
+            {
+              "expression": "referent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "candidat_ville_idx": {
+          "name": "candidat_ville_idx",
+          "columns": [
+            {
+              "expression": "ville_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "candidat_ville_id_ville_id_fk": {
+          "name": "candidat_ville_id_ville_id_fk",
+          "tableFrom": "candidat",
+          "tableTo": "ville",
+          "columnsFrom": [
+            "ville_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "candidat_arrondissement_id_arrondissement_id_fk": {
+          "name": "candidat_arrondissement_id_arrondissement_id_fk",
+          "tableFrom": "candidat",
+          "tableTo": "arrondissement",
+          "columnsFrom": [
+            "arrondissement_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "candidat_quartier_id_quartier_id_fk": {
+          "name": "candidat_quartier_id_quartier_id_fk",
+          "tableFrom": "candidat",
+          "tableTo": "quartier",
+          "columnsFrom": [
+            "quartier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "candidat_referent_id_user_id_fk": {
+          "name": "candidat_referent_id_user_id_fk",
+          "tableFrom": "candidat",
+          "tableTo": "user",
+          "columnsFrom": [
+            "referent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.candidat_consentement": {
+      "name": "candidat_consentement",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "candidat_id": {
+          "name": "candidat_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "type_consentement",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "canal": {
+          "name": "canal",
+          "type": "canal_consentement",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ip": {
+          "name": "ip",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "horodatage": {
+          "name": "horodatage",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "candidat_consentement_candidat_idx": {
+          "name": "candidat_consentement_candidat_idx",
+          "columns": [
+            {
+              "expression": "candidat_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "candidat_consentement_candidat_id_candidat_id_fk": {
+          "name": "candidat_consentement_candidat_id_candidat_id_fk",
+          "tableFrom": "candidat_consentement",
+          "tableTo": "candidat",
+          "columnsFrom": [
+            "candidat_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.candidat_demande_reinitialisation": {
+      "name": "candidat_demande_reinitialisation",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "candidat_id": {
+          "name": "candidat_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "ip": {
+          "name": "ip",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "traitee_le": {
+          "name": "traitee_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "traitee_par": {
+          "name": "traitee_par",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "candidat_demande_reinit_candidat_idx": {
+          "name": "candidat_demande_reinit_candidat_idx",
+          "columns": [
+            {
+              "expression": "candidat_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "candidat_demande_reinitialisation_candidat_id_candidat_id_fk": {
+          "name": "candidat_demande_reinitialisation_candidat_id_candidat_id_fk",
+          "tableFrom": "candidat_demande_reinitialisation",
+          "tableTo": "candidat",
+          "columnsFrom": [
+            "candidat_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "candidat_demande_reinitialisation_traitee_par_user_id_fk": {
+          "name": "candidat_demande_reinitialisation_traitee_par_user_id_fk",
+          "tableFrom": "candidat_demande_reinitialisation",
+          "tableTo": "user",
+          "columnsFrom": [
+            "traitee_par"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.candidat_document": {
+      "name": "candidat_document",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "candidat_id": {
+          "name": "candidat_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "categorie": {
+          "name": "categorie",
+          "type": "categorie_document_candidat",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cle": {
+          "name": "cle",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nom_origine": {
+          "name": "nom_origine",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mime": {
+          "name": "mime",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "taille": {
+          "name": "taille",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "candidat_document_candidat_idx": {
+          "name": "candidat_document_candidat_idx",
+          "columns": [
+            {
+              "expression": "candidat_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "candidat_document_candidat_id_candidat_id_fk": {
+          "name": "candidat_document_candidat_id_candidat_id_fk",
+          "tableFrom": "candidat_document",
+          "tableTo": "candidat",
+          "columnsFrom": [
+            "candidat_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "candidat_document_cle_unique": {
+          "name": "candidat_document_cle_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "cle"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.candidat_experience": {
+      "name": "candidat_experience",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "candidat_id": {
+          "name": "candidat_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ordre": {
+          "name": "ordre",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "poste": {
+          "name": "poste",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "employeur": {
+          "name": "employeur",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ville": {
+          "name": "ville",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "duree": {
+          "name": "duree",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "missions": {
+          "name": "missions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "candidat_experience_candidat_idx": {
+          "name": "candidat_experience_candidat_idx",
+          "columns": [
+            {
+              "expression": "candidat_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "candidat_experience_candidat_id_candidat_id_fk": {
+          "name": "candidat_experience_candidat_id_candidat_id_fk",
+          "tableFrom": "candidat_experience",
+          "tableTo": "candidat",
+          "columnsFrom": [
+            "candidat_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.candidat_jeton": {
+      "name": "candidat_jeton",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "candidat_id": {
+          "name": "candidat_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "type_jeton_candidat",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "empreinte": {
+          "name": "empreinte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expire_le": {
+          "name": "expire_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "utilise_le": {
+          "name": "utilise_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_par": {
+          "name": "cree_par",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "candidat_jeton_candidat_idx": {
+          "name": "candidat_jeton_candidat_idx",
+          "columns": [
+            {
+              "expression": "candidat_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "candidat_jeton_candidat_id_candidat_id_fk": {
+          "name": "candidat_jeton_candidat_id_candidat_id_fk",
+          "tableFrom": "candidat_jeton",
+          "tableTo": "candidat",
+          "columnsFrom": [
+            "candidat_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "candidat_jeton_cree_par_user_id_fk": {
+          "name": "candidat_jeton_cree_par_user_id_fk",
+          "tableFrom": "candidat_jeton",
+          "tableTo": "user",
+          "columnsFrom": [
+            "cree_par"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "candidat_jeton_empreinte_unique": {
+          "name": "candidat_jeton_empreinte_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "empreinte"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.candidat_session": {
+      "name": "candidat_session",
+      "schema": "",
+      "columns": {
+        "empreinte": {
+          "name": "empreinte",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "candidat_id": {
+          "name": "candidat_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "expire_le": {
+          "name": "expire_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ip": {
+          "name": "ip",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "candidat_session_candidat_idx": {
+          "name": "candidat_session_candidat_idx",
+          "columns": [
+            {
+              "expression": "candidat_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "candidat_session_candidat_id_candidat_id_fk": {
+          "name": "candidat_session_candidat_id_candidat_id_fk",
+          "tableFrom": "candidat_session",
+          "tableTo": "candidat",
+          "columnsFrom": [
+            "candidat_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.candidature": {
+      "name": "candidature",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "candidat_id": {
+          "name": "candidat_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "offre_slug": {
+          "name": "offre_slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "offre_titre": {
+          "name": "offre_titre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "motivation": {
+          "name": "motivation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "statut": {
+          "name": "statut",
+          "type": "statut_candidature",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'recue'"
+        },
+        "referent_id": {
+          "name": "referent_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "traitee_le": {
+          "name": "traitee_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "traitee_par": {
+          "name": "traitee_par",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "candidature_candidat_offre_uq": {
+          "name": "candidature_candidat_offre_uq",
+          "columns": [
+            {
+              "expression": "candidat_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "offre_slug",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "candidature_offre_idx": {
+          "name": "candidature_offre_idx",
+          "columns": [
+            {
+              "expression": "offre_slug",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "candidature_referent_idx": {
+          "name": "candidature_referent_idx",
+          "columns": [
+            {
+              "expression": "referent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "candidature_candidat_id_candidat_id_fk": {
+          "name": "candidature_candidat_id_candidat_id_fk",
+          "tableFrom": "candidature",
+          "tableTo": "candidat",
+          "columnsFrom": [
+            "candidat_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "candidature_referent_id_user_id_fk": {
+          "name": "candidature_referent_id_user_id_fk",
+          "tableFrom": "candidature",
+          "tableTo": "user",
+          "columnsFrom": [
+            "referent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "candidature_traitee_par_user_id_fk": {
+          "name": "candidature_traitee_par_user_id_fk",
+          "tableFrom": "candidature",
+          "tableTo": "user",
+          "columnsFrom": [
+            "traitee_par"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.offre_responsable": {
+      "name": "offre_responsable",
+      "schema": "",
+      "columns": {
+        "offre_slug": {
+          "name": "offre_slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "offre_responsable_user_id_user_id_fk": {
+          "name": "offre_responsable_user_id_user_id_fk",
+          "tableFrom": "offre_responsable",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "offre_responsable_offre_slug_user_id_pk": {
+          "name": "offre_responsable_offre_slug_user_id_pk",
+          "columns": [
+            "offre_slug",
+            "user_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.acces_profil": {
+      "name": "acces_profil",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "proposition_id": {
+          "name": "proposition_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "empreinte": {
+          "name": "empreinte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "objet": {
+          "name": "objet",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'profil'"
+        },
+        "expire_le": {
+          "name": "expire_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revoque_le": {
+          "name": "revoque_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "auteur_id": {
+          "name": "auteur_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "acces_profil_proposition_idx": {
+          "name": "acces_profil_proposition_idx",
+          "columns": [
+            {
+              "expression": "proposition_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "acces_profil_proposition_id_proposition_id_fk": {
+          "name": "acces_profil_proposition_id_proposition_id_fk",
+          "tableFrom": "acces_profil",
+          "tableTo": "proposition",
+          "columnsFrom": [
+            "proposition_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "acces_profil_auteur_id_user_id_fk": {
+          "name": "acces_profil_auteur_id_user_id_fk",
+          "tableFrom": "acces_profil",
+          "tableTo": "user",
+          "columnsFrom": [
+            "auteur_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "acces_profil_empreinte_unique": {
+          "name": "acces_profil_empreinte_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "empreinte"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.notification_candidat": {
+      "name": "notification_candidat",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "candidat_id": {
+          "name": "candidat_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "titre": {
+          "name": "titre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "texte": {
+          "name": "texte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lien": {
+          "name": "lien",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cle": {
+          "name": "cle",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "lu_le": {
+          "name": "lu_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "notification_candidat_idx": {
+          "name": "notification_candidat_idx",
+          "columns": [
+            {
+              "expression": "candidat_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "lu_le",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "notification_candidat_cle_uq": {
+          "name": "notification_candidat_cle_uq",
+          "columns": [
+            {
+              "expression": "candidat_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "cle",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "notification_candidat_candidat_id_candidat_id_fk": {
+          "name": "notification_candidat_candidat_id_candidat_id_fk",
+          "tableFrom": "notification_candidat",
+          "tableTo": "candidat",
+          "columnsFrom": [
+            "candidat_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.placement": {
+      "name": "placement",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "proposition_id": {
+          "name": "proposition_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dossier_id": {
+          "name": "dossier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ligne_poste_id": {
+          "name": "ligne_poste_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "candidat_id": {
+          "name": "candidat_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "statut": {
+          "name": "statut",
+          "type": "statut_placement",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'annonce'"
+        },
+        "date_prevue": {
+          "name": "date_prevue",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "poste": {
+          "name": "poste",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "salaire": {
+          "name": "salaire",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remplacement": {
+          "name": "remplacement",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "remplace_placement_id": {
+          "name": "remplace_placement_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "auteur_id": {
+          "name": "auteur_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "confirme_le": {
+          "name": "confirme_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "confirmation_mode": {
+          "name": "confirmation_mode",
+          "type": "mode_confirmation",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "date_prise_de_poste": {
+          "name": "date_prise_de_poste",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "signataire_nom": {
+          "name": "signataire_nom",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "signataire_fonction": {
+          "name": "signataire_fonction",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "confirmation_ip": {
+          "name": "confirmation_ip",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "confirme_par_id": {
+          "name": "confirme_par_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "preuve_cle": {
+          "name": "preuve_cle",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "preuve_mime": {
+          "name": "preuve_mime",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "preuve_nom": {
+          "name": "preuve_nom",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fin_le": {
+          "name": "fin_le",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fin_motif": {
+          "name": "fin_motif",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "placement_dossier_idx": {
+          "name": "placement_dossier_idx",
+          "columns": [
+            {
+              "expression": "dossier_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "placement_ligne_idx": {
+          "name": "placement_ligne_idx",
+          "columns": [
+            {
+              "expression": "ligne_poste_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "placement_candidat_idx": {
+          "name": "placement_candidat_idx",
+          "columns": [
+            {
+              "expression": "candidat_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "placement_proposition_uq": {
+          "name": "placement_proposition_uq",
+          "columns": [
+            {
+              "expression": "proposition_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"placement\".\"statut\" <> 'abandonne'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "placement_proposition_id_proposition_id_fk": {
+          "name": "placement_proposition_id_proposition_id_fk",
+          "tableFrom": "placement",
+          "tableTo": "proposition",
+          "columnsFrom": [
+            "proposition_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "placement_dossier_id_dossier_id_fk": {
+          "name": "placement_dossier_id_dossier_id_fk",
+          "tableFrom": "placement",
+          "tableTo": "dossier",
+          "columnsFrom": [
+            "dossier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "placement_ligne_poste_id_ligne_poste_id_fk": {
+          "name": "placement_ligne_poste_id_ligne_poste_id_fk",
+          "tableFrom": "placement",
+          "tableTo": "ligne_poste",
+          "columnsFrom": [
+            "ligne_poste_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "placement_candidat_id_candidat_id_fk": {
+          "name": "placement_candidat_id_candidat_id_fk",
+          "tableFrom": "placement",
+          "tableTo": "candidat",
+          "columnsFrom": [
+            "candidat_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "placement_auteur_id_user_id_fk": {
+          "name": "placement_auteur_id_user_id_fk",
+          "tableFrom": "placement",
+          "tableTo": "user",
+          "columnsFrom": [
+            "auteur_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "placement_confirme_par_id_user_id_fk": {
+          "name": "placement_confirme_par_id_user_id_fk",
+          "tableFrom": "placement",
+          "tableTo": "user",
+          "columnsFrom": [
+            "confirme_par_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.proposition": {
+      "name": "proposition",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "dossier_id": {
+          "name": "dossier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ligne_poste_id": {
+          "name": "ligne_poste_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "candidat_id": {
+          "name": "candidat_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "statut": {
+          "name": "statut",
+          "type": "statut_proposition",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'en_attente_accord'"
+        },
+        "auteur_id": {
+          "name": "auteur_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "maj_le": {
+          "name": "maj_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "salaire_communicable": {
+          "name": "salaire_communicable",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "accord_mode": {
+          "name": "accord_mode",
+          "type": "mode_accord",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "accord_le": {
+          "name": "accord_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "accord_par_id": {
+          "name": "accord_par_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "accord_preuve_cle": {
+          "name": "accord_preuve_cle",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "accord_preuve_mime": {
+          "name": "accord_preuve_mime",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "accord_ip": {
+          "name": "accord_ip",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "motif": {
+          "name": "motif",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reponse_le": {
+          "name": "reponse_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "relance_accord_le": {
+          "name": "relance_accord_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "numero_communicable": {
+          "name": "numero_communicable",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "entretien_le": {
+          "name": "entretien_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "entretien_lieu": {
+          "name": "entretien_lieu",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "decision_le": {
+          "name": "decision_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "retour_client": {
+          "name": "retour_client",
+          "type": "retour_client",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "retour_client_motif": {
+          "name": "retour_client_motif",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "retour_client_le": {
+          "name": "retour_client_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "acces_revoque_le": {
+          "name": "acces_revoque_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remplace_placement_id": {
+          "name": "remplace_placement_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "proposition_dossier_idx": {
+          "name": "proposition_dossier_idx",
+          "columns": [
+            {
+              "expression": "dossier_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "proposition_candidat_idx": {
+          "name": "proposition_candidat_idx",
+          "columns": [
+            {
+              "expression": "candidat_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "proposition_statut_idx": {
+          "name": "proposition_statut_idx",
+          "columns": [
+            {
+              "expression": "statut",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "proposition_active_uq": {
+          "name": "proposition_active_uq",
+          "columns": [
+            {
+              "expression": "ligne_poste_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "candidat_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"proposition\".\"statut\" NOT IN ('refusee', 'refusee_candidat', 'retiree')",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "proposition_dossier_id_dossier_id_fk": {
+          "name": "proposition_dossier_id_dossier_id_fk",
+          "tableFrom": "proposition",
+          "tableTo": "dossier",
+          "columnsFrom": [
+            "dossier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "proposition_ligne_poste_id_ligne_poste_id_fk": {
+          "name": "proposition_ligne_poste_id_ligne_poste_id_fk",
+          "tableFrom": "proposition",
+          "tableTo": "ligne_poste",
+          "columnsFrom": [
+            "ligne_poste_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "proposition_candidat_id_candidat_id_fk": {
+          "name": "proposition_candidat_id_candidat_id_fk",
+          "tableFrom": "proposition",
+          "tableTo": "candidat",
+          "columnsFrom": [
+            "candidat_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "proposition_client_id_client_id_fk": {
+          "name": "proposition_client_id_client_id_fk",
+          "tableFrom": "proposition",
+          "tableTo": "client",
+          "columnsFrom": [
+            "client_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "proposition_auteur_id_user_id_fk": {
+          "name": "proposition_auteur_id_user_id_fk",
+          "tableFrom": "proposition",
+          "tableTo": "user",
+          "columnsFrom": [
+            "auteur_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "proposition_accord_par_id_user_id_fk": {
+          "name": "proposition_accord_par_id_user_id_fk",
+          "tableFrom": "proposition",
+          "tableTo": "user",
+          "columnsFrom": [
+            "accord_par_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.verification_client": {
+      "name": "verification_client",
+      "schema": "",
+      "columns": {
+        "cle": {
+          "name": "cle",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "echecs": {
+          "name": "echecs",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "premier_echec_le": {
+          "name": "premier_echec_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bloque_jusqu_a": {
+          "name": "bloque_jusqu_a",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.devis": {
+      "name": "devis",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "dossier_id": {
+          "name": "dossier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "type_devis",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'devis'"
+        },
+        "numero": {
+          "name": "numero",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "devis_initial_id": {
+          "name": "devis_initial_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "statut": {
+          "name": "statut",
+          "type": "statut_devis",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'brouillon'"
+        },
+        "lignes": {
+          "name": "lignes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "taux_tva": {
+          "name": "taux_tva",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_ht": {
+          "name": "total_ht",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "montant_tva": {
+          "name": "montant_tva",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_ttc": {
+          "name": "total_ttc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "taux_acompte": {
+          "name": "taux_acompte",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "justification_taux": {
+          "name": "justification_taux",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "acompte": {
+          "name": "acompte",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "delai_recherche_jours": {
+          "name": "delai_recherche_jours",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "garantie_jours": {
+          "name": "garantie_jours",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "validite_jours": {
+          "name": "validite_jours",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "conditions": {
+          "name": "conditions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "conditions_particulieres": {
+          "name": "conditions_particulieres",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mentions_legales": {
+          "name": "mentions_legales",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prolongation_jours": {
+          "name": "prolongation_jours",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deduction_credit": {
+          "name": "deduction_credit",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "auteur_id": {
+          "name": "auteur_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "maj_le": {
+          "name": "maj_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "valide_direction_par_id": {
+          "name": "valide_direction_par_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "valide_direction_le": {
+          "name": "valide_direction_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "valide_par_id": {
+          "name": "valide_par_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "valide_le": {
+          "name": "valide_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "envoye_le": {
+          "name": "envoye_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expire_le": {
+          "name": "expire_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pdf_empreinte": {
+          "name": "pdf_empreinte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "acceptation_mode": {
+          "name": "acceptation_mode",
+          "type": "mode_acceptation",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "accepte_le": {
+          "name": "accepte_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "signataire_nom": {
+          "name": "signataire_nom",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "signataire_fonction": {
+          "name": "signataire_fonction",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "acceptation_ip": {
+          "name": "acceptation_ip",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "acceptation_navigateur": {
+          "name": "acceptation_navigateur",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "acceptation_preuve_cle": {
+          "name": "acceptation_preuve_cle",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "acceptation_preuve_mime": {
+          "name": "acceptation_preuve_mime",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "acceptation_par_id": {
+          "name": "acceptation_par_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "refus_le": {
+          "name": "refus_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "refus_motif": {
+          "name": "refus_motif",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "devis_dossier_idx": {
+          "name": "devis_dossier_idx",
+          "columns": [
+            {
+              "expression": "dossier_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "devis_statut_idx": {
+          "name": "devis_statut_idx",
+          "columns": [
+            {
+              "expression": "statut",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "devis_numero_version_uq": {
+          "name": "devis_numero_version_uq",
+          "columns": [
+            {
+              "expression": "numero",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "version",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "devis_dossier_id_dossier_id_fk": {
+          "name": "devis_dossier_id_dossier_id_fk",
+          "tableFrom": "devis",
+          "tableTo": "dossier",
+          "columnsFrom": [
+            "dossier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "devis_client_id_client_id_fk": {
+          "name": "devis_client_id_client_id_fk",
+          "tableFrom": "devis",
+          "tableTo": "client",
+          "columnsFrom": [
+            "client_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "devis_auteur_id_user_id_fk": {
+          "name": "devis_auteur_id_user_id_fk",
+          "tableFrom": "devis",
+          "tableTo": "user",
+          "columnsFrom": [
+            "auteur_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "devis_valide_direction_par_id_user_id_fk": {
+          "name": "devis_valide_direction_par_id_user_id_fk",
+          "tableFrom": "devis",
+          "tableTo": "user",
+          "columnsFrom": [
+            "valide_direction_par_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "devis_valide_par_id_user_id_fk": {
+          "name": "devis_valide_par_id_user_id_fk",
+          "tableFrom": "devis",
+          "tableTo": "user",
+          "columnsFrom": [
+            "valide_par_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "devis_document_id_document_id_fk": {
+          "name": "devis_document_id_document_id_fk",
+          "tableFrom": "devis",
+          "tableTo": "document",
+          "columnsFrom": [
+            "document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "devis_acceptation_par_id_user_id_fk": {
+          "name": "devis_acceptation_par_id_user_id_fk",
+          "tableFrom": "devis",
+          "tableTo": "user",
+          "columnsFrom": [
+            "acceptation_par_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.facture": {
+      "name": "facture",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "numero": {
+          "name": "numero",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "type_facture",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dossier_id": {
+          "name": "dossier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "devis_id": {
+          "name": "devis_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "facture_origine_id": {
+          "name": "facture_origine_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "libelle": {
+          "name": "libelle",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lignes": {
+          "name": "lignes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "taux_tva": {
+          "name": "taux_tva",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_ht": {
+          "name": "total_ht",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "montant_tva": {
+          "name": "montant_tva",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_ttc": {
+          "name": "total_ttc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "client": {
+          "name": "client",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mentions_legales": {
+          "name": "mentions_legales",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "emise_le": {
+          "name": "emise_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "auteur_id": {
+          "name": "auteur_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "facture_dossier_idx": {
+          "name": "facture_dossier_idx",
+          "columns": [
+            {
+              "expression": "dossier_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "facture_dossier_id_dossier_id_fk": {
+          "name": "facture_dossier_id_dossier_id_fk",
+          "tableFrom": "facture",
+          "tableTo": "dossier",
+          "columnsFrom": [
+            "dossier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "facture_devis_id_devis_id_fk": {
+          "name": "facture_devis_id_devis_id_fk",
+          "tableFrom": "facture",
+          "tableTo": "devis",
+          "columnsFrom": [
+            "devis_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "facture_auteur_id_user_id_fk": {
+          "name": "facture_auteur_id_user_id_fk",
+          "tableFrom": "facture",
+          "tableTo": "user",
+          "columnsFrom": [
+            "auteur_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "facture_numero_unique": {
+          "name": "facture_numero_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "numero"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.facture_pdf": {
+      "name": "facture_pdf",
+      "schema": "",
+      "columns": {
+        "facture_id": {
+          "name": "facture_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "empreinte": {
+          "name": "empreinte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "facture_pdf_facture_id_facture_id_fk": {
+          "name": "facture_pdf_facture_id_facture_id_fk",
+          "tableFrom": "facture_pdf",
+          "tableTo": "facture",
+          "columnsFrom": [
+            "facture_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "facture_pdf_document_id_document_id_fk": {
+          "name": "facture_pdf_document_id_document_id_fk",
+          "tableFrom": "facture_pdf",
+          "tableTo": "document",
+          "columnsFrom": [
+            "document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.parametre_historique": {
+      "name": "parametre_historique",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "cle": {
+          "name": "cle",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "valeur": {
+          "name": "valeur",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "effet_le": {
+          "name": "effet_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "auteur_id": {
+          "name": "auteur_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "parametre_historique_cle_idx": {
+          "name": "parametre_historique_cle_idx",
+          "columns": [
+            {
+              "expression": "cle",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "effet_le",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "parametre_historique_auteur_id_user_id_fk": {
+          "name": "parametre_historique_auteur_id_user_id_fk",
+          "tableFrom": "parametre_historique",
+          "tableTo": "user",
+          "columnsFrom": [
+            "auteur_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.sequence_document": {
+      "name": "sequence_document",
+      "schema": "",
+      "columns": {
+        "sequence": {
+          "name": "sequence",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "annee": {
+          "name": "annee",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dernier": {
+          "name": "dernier",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "sequence_document_sequence_annee_pk": {
+          "name": "sequence_document_sequence_annee_pk",
+          "columns": [
+            "sequence",
+            "annee"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ajustement": {
+      "name": "ajustement",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "dossier_id": {
+          "name": "dossier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "montant": {
+          "name": "montant",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "choix": {
+          "name": "choix",
+          "type": "choix_ajustement",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "avoir_id": {
+          "name": "avoir_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "commentaire": {
+          "name": "commentaire",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "auteur_id": {
+          "name": "auteur_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "ajustement_dossier_idx": {
+          "name": "ajustement_dossier_idx",
+          "columns": [
+            {
+              "expression": "dossier_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "ajustement_dossier_id_dossier_id_fk": {
+          "name": "ajustement_dossier_id_dossier_id_fk",
+          "tableFrom": "ajustement",
+          "tableTo": "dossier",
+          "columnsFrom": [
+            "dossier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ajustement_avoir_id_facture_id_fk": {
+          "name": "ajustement_avoir_id_facture_id_fk",
+          "tableFrom": "ajustement",
+          "tableTo": "facture",
+          "columnsFrom": [
+            "avoir_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ajustement_auteur_id_user_id_fk": {
+          "name": "ajustement_auteur_id_user_id_fk",
+          "tableFrom": "ajustement",
+          "tableTo": "user",
+          "columnsFrom": [
+            "auteur_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.demande_annulation": {
+      "name": "demande_annulation",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "encaissement_id": {
+          "name": "encaissement_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "motif": {
+          "name": "motif",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "statut": {
+          "name": "statut",
+          "type": "statut_demande_annulation",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'en_attente'"
+        },
+        "demande_par_id": {
+          "name": "demande_par_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "demande_le": {
+          "name": "demande_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "traitee_par_id": {
+          "name": "traitee_par_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "traitee_le": {
+          "name": "traitee_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reponse": {
+          "name": "reponse",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "demande_annulation_encaissement_idx": {
+          "name": "demande_annulation_encaissement_idx",
+          "columns": [
+            {
+              "expression": "encaissement_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "demande_annulation_encaissement_id_encaissement_id_fk": {
+          "name": "demande_annulation_encaissement_id_encaissement_id_fk",
+          "tableFrom": "demande_annulation",
+          "tableTo": "encaissement",
+          "columnsFrom": [
+            "encaissement_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "demande_annulation_demande_par_id_user_id_fk": {
+          "name": "demande_annulation_demande_par_id_user_id_fk",
+          "tableFrom": "demande_annulation",
+          "tableTo": "user",
+          "columnsFrom": [
+            "demande_par_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "demande_annulation_traitee_par_id_user_id_fk": {
+          "name": "demande_annulation_traitee_par_id_user_id_fk",
+          "tableFrom": "demande_annulation",
+          "tableTo": "user",
+          "columnsFrom": [
+            "traitee_par_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.encaissement": {
+      "name": "encaissement",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "dossier_id": {
+          "name": "dossier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "devis_id": {
+          "name": "devis_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "type_ecriture",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'encaissement'"
+        },
+        "nature": {
+          "name": "nature",
+          "type": "nature_encaissement",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "montant": {
+          "name": "montant",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "moyen": {
+          "name": "moyen",
+          "type": "moyen_paiement",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reference": {
+          "name": "reference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reference_normalisee": {
+          "name": "reference_normalisee",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recu_le": {
+          "name": "recu_le",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "justificatif_document_id": {
+          "name": "justificatif_document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "commentaire": {
+          "name": "commentaire",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "annule_encaissement_id": {
+          "name": "annule_encaissement_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "motif": {
+          "name": "motif",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remboursement_id": {
+          "name": "remboursement_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recu_numero": {
+          "name": "recu_numero",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "auteur_id": {
+          "name": "auteur_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "encaissement_dossier_idx": {
+          "name": "encaissement_dossier_idx",
+          "columns": [
+            {
+              "expression": "dossier_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "encaissement_reference_idx": {
+          "name": "encaissement_reference_idx",
+          "columns": [
+            {
+              "expression": "moyen",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "reference_normalisee",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "encaissement_annulation_uq": {
+          "name": "encaissement_annulation_uq",
+          "columns": [
+            {
+              "expression": "annule_encaissement_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "encaissement_dossier_id_dossier_id_fk": {
+          "name": "encaissement_dossier_id_dossier_id_fk",
+          "tableFrom": "encaissement",
+          "tableTo": "dossier",
+          "columnsFrom": [
+            "dossier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "encaissement_devis_id_devis_id_fk": {
+          "name": "encaissement_devis_id_devis_id_fk",
+          "tableFrom": "encaissement",
+          "tableTo": "devis",
+          "columnsFrom": [
+            "devis_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "encaissement_justificatif_document_id_document_id_fk": {
+          "name": "encaissement_justificatif_document_id_document_id_fk",
+          "tableFrom": "encaissement",
+          "tableTo": "document",
+          "columnsFrom": [
+            "justificatif_document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "encaissement_auteur_id_user_id_fk": {
+          "name": "encaissement_auteur_id_user_id_fk",
+          "tableFrom": "encaissement",
+          "tableTo": "user",
+          "columnsFrom": [
+            "auteur_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "encaissement_recu_numero_unique": {
+          "name": "encaissement_recu_numero_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "recu_numero"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.mouvement_credit": {
+      "name": "mouvement_credit",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "montant": {
+          "name": "montant",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "libelle": {
+          "name": "libelle",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dossier_id": {
+          "name": "dossier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ajustement_id": {
+          "name": "ajustement_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "devis_id": {
+          "name": "devis_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "facture_id": {
+          "name": "facture_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "auteur_id": {
+          "name": "auteur_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "mouvement_credit_client_idx": {
+          "name": "mouvement_credit_client_idx",
+          "columns": [
+            {
+              "expression": "client_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "mouvement_credit_client_id_client_id_fk": {
+          "name": "mouvement_credit_client_id_client_id_fk",
+          "tableFrom": "mouvement_credit",
+          "tableTo": "client",
+          "columnsFrom": [
+            "client_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mouvement_credit_dossier_id_dossier_id_fk": {
+          "name": "mouvement_credit_dossier_id_dossier_id_fk",
+          "tableFrom": "mouvement_credit",
+          "tableTo": "dossier",
+          "columnsFrom": [
+            "dossier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mouvement_credit_ajustement_id_ajustement_id_fk": {
+          "name": "mouvement_credit_ajustement_id_ajustement_id_fk",
+          "tableFrom": "mouvement_credit",
+          "tableTo": "ajustement",
+          "columnsFrom": [
+            "ajustement_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mouvement_credit_devis_id_devis_id_fk": {
+          "name": "mouvement_credit_devis_id_devis_id_fk",
+          "tableFrom": "mouvement_credit",
+          "tableTo": "devis",
+          "columnsFrom": [
+            "devis_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mouvement_credit_facture_id_facture_id_fk": {
+          "name": "mouvement_credit_facture_id_facture_id_fk",
+          "tableFrom": "mouvement_credit",
+          "tableTo": "facture",
+          "columnsFrom": [
+            "facture_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mouvement_credit_auteur_id_user_id_fk": {
+          "name": "mouvement_credit_auteur_id_user_id_fk",
+          "tableFrom": "mouvement_credit",
+          "tableTo": "user",
+          "columnsFrom": [
+            "auteur_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.recu_pdf": {
+      "name": "recu_pdf",
+      "schema": "",
+      "columns": {
+        "encaissement_id": {
+          "name": "encaissement_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "empreinte": {
+          "name": "empreinte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "recu_pdf_encaissement_id_encaissement_id_fk": {
+          "name": "recu_pdf_encaissement_id_encaissement_id_fk",
+          "tableFrom": "recu_pdf",
+          "tableTo": "encaissement",
+          "columnsFrom": [
+            "encaissement_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "recu_pdf_document_id_document_id_fk": {
+          "name": "recu_pdf_document_id_document_id_fk",
+          "tableFrom": "recu_pdf",
+          "tableTo": "document",
+          "columnsFrom": [
+            "document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.remboursement": {
+      "name": "remboursement",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "dossier_id": {
+          "name": "dossier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ajustement_id": {
+          "name": "ajustement_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "montant": {
+          "name": "montant",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "statut": {
+          "name": "statut",
+          "type": "statut_remboursement",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'a_valider'"
+        },
+        "prepare_par_id": {
+          "name": "prepare_par_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prepare_le": {
+          "name": "prepare_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "valide_par_id": {
+          "name": "valide_par_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "valide_le": {
+          "name": "valide_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "motif_refus": {
+          "name": "motif_refus",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "effectue_par_id": {
+          "name": "effectue_par_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "effectue_le": {
+          "name": "effectue_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "encaissement_id": {
+          "name": "encaissement_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "remboursement_dossier_idx": {
+          "name": "remboursement_dossier_idx",
+          "columns": [
+            {
+              "expression": "dossier_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "remboursement_statut_idx": {
+          "name": "remboursement_statut_idx",
+          "columns": [
+            {
+              "expression": "statut",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "remboursement_dossier_id_dossier_id_fk": {
+          "name": "remboursement_dossier_id_dossier_id_fk",
+          "tableFrom": "remboursement",
+          "tableTo": "dossier",
+          "columnsFrom": [
+            "dossier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "remboursement_ajustement_id_ajustement_id_fk": {
+          "name": "remboursement_ajustement_id_ajustement_id_fk",
+          "tableFrom": "remboursement",
+          "tableTo": "ajustement",
+          "columnsFrom": [
+            "ajustement_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "remboursement_prepare_par_id_user_id_fk": {
+          "name": "remboursement_prepare_par_id_user_id_fk",
+          "tableFrom": "remboursement",
+          "tableTo": "user",
+          "columnsFrom": [
+            "prepare_par_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "remboursement_valide_par_id_user_id_fk": {
+          "name": "remboursement_valide_par_id_user_id_fk",
+          "tableFrom": "remboursement",
+          "tableTo": "user",
+          "columnsFrom": [
+            "valide_par_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "remboursement_effectue_par_id_user_id_fk": {
+          "name": "remboursement_effectue_par_id_user_id_fk",
+          "tableFrom": "remboursement",
+          "tableTo": "user",
+          "columnsFrom": [
+            "effectue_par_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "remboursement_encaissement_id_encaissement_id_fk": {
+          "name": "remboursement_encaissement_id_encaissement_id_fk",
+          "tableFrom": "remboursement",
+          "tableTo": "encaissement",
+          "columnsFrom": [
+            "encaissement_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.rendez_vous": {
+      "name": "rendez_vous",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "dossier_id": {
+          "name": "dossier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "type_rendez_vous",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "debut": {
+          "name": "debut",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "planifie_le": {
+          "name": "planifie_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "duree_minutes": {
+          "name": "duree_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 60
+        },
+        "lieu": {
+          "name": "lieu",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "participants": {
+          "name": "participants",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "statut": {
+          "name": "statut",
+          "type": "statut_rendez_vous",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'prevu'"
+        },
+        "compte_rendu": {
+          "name": "compte_rendu",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_par": {
+          "name": "cree_par",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cree_le": {
+          "name": "cree_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "modifie_le": {
+          "name": "modifie_le",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "rendez_vous_debut_idx": {
+          "name": "rendez_vous_debut_idx",
+          "columns": [
+            {
+              "expression": "debut",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "rendez_vous_dossier_idx": {
+          "name": "rendez_vous_dossier_idx",
+          "columns": [
+            {
+              "expression": "dossier_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "rendez_vous_dossier_id_dossier_id_fk": {
+          "name": "rendez_vous_dossier_id_dossier_id_fk",
+          "tableFrom": "rendez_vous",
+          "tableTo": "dossier",
+          "columnsFrom": [
+            "dossier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "rendez_vous_cree_par_user_id_fk": {
+          "name": "rendez_vous_cree_par_user_id_fk",
+          "tableFrom": "rendez_vous",
+          "tableTo": "user",
+          "columnsFrom": [
+            "cree_par"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.type_dossier": {
+      "name": "type_dossier",
+      "schema": "public",
+      "values": [
+        "REC",
+        "NET",
+        "EV",
+        "ABO",
+        "MAD",
+        "PAR",
+        "RCL"
+      ]
+    },
+    "public.role_collaborateur": {
+      "name": "role_collaborateur",
+      "schema": "public",
+      "values": [
+        "referent",
+        "finances",
+        "direction",
+        "admin"
+      ]
+    },
+    "public.type_acteur": {
+      "name": "type_acteur",
+      "schema": "public",
+      "values": [
+        "collaborateur",
+        "client",
+        "candidat",
+        "systeme",
+        "anonyme"
+      ]
+    },
+    "public.canal_demande": {
+      "name": "canal_demande",
+      "schema": "public",
+      "values": [
+        "site",
+        "whatsapp",
+        "telephone",
+        "email",
+        "visite",
+        "autre"
+      ]
+    },
+    "public.categorie_document": {
+      "name": "categorie_document",
+      "schema": "public",
+      "values": [
+        "piece_client",
+        "devis_externe",
+        "justificatif",
+        "autre",
+        "devis",
+        "facture",
+        "accuse_reception",
+        "attestation",
+        "recu"
+      ]
+    },
+    "public.type_client": {
+      "name": "type_client",
+      "schema": "public",
+      "values": [
+        "entreprise",
+        "particulier"
+      ]
+    },
+    "public.type_evenement": {
+      "name": "type_evenement",
+      "schema": "public",
+      "values": [
+        "creation",
+        "transition",
+        "modification",
+        "attribution",
+        "reaffectation",
+        "note",
+        "document",
+        "rattachement",
+        "whatsapp",
+        "lien_suivi",
+        "client",
+        "proposition",
+        "placement",
+        "rendez_vous"
+      ]
+    },
+    "public.source_acquisition": {
+      "name": "source_acquisition",
+      "schema": "public",
+      "values": [
+        "google_naturel",
+        "google_ads",
+        "google_maps",
+        "facebook",
+        "instagram",
+        "tiktok",
+        "whatsapp_direct",
+        "bouche_a_oreille",
+        "prospection",
+        "partenaire",
+        "autre",
+        "inconnue"
+      ]
+    },
+    "public.statut_dossier": {
+      "name": "statut_dossier",
+      "schema": "public",
+      "values": [
+        "nouvelle_demande",
+        "attribuee",
+        "en_qualification",
+        "a_completer",
+        "devis_pret",
+        "devis_envoye",
+        "accepte",
+        "acompte_recu",
+        "recherche_en_cours",
+        "candidats_proposes",
+        "placements_confirmes",
+        "en_cours",
+        "termine",
+        "solde_recu",
+        "cloture",
+        "refuse",
+        "sans_suite"
+      ]
+    },
+    "public.canal_consentement": {
+      "name": "canal_consentement",
+      "schema": "public",
+      "values": [
+        "site",
+        "assiste"
+      ]
+    },
+    "public.categorie_document_candidat": {
+      "name": "categorie_document_candidat",
+      "schema": "public",
+      "values": [
+        "cv",
+        "justificatif"
+      ]
+    },
+    "public.disponibilite_candidat": {
+      "name": "disponibilite_candidat",
+      "schema": "public",
+      "values": [
+        "immediate",
+        "a_partir_du",
+        "preavis"
+      ]
+    },
+    "public.statut_candidat": {
+      "name": "statut_candidat",
+      "schema": "public",
+      "values": [
+        "nouveau",
+        "a_contacter",
+        "preselectionne",
+        "entretien",
+        "propose",
+        "place",
+        "indisponible"
+      ]
+    },
+    "public.statut_candidature": {
+      "name": "statut_candidature",
+      "schema": "public",
+      "values": [
+        "recue",
+        "retenue",
+        "refusee"
+      ]
+    },
+    "public.type_consentement": {
+      "name": "type_consentement",
+      "schema": "public",
+      "values": [
+        "traitement",
+        "contact",
+        "majorite"
+      ]
+    },
+    "public.type_jeton_candidat": {
+      "name": "type_jeton_candidat",
+      "schema": "public",
+      "values": [
+        "reinitialisation",
+        "activation"
+      ]
+    },
+    "public.mode_accord": {
+      "name": "mode_accord",
+      "schema": "public",
+      "values": [
+        "espace",
+        "whatsapp"
+      ]
+    },
+    "public.mode_confirmation": {
+      "name": "mode_confirmation",
+      "schema": "public",
+      "values": [
+        "client",
+        "preuve"
+      ]
+    },
+    "public.retour_client": {
+      "name": "retour_client",
+      "schema": "public",
+      "values": [
+        "rencontrer",
+        "ne_correspond_pas"
+      ]
+    },
+    "public.statut_placement": {
+      "name": "statut_placement",
+      "schema": "public",
+      "values": [
+        "annonce",
+        "confirme",
+        "rompu_garantie",
+        "termine",
+        "abandonne"
+      ]
+    },
+    "public.statut_proposition": {
+      "name": "statut_proposition",
+      "schema": "public",
+      "values": [
+        "en_attente_accord",
+        "proposee",
+        "entretien",
+        "retenue",
+        "refusee",
+        "placee",
+        "refusee_candidat",
+        "retiree"
+      ]
+    },
+    "public.mode_acceptation": {
+      "name": "mode_acceptation",
+      "schema": "public",
+      "values": [
+        "suivi",
+        "whatsapp"
+      ]
+    },
+    "public.statut_devis": {
+      "name": "statut_devis",
+      "schema": "public",
+      "values": [
+        "brouillon",
+        "attente_direction",
+        "valide",
+        "envoye",
+        "accepte",
+        "refuse",
+        "expire",
+        "remplace"
+      ]
+    },
+    "public.type_devis": {
+      "name": "type_devis",
+      "schema": "public",
+      "values": [
+        "devis",
+        "avenant"
+      ]
+    },
+    "public.type_facture": {
+      "name": "type_facture",
+      "schema": "public",
+      "values": [
+        "acompte",
+        "solde",
+        "avoir"
+      ]
+    },
+    "public.choix_ajustement": {
+      "name": "choix_ajustement",
+      "schema": "public",
+      "values": [
+        "remboursement",
+        "credit"
+      ]
+    },
+    "public.moyen_paiement": {
+      "name": "moyen_paiement",
+      "schema": "public",
+      "values": [
+        "orange_money",
+        "mtn_momo",
+        "especes",
+        "virement",
+        "cheque",
+        "autre",
+        "credit_client"
+      ]
+    },
+    "public.nature_encaissement": {
+      "name": "nature_encaissement",
+      "schema": "public",
+      "values": [
+        "acompte",
+        "solde",
+        "autre"
+      ]
+    },
+    "public.statut_demande_annulation": {
+      "name": "statut_demande_annulation",
+      "schema": "public",
+      "values": [
+        "en_attente",
+        "acceptee",
+        "refusee"
+      ]
+    },
+    "public.statut_remboursement": {
+      "name": "statut_remboursement",
+      "schema": "public",
+      "values": [
+        "a_valider",
+        "valide",
+        "refuse",
+        "effectue"
+      ]
+    },
+    "public.type_ecriture": {
+      "name": "type_ecriture",
+      "schema": "public",
+      "values": [
+        "encaissement",
+        "annulation",
+        "remboursement",
+        "credit"
+      ]
+    },
+    "public.statut_rendez_vous": {
+      "name": "statut_rendez_vous",
+      "schema": "public",
+      "values": [
+        "prevu",
+        "fait",
+        "annule",
+        "non_honore"
+      ]
+    },
+    "public.type_rendez_vous": {
+      "name": "type_rendez_vous",
+      "schema": "public",
+      "values": [
+        "visite_site",
+        "appel",
+        "entretien",
+        "reunion"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

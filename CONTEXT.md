@@ -72,6 +72,22 @@ Langage commun du projet. Chaque terme a **un seul sens**. En cas de doute, ce f
 | **Mise à disposition** | Prestation où NEXCLEAN reste employeur et refacture le Client. Type de dossier capté en V1 avec devis manuel ; métier hors V1. | Placement |
 | **Page de suivi** | Page accessible au Client par lien sécurisé (sans compte) : statut, documents, acceptation du devis. | Espace candidat |
 
+### Acquisition commerciale (ADR 0025, 0026, 0027)
+
+| Terme | Définition | À ne pas confondre avec |
+|---|---|---|
+| **Prospect** | Terme commercial, pas une entité : un Dossier en phase *Nouveau*, *En qualification* ou *Devis*. | Piste |
+| **Source d'acquisition** | Ce qui a amené le prospect (Google, Facebook, TikTok, bouche-à-oreille, prospection…). Portée par la Demande. | Canal |
+| **Canal** | Voie par laquelle la Demande est arrivée (site, WhatsApp, téléphone…). | Source d'acquisition |
+| **Conversation** | Fil des messages WhatsApp échangés via l'API avec un numéro, donc un Client. | Historique du dossier |
+| **Fenêtre de service** | 24 h suivant le dernier message du client, pendant lesquelles le texte libre est autorisé ; au-delà, modèle approuvé par Meta uniquement. | |
+| **Modèle Meta** | Modèle de message approuvé par Meta, seul envoyable hors fenêtre de service. | Modèle de message (wa.me) |
+| **Copilote IA** | L'IA propose (champs, brouillons, résumés), un humain valide. | Agent conversationnel |
+| **Agent conversationnel** | IA qui répond seule aux prospects sur WhatsApp, dans un périmètre fermé, sans jamais s'engager pour NEXCLEAN. | Copilote IA |
+| **Passage à l'humain** | Transfert d'une conversation de l'agent vers un référent, avec motif et résumé. | Réaffectation |
+| **Piste** | Besoin repéré lors de la veille, avant tout contact. Devient Client + Demande + Dossier quand le prospect écrit. | Prospect, Demande |
+| **Rendez-vous** | Visite, appel ou réunion planifiée sur un Dossier. | |
+
 ## Modèle de domaine (provisoire)
 
 ```

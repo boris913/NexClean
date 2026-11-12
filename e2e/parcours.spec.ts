@@ -41,6 +41,21 @@ test.describe('Site public', () => {
     await page.close();
   });
 
+  test('pages par ville : quartiers, trio d’actions, ville non couverte en 404 (COM1-01 RG-11)', async () => {
+    const page = await visiteur.newPage();
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.locator('#zones').getByRole('link', { name: 'Nos services à Douala' }).click();
+    await expect(page).toHaveURL(/\/zones\/douala$/);
+    await expect(page.locator('h1')).toHaveText('Nettoyage et entretien à Douala');
+    await expect(page.locator('#quartiers')).toContainText('Bonapriso');
+    await expect(page.getByRole('link', { name: 'Devis sur WhatsApp' })).toBeInViewport();
+    await expect(page.getByRole('link', { name: 'Demander un devis' }).first()).toBeInViewport();
+    await sansDefilementHorizontal(page);
+    expect((await page.goto('/zones/yaounde', { waitUntil: 'domcontentloaded' }))?.status()).toBe(200);
+    expect((await page.goto('/zones/kribi', { waitUntil: 'domcontentloaded' }))?.status()).toBe(404);
+    await page.close();
+  });
+
   test('« Demander du personnel » : 4 étapes, validation, brouillon et numéro de dossier', async () => {
     const page = await visiteur.newPage();
     await page.goto('/recrutement');
@@ -197,6 +212,7 @@ test.describe('Back-Office', () => {
   test('saisie manuelle, changement de statut et page de suivi du client', async () => {
     await bo.goto('/admin/dossiers/nouveau');
     await bo.selectOption('#type', 'REC');
+    await bo.selectOption('#source', 'bouche_a_oreille'); // COM1-01 RG-03 : source obligatoire en saisie
     await bo.getByLabel('Entreprise / nom').fill('Résidence Saisie E2E');
     await bo.getByLabel('Nom du contact').fill('M. Ngando');
     await bo.getByLabel('Numéro WhatsApp').fill('690 77 88 99');
@@ -216,6 +232,32 @@ test.describe('Back-Office', () => {
     await bo.getByRole('button', { name: 'Passer à « En qualification »' }).click();
     await expect(bo.locator('main')).toContainText('En qualification');
     await sansDefilementHorizontal(bo);
+
+    // COM1-02 RG-01 / RG-03 : rendez-vous planifié sur le dossier, visible dans l'agenda.
+    const urlDossier = bo.url();
+    const numero = (await bo.locator('h1').first().textContent())!.match(/REC-\d{4}-\d{5}/)![0];
+    const demain = new Date(Date.now() + 25 * 3600_000 + 3600_000).toISOString().slice(0, 10);
+    await bo.locator('#rdv-jour').fill(demain);
+    await bo.locator('#rdv-heure').fill('10:30');
+    await bo.locator('#rdv-lieu').fill('Bonapriso, face pharmacie');
+    await bo.getByRole('button', { name: 'Planifier le rendez-vous' }).click();
+    await expect(bo.locator('#rendez-vous')).toContainText('Visite sur site');
+    await expect(bo.locator('#rendez-vous')).toContainText('10:30');
+    await sansDefilementHorizontal(bo);
+    await bo.goto(`/admin/agenda?vue=jour&jour=${demain}`);
+    await expect(bo.locator('main')).toContainText(numero);
+    await sansDefilementHorizontal(bo);
+
+    // COM1-02 RG-05..08 : tableau de bord commercial et export CSV.
+    await bo.goto('/admin/commercial');
+    await expect(bo.getByRole('heading', { name: 'Commercial' })).toBeVisible();
+    await expect(bo.locator('main')).toContainText('Nouveaux prospects');
+    await expect(bo.locator('main')).toContainText('Bouche-à-oreille');
+    await sansDefilementHorizontal(bo);
+    const exportCsv = await bo.request.get('/admin/commercial/export?periode=mois');
+    expect(exportCsv.status()).toBe(200);
+    expect(await exportCsv.text()).toContain(numero);
+    await bo.goto(urlDossier);
 
     // Le client suit son dossier sans compte ; le salaire proposé n'y apparaît pas.
     const lienSuivi = await bo.getByLabel('Lien de suivi').inputValue();

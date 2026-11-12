@@ -9,6 +9,7 @@ import { peut } from '@/lib/authz/permissions';
 import { ROLES } from '@/lib/domain/referentiels';
 import BoutonDeconnexion from './BoutonDeconnexion';
 import { compterNonLues } from '@/lib/notifications';
+import { compterNonTraitees, peutOuvrirMessagerie } from '@/lib/whatsapp/lecture';
 import { peutAccederVivier } from '@/lib/candidats/acces';
 import { LiensNav, MenuMobile, type GroupeNav, type LienNav } from '@/components/backoffice/Navigation';
 import { RechercheRapide } from '@/components/backoffice/RechercheRapide';
@@ -43,7 +44,7 @@ function Initiales({ nom }: { nom: string }) {
 export default async function LayoutPrive({ children }: { children: React.ReactNode }) {
   const c = await collaborateurCourant();
   if (!c) redirect('/admin/connexion');
-  const [nonLues, vivier] = await Promise.all([compterNonLues(c.id), peutAccederVivier(c)]);
+  const [nonLues, vivier, waNonTraitees] = await Promise.all([compterNonLues(c.id), peutAccederVivier(c), compterNonTraitees(c)]);
 
   const filtrer = (liens: (LienNav & { visible: boolean })[]) => liens.filter((l) => l.visible).map(({ visible: _, ...l }) => l);
   const groupes: GroupeNav[] = [
@@ -56,10 +57,14 @@ export default async function LayoutPrive({ children }: { children: React.ReactN
     {
       titre: 'Activité',
       liens: filtrer([
+        { href: '/admin/messagerie', libelle: 'Messagerie', icone: 'messagerie', badge: waNonTraitees, visible: peutOuvrirMessagerie(c) },
         { href: '/admin/dossiers', libelle: 'Dossiers', icone: 'dossiers', visible: peut(c.roles, 'dossier.voir_siens') || peut(c.roles, 'dossier.voir_tous') },
+        { href: '/admin/agenda', libelle: 'Agenda', icone: 'agenda', visible: peut(c.roles, 'dossier.voir_siens') || peut(c.roles, 'dossier.voir_tous') },
         { href: '/admin/attribution', libelle: 'Attribution', icone: 'attribution', visible: peut(c.roles, 'dossier.reaffecter') },
         { href: '/admin/candidats', libelle: 'Candidats', icone: 'candidats', visible: vivier },
         { href: '/admin/candidatures', libelle: 'Candidatures', icone: 'candidatures', visible: vivier },
+        { href: '/admin/veille', libelle: 'Veille', icone: 'veille', visible: peut(c.roles, 'veille.utiliser') },
+        { href: '/admin/commercial', libelle: 'Commercial', icone: 'commercial', visible: peut(c.roles, 'commercial.tableau_de_bord') },
         { href: '/admin/finances', libelle: 'Finances', icone: 'finances', visible: peut(c.roles, 'finances.tableau_de_bord') },
       ]),
     },
@@ -68,6 +73,7 @@ export default async function LayoutPrive({ children }: { children: React.ReactN
       liens: filtrer([
         { href: '/admin/collaborateurs', libelle: 'Collaborateurs', icone: 'collaborateurs', visible: peut(c.roles, 'collaborateurs.gerer') || peut(c.roles, 'collaborateurs.attributs') },
         { href: '/admin/referentiel', libelle: 'Référentiel', icone: 'referentiel', visible: peut(c.roles, 'referentiel.gerer') },
+        { href: '/admin/agent', libelle: 'Assistant virtuel', icone: 'agent', visible: peut(c.roles, 'agent.gerer') },
         { href: '/admin/modeles', libelle: 'Modèles', icone: 'modeles', visible: peut(c.roles, 'modeles.gerer') },
         { href: '/admin/parametres', libelle: 'Paramètres', icone: 'parametres', visible: peut(c.roles, 'tarifs.modifier') },
         { href: '/admin/journal', libelle: 'Journal', icone: 'journal', visible: peut(c.roles, 'audit.consulter') },

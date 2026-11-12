@@ -99,6 +99,76 @@
       "when": 1793801820369,
       "tag": "0013_encaissements",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1794330683119,
+      "tag": "0014_source_acquisition",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1794343681776,
+      "tag": "0015_rendez_vous",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1794402080227,
+      "tag": "0016_rapport_hebdomadaire",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1794415805123,
+      "tag": "0017_whatsapp_reception",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1794417670663,
+      "tag": "0018_whatsapp_reponses",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1794420425716,
+      "tag": "0019_copilote_ia",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1794421733065,
+      "tag": "0020_agent_conversationnel",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794423606458,
+      "tag": "0021_evaluation_agent",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1794438864415,
+      "tag": "0022_veille_prospects",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1794442399645,
+      "tag": "0023_veille_sources",
+      "breakpoints": true
     }
   ]
 }

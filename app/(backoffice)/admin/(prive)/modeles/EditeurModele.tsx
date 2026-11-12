@@ -11,7 +11,14 @@ export interface Modele {
   types: DossierType[];
   texte: string;
   actif: boolean;
+  metaNom: string | null;
+  metaLangue: string;
+  metaParametres: string[];
+  metaStatut: string | null;
+  metaCategorie: string | null;
 }
+
+const STATUTS_META: Record<string, string> = { APPROVED: 'approuvé par Meta', PENDING: 'en attente chez Meta', REJECTED: 'refusé par Meta', PAUSED: 'suspendu par Meta', DISABLED: 'désactivé par Meta' };
 
 export default function EditeurModele({ modele }: { modele: Modele | null }) {
   const [ouvert, setOuvert] = useState(false);
@@ -19,6 +26,9 @@ export default function EditeurModele({ modele }: { modele: Modele | null }) {
   const [types, setTypes] = useState<DossierType[]>(modele?.types ?? []);
   const [texte, setTexte] = useState(modele?.texte ?? '');
   const [actif, setActif] = useState(modele?.actif ?? true);
+  const [metaNom, setMetaNom] = useState(modele?.metaNom ?? '');
+  const [metaLangue, setMetaLangue] = useState(modele?.metaLangue ?? 'fr');
+  const [metaParametres, setMetaParametres] = useState((modele?.metaParametres ?? []).join(', '));
   const [r, setR] = useState<ResultatAction | null>(null);
   const [envoi, setEnvoi] = useState(false);
   const inconnue = variableInconnue(texte);
@@ -30,6 +40,7 @@ export default function EditeurModele({ modele }: { modele: Modele | null }) {
         <p className="text-xs text-ink-500 mb-1">
           {modele.types.length ? modele.types.map((t) => DOSSIER_TYPES[t]).join(', ') : 'Tous les types'}
           {!modele.actif && ' · désactivé'}
+          {modele.metaNom && ` · WhatsApp : ${modele.metaNom} (${modele.metaStatut ? (STATUTS_META[modele.metaStatut] ?? modele.metaStatut) : 'non synchronisé'}${modele.metaCategorie ? `, ${modele.metaCategorie}` : ''})`}
         </p>
         <p className="text-sm whitespace-pre-wrap">{modele.texte}</p>
       </Carte>
@@ -47,7 +58,7 @@ export default function EditeurModele({ modele }: { modele: Modele | null }) {
         onSubmit={async (e) => {
           e.preventDefault();
           setEnvoi(true);
-          const res = await actions.enregistrer(modele?.id ?? null, { nom, types, texte, actif, langue: 'fr' });
+          const res = await actions.enregistrer(modele?.id ?? null, { nom, types, texte, actif, langue: 'fr', metaNom: metaNom || null, metaLangue, metaParametres: metaParametres.split(',').map((x) => x.trim()).filter(Boolean) });
           setEnvoi(false);
           setR(res);
           if (res.ok) {
@@ -91,6 +102,22 @@ export default function EditeurModele({ modele }: { modele: Modele | null }) {
             </ul>
           </details>
         </div>
+        <fieldset className="rounded-lg border border-ink-200 p-3">
+          <legend className="px-1 text-sm font-medium text-ink-700">Modèle WhatsApp approuvé (facultatif)</legend>
+          <p className="mb-2 text-xs text-ink-500">Nécessaire pour écrire à un client qui n’a pas écrit depuis plus de 24 h. Créez le modèle dans le WhatsApp Manager avec le même texte, puis indiquez son nom ici : son statut est synchronisé automatiquement.</p>
+          <div className="grid gap-3 sm:grid-cols-[1fr_6rem]">
+            <div>
+              <label htmlFor={`${prefixe}-meta`} className={classeLibelle}>Nom du modèle Meta</label>
+              <input id={`${prefixe}-meta`} value={metaNom} onChange={(e) => setMetaNom(e.target.value)} placeholder="relance_devis" className={classeChamp} />
+            </div>
+            <div>
+              <label htmlFor={`${prefixe}-langue`} className={classeLibelle}>Langue</label>
+              <input id={`${prefixe}-langue`} value={metaLangue} onChange={(e) => setMetaLangue(e.target.value)} className={classeChamp} />
+            </div>
+          </div>
+          <label htmlFor={`${prefixe}-params`} className={`${classeLibelle} mt-3`}>Variables passées en {'{{1}}'}, {'{{2}}'}… (dans l’ordre, séparées par des virgules)</label>
+          <input id={`${prefixe}-params`} value={metaParametres} onChange={(e) => setMetaParametres(e.target.value)} placeholder="client.nom, dossier.numero" className={classeChamp} />
+        </fieldset>
         <label className="flex items-center gap-2 min-h-11 text-sm">
           <input type="checkbox" className="h-5 w-5 accent-primary" checked={actif} onChange={(e) => setActif(e.target.checked)} />
           Actif (proposé dans les dossiers)

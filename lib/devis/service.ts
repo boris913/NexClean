@@ -50,6 +50,7 @@ import {
   type StatutDevis,
   type Tarifs,
 } from './domaine';
+import { envoyerAuClient, type IssueEnvoiClient } from '@/lib/whatsapp/envoi';
 import { accepterDevis, archiverPdf, archiverPdfFacture, auditDe, evenementDossier, lienDevisDossier, prochainNumero, refuserDevis, transitionAutomatique, type AuteurEffet, type Tx } from './effets';
 import { consoliderLignes, devisAccepte, type LigneFacturable } from './lignes';
 import { creditDisponible } from '@/lib/encaissements/effets';
@@ -571,6 +572,8 @@ export interface ResultatEnvoi extends MessageEnvoi {
   empreinte: string;
   /** E-mail avec le PDF : envoyé, en échec (l'envoi du devis reste valable) ou client sans e-mail. */
   email: 'envoye' | 'echec' | 'absent';
+  /** COM2-02 RG-05 : message WhatsApp envoyé par l'API, ou à envoyer à la main (wa.me) avec la raison. */
+  whatsapp: IssueEnvoiClient;
 }
 
 /**
@@ -621,7 +624,12 @@ export async function validerEtEnvoyer(devisId: number, a: ActeurDevis, maintena
     }
   }
   const texte = rendreMessage(await texteModeleEnvoi(), ctx);
-  return { modele: NOM_MODELE_ENVOI_DEVIS, texte, numero: client.whatsapp, documentId, empreinte, email };
+  // COM2-02 RG-05 : envoi réel par l'API WhatsApp quand le canal est disponible ; sinon wa.me comme avant.
+  // La remise effective (statuts Meta) est suivie sur le message, visible dans la messagerie.
+  const whatsapp = await envoyerAuClient({ numero: client.whatsapp, dossierId: dossier.id, texte, nomModeleInterne: NOM_MODELE_ENVOI_DEVIS, ctx }, { id: a.id, roles: a.roles }).catch(
+    (e): IssueEnvoiClient => ({ statut: 'echec', raison: e instanceof Error ? e.message : String(e) }),
+  );
+  return { modele: NOM_MODELE_ENVOI_DEVIS, texte, numero: client.whatsapp, documentId, empreinte, email, whatsapp };
 }
 
 /** Trace du message WhatsApp « Envoi du devis » (MVP1-05 RG-17). */

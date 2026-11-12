@@ -2,6 +2,7 @@
 import { sql } from 'drizzle-orm';
 import { bigserial, boolean, date, index, integer, jsonb, pgEnum, pgTable, primaryKey, serial, text, timestamp } from 'drizzle-orm/pg-core';
 import { STATUT_CODES } from '@/lib/dossiers/statuts';
+import { SOURCE_CODES } from '@/lib/acquisition/source';
 import { user } from './auth';
 import { dossierTypeEnum } from './collaborateurs';
 import { quartier, ville } from './geo';
@@ -9,6 +10,7 @@ import { quartier, ville } from './geo';
 export const clientTypeEnum = pgEnum('type_client', ['entreprise', 'particulier']);
 export const canalEnum = pgEnum('canal_demande', ['site', 'whatsapp', 'telephone', 'email', 'visite', 'autre']);
 export const statutEnum = pgEnum('statut_dossier', STATUT_CODES);
+export const sourceEnum = pgEnum('source_acquisition', SOURCE_CODES);
 export const categorieDocumentEnum = pgEnum('categorie_document', ['piece_client', 'devis_externe', 'justificatif', 'autre', 'devis', 'facture', 'accuse_reception', 'attestation', 'recu']);
 export const evenementTypeEnum = pgEnum('type_evenement', [
   'creation',
@@ -24,6 +26,7 @@ export const evenementTypeEnum = pgEnum('type_evenement', [
   'client',
   'proposition',
   'placement',
+  'rendez_vous',
 ]);
 
 export const client = pgTable('client', {
@@ -73,6 +76,8 @@ export const dossier = pgTable(
     description: text('description'),
     /** Jeton de la page de suivi (≥ 128 bits), RG-24. */
     jetonSuivi: text('jeton_suivi').notNull().unique(),
+    /** COM3-02 RG-07 : agent conversationnel coupé pour ce Dossier. */
+    agentCoupe: boolean('agent_coupe').notNull().default(false),
     /** Date de passage à un statut final (expiration du lien de suivi, RG-29). */
     fermeLe: timestamp('ferme_le', { withTimezone: true }),
     creeLe: timestamp('cree_le', { withTimezone: true }).notNull().defaultNow(),
@@ -117,6 +122,10 @@ export const demande = pgTable(
       .notNull()
       .references(() => client.id),
     canal: canalEnum('canal').notNull(),
+    /** Ce qui a amené le prospect (COM1-01 RG-01). Corrigeable par le référent, contrairement aux données. */
+    source: sourceEnum('source').notNull().default('inconnue'),
+    /** Premier et dernier contact relevés sur le site (UTM, referrer), tels que reçus (COM1-01 RG-02). */
+    attribution: jsonb('attribution'),
     /** Formulaire d'origine (ex. « demande-personnel », « devis-pro ») ou « saisie ». */
     formulaire: text('formulaire').notNull(),
     /** Données soumises, telles quelles (RG-06). Immuables. */

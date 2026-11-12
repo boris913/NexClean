@@ -12,6 +12,25 @@ const schema = z.object({
   RESEND_API_KEY: z.string().optional(),
   /** Expéditeur des e-mails du Back-Office. */
   BACKOFFICE_FROM_EMAIL: z.string().default('NexClean <no-reply@nexclean.xyz>'),
+  // WhatsApp Cloud API (COM2-01, ADR 0025). Absentes : le webhook répond 404, rien n'est appelé.
+  /** Secret de l'application Meta : vérifie la signature X-Hub-Signature-256 des webhooks. */
+  WHATSAPP_APP_SECRET: z.string().min(16).optional(),
+  /** Jeton choisi par nous, saisi dans la console Meta pour le défi de vérification du webhook. */
+  WHATSAPP_VERIFY_TOKEN: z.string().min(16).optional(),
+  /** Jeton d'accès (utilisateur système) : téléchargement des médias, puis envoi (COM2-02). */
+  WHATSAPP_ACCESS_TOKEN: z.string().optional(),
+  /** Identifiant du numéro (envoi des messages, COM2-02) et du compte WhatsApp Business (synchronisation des modèles). */
+  WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
+  WHATSAPP_WABA_ID: z.string().optional(),
+  WHATSAPP_GRAPH_VERSION: z.string().default('v21.0'),
+  // Copilote IA (COM3-01, ADR 0026). Absente : les fonctions IA sont masquées, tout fonctionne sans.
+  /** Clé de l'API Claude (compte au nom de NEXCLEAN). */
+  IA_API_KEY: z.string().optional(),
+  /** Modèle léger (extraction, classification) et modèle de rédaction (brouillons, résumés, rapport). */
+  IA_MODELE_LEGER: z.string().default('claude-haiku-5-5'),
+  IA_MODELE_REDACTION: z.string().default('claude-sonnet-5-5'),
+  /** Agent conversationnel WhatsApp (COM3-02). */
+  IA_MODELE_AGENT: z.string().default('claude-opus-5-5'),
 });
 
 export type Env = z.infer<typeof schema>;

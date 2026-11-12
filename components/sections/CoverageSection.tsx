@@ -1,7 +1,9 @@
 import { Check, MapPin } from 'lucide-react';
 import Section from '@/components/ui/Section';
 import SectionHeader from '@/components/ui/SectionHeader';
+import Link from 'next/link';
 import { lireCouverture } from '@/lib/geo/couverture';
+import { cheminVille } from '@/lib/geo/slug';
 
 interface CoverageSectionProps {
   eyebrow?: string;
@@ -14,7 +16,7 @@ interface CoverageSectionProps {
  * « Nous intervenons à {villes} » et l'id `zones` sont vérifiés par e2e/parcours.spec.ts.
  */
 export default async function CoverageSection({ eyebrow = 'Zone de couverture', intro }: CoverageSectionProps) {
-  const { libelle, quartiers } = await lireCouverture();
+  const { libelle, villes, quartiers } = await lireCouverture();
   const plusieursVilles = quartiers.length > 1;
   const introComplete = [intro, quartiers.length > 0 && 'Principaux quartiers couverts :'].filter(Boolean).join(' ');
 
@@ -49,6 +51,17 @@ export default async function CoverageSection({ eyebrow = 'Zone de couverture', 
             </ul>
           </div>
         ))}
+
+        {/* Pages par ville (specs/COM1-01 RG-11) : maillage interne pour le référencement local. */}
+        <ul className="mb-8 flex flex-wrap gap-x-5 gap-y-2" aria-label="Pages par ville">
+          {villes.map((v) => (
+            <li key={v}>
+              <Link href={cheminVille(v)} className="text-sm font-semibold text-primary underline-offset-4 hover:underline">
+                Nos services à {v}
+              </Link>
+            </li>
+          ))}
+        </ul>
 
         <div className="border-l-2 border-primary pl-4">
           <p className="mb-1 font-semibold text-ink-900">Votre quartier n&apos;est pas listé ?</p>
