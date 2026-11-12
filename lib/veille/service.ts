@@ -46,12 +46,14 @@ export const schemaAnalyse = z.object({
 export type Analyse = z.infer<typeof schemaAnalyse>;
 
 export const schemaNouvellePiste = z.object({
+  // Lien affiché comme lien cliquable : uniquement http(s) (pas de « javascript: »). Sans protocole → https.
   url: z
     .string()
     .trim()
     .max(2000)
     .nullable()
-    .transform((u) => u || null),
+    .transform((u) => (!u ? null : /^[a-z][a-z0-9+.-]*:/i.test(u) ? u : `https://${u}`))
+    .refine((u) => u === null || /^https?:\/\/[^\s]+$/i.test(u), 'Lien invalide : collez une adresse qui commence par https://'),
   texte: z.string().trim().min(20, 'Collez le texte de la publication (20 caractères au moins).').max(6000, '6 000 caractères maximum'),
 });
 
@@ -155,14 +157,20 @@ export async function ajouterPiste(entree: z.input<typeof schemaNouvellePiste>, 
 
 // ─── Statuts et approche (RG-02, RG-07) ────────────────────────
 
-async function lirePiste(id: number) {
+/** Un référent n'agit que sur ses pistes et celles sans titulaire ; la Direction sur toutes. */
+function verifierAcces(p: { assigneA: string | null }, a: Acteur) {
+  if (p.assigneA && p.assigneA !== a.id && !peut(a.roles, 'veille.gerer')) throw new ErreurMetier('Cette piste est suivie par un autre collaborateur.');
+}
+
+async function lirePiste(id: number, a: Acteur) {
   const [p] = await getDb().select().from(schema.piste).where(eq(schema.piste.id, id));
   if (!p) throw new ErreurMetier('Piste introuvable.');
+  verifierAcces(p, a);
   return p;
 }
 
 export async function changerStatutPiste(id: number, vers: StatutPiste, motif: MotifEcart | null, a: Acteur): Promise<typeof schema.piste.$inferSelect> {
-  const p = await lirePiste(id);
+  const p = await lirePiste(id, a);
   if (!transitionPossible(p.statut, vers)) throw new ErreurMetier(`Passage impossible de « ${p.statut} » à « ${vers} ».`);
   if (vers === 'ecartee' && !(motif && motif in MOTIFS_ECART)) throw new ErreurMetier('Indiquez le motif.');
   if (vers === 'contactee') throw new ErreurMetier('Utilisez « Marquer contactée » pour enregistrer le contact.');
@@ -184,7 +192,7 @@ export const canalParDefaut = (p: { contactEmail: string | null; url: string | n
 export async function redigerApproche(id: number, canal: CanalContact, a: Acteur): Promise<string> {
   if (!(canal in CANAUX_CONTACT)) throw new ErreurMetier('Canal inconnu.');
   if (!iaActive()) throw new ErreurMetier('La clé de l’API IA n’est pas configurée : rédigez le message vous-même.');
-  const p = await lirePiste(id);
+  const p = await lirePiste(id, a);
   const [ville] = p.villeId ? await getDb().select({ nom: schema.ville.nom }).from(schema.ville).where(eq(schema.ville.id, p.villeId)) : [];
   const contenu = [`Canal : ${CANAUX_CONTACT[canal]}`, p.besoin && `Besoin : ${p.besoin}`, p.postes.length && `Postes : ${p.postes.join(', ')}`, p.effectif && `Effectif : ${p.effectif}`, (ville?.nom || p.lieuTexte) && `Lieu : ${[p.lieuTexte, ville?.nom].filter(Boolean).join(', ')}`, p.contactNom && `Auteur : ${p.contactNom}`, `Publication :\n${p.extrait.slice(0, 1500)}`].filter(Boolean).join('\n');
   const texte = await ia().rediger(PROMPT_APPROCHE, contenu, { tache: 'veille_approche', collaborateurId: a.id }, { maxTokens: 800 });
@@ -197,7 +205,7 @@ export async function redigerApproche(id: number, canal: CanalContact, a: Acteur
 export async function enregistrerMessage(id: number, texte: string, a: Acteur): Promise<void> {
   const t = z.string().trim().min(10, 'Message trop court').max(3000).parse(texte);
   if (contientMontant(t)) throw new ErreurMetier('Pas de prix ferme dans le premier message (l’estimation se donne ensuite, sur WhatsApp).');
-  await lirePiste(id);
+  await lirePiste(id, a);
   await getDb().update(schema.piste).set({ message: t, majLe: new Date() }).where(eq(schema.piste.id, id));
   await journaliser({ acteurType: 'collaborateur', acteurId: a.id, ip: a.ip ?? null, action: 'veille.message_modifie', objetType: 'piste', objetId: id });
 }
@@ -215,6 +223,7 @@ export async function marquerContactee(id: number, e: { canal: CanalContact; tex
   return db.transaction(async (tx) => {
     const [p] = await tx.select().from(schema.piste).where(eq(schema.piste.id, id)).for('update');
     if (!p) throw new ErreurMetier('Piste introuvable.');
+    verifierAcces(p, a);
     let type: 'premier' | 'relance';
     if (p.statut === 'retenue') type = 'premier';
     else if (p.statut === 'contactee' || p.statut === 'en_conversation') type = 'relance';
