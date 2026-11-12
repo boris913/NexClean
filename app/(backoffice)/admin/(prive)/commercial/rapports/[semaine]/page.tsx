@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { exigerCollaborateur } from '@/lib/authz/session';
 import { peut } from '@/lib/authz/permissions';
 import { lireRapport } from '@/lib/commercial/rapport-service';
-import { lignesIndicateurs, titreRapport } from '@/lib/commercial/rapport';
+import { lignesIndicateurs, lignesVeille, titreRapport } from '@/lib/commercial/rapport';
 import { libelleDuree } from '@/lib/commercial/indicateurs';
 import { libelleDebut, RDV_TYPES } from '@/lib/rendezvous/domaine';
 import { formatHorodatage } from '@/lib/audit-lecture';
@@ -38,6 +38,17 @@ export default async function Rapport({ params }: { params: Promise<{ semaine: s
           ))}
         </dl>
       </Carte>
+      {x.veille && (
+        <Carte titre="Veille prospects">
+          <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2 [&>div]:flex [&>div]:justify-between [&>div]:gap-3 [&>div]:border-b [&>div]:border-ink-100 [&>div]:pb-2">
+            {lignesVeille(x.veille).map(([k, v]) => (
+              <div key={k}><dt className="text-ink-600">{k}</dt><dd className="text-right font-medium tabular-nums text-ink-900">{v}</dd></div>
+            ))}
+          </dl>
+          {x.veille.parSource.length > 0 && <p className="mt-3 text-sm text-ink-600">{x.veille.parSource.map((s) => `${s.libelle} : ${s.trouvees} trouvée(s), ${s.converties} convertie(s)`).join(' · ')}</p>}
+          {x.veille.improductives.length > 0 && <p className="mt-2 text-sm text-amber-800">À désactiver (aucune piste retenue en 30 jours) : {x.veille.improductives.join(' ; ')}</p>}
+        </Carte>
+      )}
       {x.commentaire && <Carte titre="Commentaire"><p className="whitespace-pre-line text-sm text-ink-700">{x.commentaire}</p></Carte>}
       <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
         <Liste titre="Meilleures sources" vide="Aucun nouveau prospect." items={x.topSources} rendu={(s) => <><span className="flex-1 text-ink-800">{s.libelle}</span><span className="tabular-nums text-ink-600">{s.nouveaux} prospect(s) · {s.acceptes} accepté(s)</span></>} />

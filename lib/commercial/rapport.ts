@@ -54,6 +54,19 @@ export interface ContenuRapport {
   aVenir: { dossierId: number; numero: string; type: RdvType; debut: string; ville: string | null }[];
   /** COM3-01 : commentaire rédigé par l'IA, en complément des chiffres (jamais à leur place). */
   commentaire?: string | null;
+  /** COM4-01 RG-12 (Direction) : veille prospects de la semaine, par source. */
+  veille?: { trouvees: number; retenues: number; contactees: number; converties: number; ca: number; parSource: { libelle: string; trouvees: number; converties: number }[]; improductives: string[] } | null;
+}
+
+/** COM4-01 RG-12 : lignes de la veille prospects dans le rapport. */
+export function lignesVeille(v: NonNullable<ContenuRapport['veille']>): [string, string][] {
+  return [
+    ['Pistes trouvées', String(v.trouvees)],
+    ['Pistes retenues', String(v.retenues)],
+    ['Pistes contactées', String(v.contactees)],
+    ['Pistes converties', String(v.converties)],
+    ['CA encaissé issu des pistes', formaterMontant(v.ca)],
+  ];
 }
 
 export function topSources(ventilation: Ventilation[], n = 3): ContenuRapport['topSources'] {
@@ -106,6 +119,9 @@ export function texteRapport(c: ContenuRapport): string {
     ...liste(`Dossiers sans action depuis ${c.joursSansAction} jours ou plus`, c.sansAction, (d) => `${d.numero} (${d.jours} j)`),
     ...liste('Rendez-vous à clôturer', c.aCloturer, (r) => `${r.numero} — ${RDV_TYPES[r.type]} du ${libelleDebut(new Date(r.debut))}`),
     ...liste('Rendez-vous de la semaine', c.aVenir, (r) => `${libelleDebut(new Date(r.debut))} — ${RDV_TYPES[r.type]} ${r.numero}${r.ville ? ` (${r.ville})` : ''}`, 20),
+    ...(c.veille ? ['\nVeille prospects :', ...lignesVeille(c.veille).map(([k, v]) => `${k} : ${v}`)] : []),
+    ...liste('Pistes par source', c.veille?.parSource ?? [], (s) => `${s.libelle} : ${s.trouvees} trouvée(s), ${s.converties} convertie(s)`),
+    ...liste('Requêtes sans piste retenue depuis 30 jours (à désactiver)', c.veille?.improductives ?? [], (r) => r),
     ...(c.commentaire ? ['\nCommentaire :', c.commentaire] : []),
   ].join('\n');
 }

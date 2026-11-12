@@ -10,7 +10,7 @@ import { listerPistes, canalParDefaut, type FiltresPistes } from '@/lib/veille/s
 import { CANAUX_CONTACT, MOTIFS_ECART, STATUTS_PISTE, relancePossible, type CanalContact, type MotifEcart, type StatutPiste } from '@/lib/veille/domaine';
 import { formaterTelephone } from '@/lib/telephone';
 import { formatHorodatage } from '@/lib/audit-lecture';
-import { Carte, EtatVide, Pastille, TitrePage } from '@/components/backoffice/ui';
+import { Carte, classeBouton, EtatVide, Pastille, TitrePage } from '@/components/backoffice/ui';
 import { Radar } from 'lucide-react';
 import { ActionsPiste, AjouterPiste } from './Composants';
 
@@ -36,7 +36,13 @@ export default async function Veille({ searchParams }: { searchParams: Promise<{
 
   return (
     <div className="space-y-5">
-      <TitrePage titre="Veille" description="Besoins de personnel repérés en ligne. Le premier contact se fait toujours par un humain, sur le canal d’origine." />
+      <TitrePage titre="Veille" description="Besoins de personnel repérés en ligne. Le premier contact se fait toujours par un humain, sur le canal d’origine.">
+        {peut(c.roles, 'veille.gerer') && (
+          <Link href="/admin/veille/sources" className={classeBouton('secondaire')}>
+            Sources
+          </Link>
+        )}
+      </TitrePage>
       <AjouterPiste iaConfiguree={ia} />
 
       <nav aria-label="Statut" className="flex w-fit max-w-full flex-wrap gap-1 rounded-lg bg-ink-100/80 p-1">
@@ -87,6 +93,7 @@ export default async function Veille({ searchParams }: { searchParams: Promise<{
                       <Pastille ton={tonStatut(x.statut)}>{STATUTS_PISTE[x.statut]}</Pastille>
                       {x.motifEcart && <span className="text-xs text-ink-500">{MOTIFS_ECART[x.motifEcart as MotifEcart] ?? x.motifEcart}</span>}
                       {x.type && <span className="text-xs font-medium text-ink-700">{DOSSIER_TYPES[x.type]}</span>}
+                      {x.source !== 'saisie_assistee' && <span className="text-xs text-ink-500">collecte {x.sourceNom ?? ''}{x.requete ? ` · « ${x.requete} »` : ''}</span>}
                       {lieu && <span className="text-xs text-ink-600">{lieu}</span>}
                       <span className="ml-auto text-xs text-ink-400">{formatHorodatage(x.creeLe)}{x.assigne && ` · ${x.assigne}`}</span>
                     </div>
@@ -117,7 +124,7 @@ export default async function Veille({ searchParams }: { searchParams: Promise<{
                         Voir le dossier créé →
                       </Link>
                     )}
-                    {x.statut !== 'convertie' && <ActionsPiste key={`${x.id}-${x.statut}-${x.message ?? ''}`} piste={{ id: x.id, reference: x.reference, statut: x.statut, message: x.message, canalDefaut: canalParDefaut(x), relance }} iaConfiguree={ia} />}
+                    {x.statut !== 'convertie' && <ActionsPiste key={`${x.id}-${x.statut}-${x.message ?? ''}`} piste={{ id: x.id, reference: x.reference, statut: x.statut, message: x.message, canalDefaut: canalParDefaut(x), relance, contactEmail: x.contactEmail }} iaConfiguree={ia} />}
                   </div>
                 </Carte>
               </li>

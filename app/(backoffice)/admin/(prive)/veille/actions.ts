@@ -54,3 +54,12 @@ export async function marquerContactee(id: number, canal: CanalContact, texte: s
     return type === 'premier' ? 'Contact enregistré.' : 'Relance enregistrée.';
   });
 }
+
+/** RG-08 : e-mail professionnel envoyé depuis le Back-Office à l'adresse publiée par l'auteur. */
+export async function envoyerEmail(id: number, objet: string, texte: string) {
+  return executer(async () => {
+    const type = await veille.envoyerEmailApproche(id, { objet, texte }, await acteur());
+    revalidatePath('/admin/veille');
+    return type === 'premier' ? 'E-mail envoyé, contact enregistré.' : 'E-mail de relance envoyé.';
+  });
+}

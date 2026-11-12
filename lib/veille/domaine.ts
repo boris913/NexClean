@@ -14,6 +14,19 @@ export const STATUTS_PISTE = {
 export type StatutPiste = keyof typeof STATUTS_PISTE;
 export const STATUTS_PISTE_CODES = Object.keys(STATUTS_PISTE) as [StatutPiste, ...StatutPiste[]];
 
+/** RG-04 : types de source. Seules les méthodes d'accès autorisées sont automatisées (ADR 0027 §2). */
+export const TYPES_SOURCE = {
+  rss: 'Flux RSS / Atom',
+  site_annonces: 'Site d’annonces (flux public)',
+  appels_offres: 'Portail d’appels d’offres (flux public)',
+  api_recherche: 'API de recherche web',
+  saisie_assistee: 'Saisie assistée (réseaux sociaux)',
+} as const;
+export type TypeSource = keyof typeof TYPES_SOURCE;
+export const TYPES_SOURCE_CODES = Object.keys(TYPES_SOURCE) as [TypeSource, ...TypeSource[]];
+/** Types collectés automatiquement à partir d'un flux public. */
+export const TYPES_AUTOMATISES: readonly TypeSource[] = ['rss', 'site_annonces', 'appels_offres'];
+
 export const MOTIFS_ECART = {
   hors_services: 'Hors services',
   hors_zone: 'Hors zone',

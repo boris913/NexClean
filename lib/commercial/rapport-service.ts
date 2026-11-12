@@ -15,6 +15,15 @@ import { demandesEnAttente, totaux, ventiler } from './indicateurs';
 import { lignesCommerciales } from './service';
 import { iaActive } from '@/lib/ia/client';
 import { commentaireRapport } from '@/lib/ia/copilote';
+import { indicateursVeille, requetesImproductives } from '@/lib/veille/indicateurs';
+
+/** COM4-01 RG-12 : veille de la semaine (null s'il n'y a eu aucune piste). */
+async function veilleDuRapport(s: SemaineRapport, maintenant: Date): Promise<ContenuRapport['veille']> {
+  const [i, improductives] = await Promise.all([indicateursVeille({ du: s.du, au: s.au }), requetesImproductives(maintenant)]);
+  if (!i.total.trouvees && !i.total.converties && !improductives.length) return null;
+  const { trouvees, retenues, contactees, converties, ca } = i.total;
+  return { trouvees, retenues, contactees, converties, ca, parSource: i.parSource.slice(0, 8).map((x) => ({ libelle: x.libelle, trouvees: x.trouvees, converties: x.converties })), improductives: improductives.map((r) => `${r.source} — « ${r.requete} »`) };
+}
 import { semaineDue, texteRapport, titreRapport, topSources, type ContenuRapport, type SemaineRapport } from './rapport';
 
 const JOUR_MS = 24 * 60 * 60 * 1000;
@@ -79,6 +88,7 @@ export async function genererRapportsHebdomadaires(maintenant = new Date()): Pro
   for (const p of portees) {
     if (deja.has(p.portee)) continue;
     const contenu = await construireRapport(s, p.dem, maintenant);
+    if (p.portee === PORTEE_DIRECTION) contenu.veille = await veilleDuRapport(s, maintenant).catch(() => null);
     // COM3-01 RG-11 : commentaire IA, en complément des chiffres ; rejeté s'il cite un nombre inventé.
     if (iaActive()) contenu.commentaire = await commentaireRapport(contenu).catch(() => null);
     const genere = await getDb().transaction(async (tx) => {

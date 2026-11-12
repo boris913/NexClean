@@ -21,6 +21,7 @@ import { synchroniserModeles, synchroniserQualite } from '@/lib/whatsapp/envoi';
 import { qualifierEnAttente } from '@/lib/ia/copilote';
 import { iaActive } from '@/lib/ia/client';
 import { purgerPistes } from '@/lib/veille/service';
+import { collecterSourcesDues } from '@/lib/veille/sources';
 
 const JOUR_MS = 24 * 60 * 60 * 1000;
 
@@ -134,9 +135,15 @@ export async function executerTaches(maintenant = new Date()) {
       console.error('[ia] qualification', e);
     }
   }
-  // COM4-01 RG-02 : purge des pistes non converties.
+  // COM4-01 RG-05 : collecte des sources automatisées échues (jamais bloquante) ; RG-02 : purge.
+  let pistesCollectees = 0;
+  try {
+    pistesCollectees = await collecterSourcesDues(maintenant);
+  } catch (e) {
+    console.error('[veille] collecte', e);
+  }
   const pistesPurgees = await purgerPistes(maintenant);
   const emails = await envoyerNotificationsEnAttente(200);
-  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, devisExpires, soldesRelances, rendezVous, rapports, whatsapp, qualifiees, pistesPurgees, emails };
+  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, devisExpires, soldesRelances, rendezVous, rapports, whatsapp, qualifiees, pistesCollectees, pistesPurgees, emails };
 }
 

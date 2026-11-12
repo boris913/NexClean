@@ -10,6 +10,7 @@ import { lignesCommerciales, voitTout } from '@/lib/commercial/service';
 import { Carte, classeBouton, EtatVide, Pastille, TitrePage } from '@/components/backoffice/ui';
 import { indicateursAgent } from '@/lib/ia/indicateurs-agent';
 import { MOTIFS_PASSAGE } from '@/lib/ia/agent-regles';
+import { indicateursVeille } from '@/lib/veille/indicateurs';
 
 export const metadata = { title: 'Commercial' };
 
@@ -64,6 +65,8 @@ export default async function Commercial({ searchParams }: { searchParams: Promi
   const attente = demandesEnAttente(lignes, maintenant);
   // COM3-02 RG-09 : indicateurs de l'assistant virtuel (Direction), s'il a eu de l'activité.
   const agent = voitTout(c) ? await indicateursAgent({ du, au }) : null;
+  // COM4-01 RG-12 : veille prospects par source et par requête (Direction).
+  const veille = voitTout(c) ? await indicateursVeille({ du, au }) : null;
   const lien = (x: { periode?: Periode; dim?: Dimension }) => `?${new URLSearchParams({ periode: x.periode ?? periode, dim: x.dim ?? dim })}`;
   const dimensions = (Object.keys(DIMENSIONS) as Dimension[]).filter((d) => d !== 'referent' || voitTout(c));
 
@@ -108,6 +111,37 @@ export default async function Commercial({ searchParams }: { searchParams: Promi
             <Indicateur valeur={String(agent.passages.reduce((s, p) => s + p.n, 0))} libelle="Passages à un conseiller" detail={agent.passages.slice(0, 2).map((p) => `${MOTIFS_PASSAGE[p.motif] ?? p.motif} : ${p.taux ?? 0} %`).join(' · ') || undefined} />
             <Indicateur valeur={String(agent.bloques)} libelle="Messages bloqués" alerte={agent.bloques > 0} />
             <Indicateur valeur={`${agent.devisAcceptes} / ${agent.dossiersAgent}`} libelle="Devis acceptés / dossiers de l’agent" />
+          </div>
+        </Carte>
+      )}
+
+      {veille && veille.parSource.length > 0 && (
+        <Carte titre="Veille prospects" actions={<Link href="/admin/veille/sources" className="text-sm text-primary hover:underline">Sources</Link>}>
+          <div className="-mx-4 overflow-x-auto px-4">
+            <table className="w-full min-w-[36rem] text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wide text-ink-400">
+                  <th className="pb-2 font-semibold">Source / requête</th>
+                  <th className="pb-2 text-right font-semibold">Trouvées</th>
+                  <th className="pb-2 text-right font-semibold">Retenues</th>
+                  <th className="pb-2 text-right font-semibold">Contactées</th>
+                  <th className="pb-2 text-right font-semibold">Converties</th>
+                  <th className="pb-2 text-right font-semibold">CA encaissé</th>
+                </tr>
+              </thead>
+              <tbody className="tabular-nums">
+                {[veille.total, ...veille.parRequete].map((l) => (
+                  <tr key={l.cle} className={`border-t border-ink-100 ${l.cle === 'total' ? 'font-semibold' : ''}`}>
+                    <td className="py-2 pr-2 text-ink-800">{l.libelle}</td>
+                    <td className="py-2 text-right">{l.trouvees}</td>
+                    <td className="py-2 text-right">{l.retenues}</td>
+                    <td className="py-2 text-right">{l.contactees}</td>
+                    <td className="py-2 text-right">{l.converties}</td>
+                    <td className="py-2 text-right">{formaterMontant(l.ca)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </Carte>
       )}
