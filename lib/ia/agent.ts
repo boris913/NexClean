@@ -276,7 +276,13 @@ const autorisationsDeBase = (): Autorisations => ({ montants: [], liens: [env().
  * conversation en charge (les réponses automatiques de COM2-02 ne partent alors pas).
  * Ne lève jamais : en cas de problème, COM2-02 s'applique.
  */
-export async function agentRepond(conversationId: number, texteClient: string, maintenant = new Date()): Promise<boolean> {
+/** Dernier message reçu du client dans la conversation (identifiant WhatsApp). */
+async function dernierEntrant(conversationId: number): Promise<string | null> {
+  const [m] = await getDb().select({ waId: schema.messageWhatsapp.waId }).from(schema.messageWhatsapp).where(and(eq(schema.messageWhatsapp.conversationId, conversationId), eq(schema.messageWhatsapp.sens, 'entrant'))).orderBy(desc(schema.messageWhatsapp.horodatage), desc(schema.messageWhatsapp.id)).limit(1);
+  return m?.waId ?? null;
+}
+
+export async function agentRepond(conversationId: number, texteClient: string, maintenant = new Date(), waId: string | null = null): Promise<boolean> {
   try {
     const mode = await lireParametre('mode_agent');
     if (mode === 'desactive' || !iaActive() || estStop(texteClient)) return false;
@@ -288,6 +294,10 @@ export async function agentRepond(conversationId: number, texteClient: string, m
       if (automateSuspendu(charge.c, maintenant, await lireParametre('wa_suspension_heures'))) return false;
       if (mode === 'hors_heures' && ouverture(maintenant, await lireParametre('heures_ouvrees')).ouvert) return false;
     }
+    // Messages rapprochés traités en parallèle : seul le plus récent obtient une réponse (avec tout
+    // l'historique) ; les précédents sont considérés comme pris en charge.
+    const depasse = async () => !!waId && (await dernierEntrant(conversationId)) !== waId;
+    if (await depasse()) return !fantome;
     const etat: Etat = {
       conv: { id: charge.c.id, numero: charge.c.numero, dossierId: charge.c.dossierId },
       dossier: charge.d,
@@ -313,6 +323,8 @@ export async function agentRepond(conversationId: number, texteClient: string, m
     const dejaPresente = (await getDb().select({ id: schema.evenementAgent.id }).from(schema.evenementAgent).where(and(eq(schema.evenementAgent.conversationId, conversationId), eq(schema.evenementAgent.type, fantome ? 'brouillon' : 'reponse'))).limit(1)).length > 0;
 
     const d = await deciderTour(texteClient, messages, etat, 'agent');
+    // Un nouveau message est arrivé pendant la réflexion : sa propre réponse tiendra compte des deux.
+    if (await depasse()) return !fantome;
     const dossierId = etat.dossier?.id ?? null;
     switch (d.issue) {
       case 'silence':
