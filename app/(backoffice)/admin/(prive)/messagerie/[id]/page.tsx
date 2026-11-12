@@ -9,7 +9,7 @@ import { formatHorodatage } from '@/lib/audit-lecture';
 import { Alerte, Carte, EtatVide, TitrePage } from '@/components/backoffice/ui';
 import Rafraichir from '../Rafraichir';
 import Rattacher from './Rattacher';
-import Repondre, { Accord, Automate } from './Repondre';
+import Repondre, { Accord, AssistantVirtuel, Automate } from './Repondre';
 import { documentsPartageables, envoiActif, etatConsentement, modelesMetaApprouves } from '@/lib/whatsapp/envoi';
 import { automateSuspendu, fenetreOuverte, FENETRE_SERVICE_MS } from '@/lib/whatsapp/automate';
 import { listerModeles, contexteDossier } from '@/lib/modeles/service';
@@ -117,6 +117,11 @@ export default async function Conversation({ params }: { params: Promise<{ id: s
           <Carte titre="Réponses automatiques">
             <Automate conversationId={conv.id} mode={conv.automate} suspenduJusqua={suspenduJusqua} />
           </Carte>
+          {iaActive() && (
+            <Carte titre="Assistant virtuel">
+              <AssistantVirtuel conversationId={conv.id} etat={conv.agent} dossierCoupe={!!conv.dossierAgentCoupe} aDossier={!!conv.dossierId} />
+            </Carte>
+          )}
           <Carte titre="Messages promotionnels">
             <Accord conversationId={conv.id} numero={conv.numero} etat={{ accordLe: consentement?.accordLe?.toISOString() ?? null, retireLe: consentement?.retireLe?.toISOString() ?? null, formulation: consentement?.formulation ?? null }} />
           </Carte>

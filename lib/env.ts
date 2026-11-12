@@ -29,6 +29,8 @@ const schema = z.object({
   /** Modèle léger (extraction, classification) et modèle de rédaction (brouillons, résumés, rapport). */
   IA_MODELE_LEGER: z.string().default('claude-haiku-5-5'),
   IA_MODELE_REDACTION: z.string().default('claude-sonnet-5-5'),
+  /** Agent conversationnel WhatsApp (COM3-02). */
+  IA_MODELE_AGENT: z.string().default('claude-opus-5-5'),
 });
 
 export type Env = z.infer<typeof schema>;

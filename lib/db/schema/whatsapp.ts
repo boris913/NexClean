@@ -42,6 +42,8 @@ export const conversation = pgTable(
     dernierSortantLe: timestamp('dernier_sortant_le', { withTimezone: true }),
     /** COM2-02 RG-08 : « actif » (réponses automatiques permises) ou « manuel » (reprise de la main). */
     automate: text('automate').$type<'actif' | 'manuel'>().notNull().default('actif'),
+    /** COM3-02 RG-05, RG-07 : « actif », « coupe » (interrupteur de la conversation) ou « passe » (main passée à un conseiller). */
+    agent: text('agent').$type<'actif' | 'coupe' | 'passe'>().notNull().default('actif'),
     creeLe: timestamp('cree_le', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index('conversation_dossier_idx').on(t.dossierId), index('conversation_entrant_idx').on(t.dernierEntrantLe)],

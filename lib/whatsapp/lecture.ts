@@ -31,6 +31,8 @@ const colonnes = {
   dernierEntrantLe: schema.conversation.dernierEntrantLe,
   dernierSortantLe: schema.conversation.dernierSortantLe,
   automate: schema.conversation.automate,
+  agent: schema.conversation.agent,
+  dossierAgentCoupe: schema.dossier.agentCoupe,
   nonTraitee: sql<boolean>`coalesce(${conditionNonTraitee}, false)`,
   dernierTexte: sql<string | null>`(select ${schema.messageWhatsapp.texte} from ${schema.messageWhatsapp} where ${schema.messageWhatsapp.conversationId} = ${schema.conversation.id} order by ${schema.messageWhatsapp.horodatage} desc limit 1)`,
 };

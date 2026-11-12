@@ -72,6 +72,7 @@ export default async function LayoutPrive({ children }: { children: React.ReactN
       liens: filtrer([
         { href: '/admin/collaborateurs', libelle: 'Collaborateurs', icone: 'collaborateurs', visible: peut(c.roles, 'collaborateurs.gerer') || peut(c.roles, 'collaborateurs.attributs') },
         { href: '/admin/referentiel', libelle: 'Référentiel', icone: 'referentiel', visible: peut(c.roles, 'referentiel.gerer') },
+        { href: '/admin/agent', libelle: 'Assistant virtuel', icone: 'agent', visible: peut(c.roles, 'agent.gerer') },
         { href: '/admin/modeles', libelle: 'Modèles', icone: 'modeles', visible: peut(c.roles, 'modeles.gerer') },
         { href: '/admin/parametres', libelle: 'Paramètres', icone: 'parametres', visible: peut(c.roles, 'tarifs.modifier') },
         { href: '/admin/journal', libelle: 'Journal', icone: 'journal', visible: peut(c.roles, 'audit.consulter') },

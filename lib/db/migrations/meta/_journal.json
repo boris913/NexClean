@@ -141,6 +141,13 @@
       "when": 1794420425716,
       "tag": "0019_copilote_ia",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1794421733065,
+      "tag": "0020_agent_conversationnel",
+      "breakpoints": true
     }
   ]
 }
