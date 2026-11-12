@@ -1,10 +1,12 @@
 'use server';
 // COM3-02 RG-03, RG-07, RG-08 : administration de l'agent (Direction), journalisée.
 import { revalidatePath } from 'next/cache';
+import { after } from 'next/server';
 import { exigerCollaborateur } from '@/lib/authz/session';
 import { executer } from '@/lib/actions';
 import { changerModeAgent } from '@/lib/ia/agent';
 import { enregistrerConnaissance, type schemaConnaissance } from '@/lib/ia/connaissance';
+import { demarrerEvaluation, executerEvaluation } from '@/lib/ia/evaluation/service';
 import type { z } from 'zod';
 
 async function auteur() {
@@ -27,6 +29,16 @@ export async function enregistrerFiche(id: number | null, entree: z.input<typeof
   return executer(async () => {
     await enregistrerConnaissance(id, entree, await auteur());
     revalidatePath('/admin/agent');
-    return 'Fiche enregistrée. Pensez à relancer l’évaluation de l’agent avant de changer de mode.';
+    return 'Fiche enregistrée. La base a changé : relancez l’évaluation avant toute mise en service.';
+  });
+}
+
+/** RG-10 : lance le jeu d'évaluation en arrière-plan (appels facturés au fournisseur IA). */
+export async function lancerEvaluation() {
+  return executer(async () => {
+    const id = await demarrerEvaluation(await auteur());
+    after(() => executerEvaluation(id));
+    revalidatePath('/admin/agent');
+    return 'Évaluation lancée : comptez quelques minutes. La page se met à jour seule.';
   });
 }

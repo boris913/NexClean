@@ -8,6 +8,8 @@ import { formaterMontant } from '@/lib/devis/domaine';
 import { DIMENSIONS, demandesEnAttente, entonnoir, libelleDuree, totaux, ventiler, type Dimension, type EtapeEntonnoir } from '@/lib/commercial/indicateurs';
 import { lignesCommerciales, voitTout } from '@/lib/commercial/service';
 import { Carte, classeBouton, EtatVide, Pastille, TitrePage } from '@/components/backoffice/ui';
+import { indicateursAgent } from '@/lib/ia/indicateurs-agent';
+import { MOTIFS_PASSAGE } from '@/lib/ia/agent-regles';
 
 export const metadata = { title: 'Commercial' };
 
@@ -60,6 +62,8 @@ export default async function Commercial({ searchParams }: { searchParams: Promi
   const ventilation = ventiler(lignes, dim, ctx);
   const funnel = entonnoir(lignes, ctx);
   const attente = demandesEnAttente(lignes, maintenant);
+  // COM3-02 RG-09 : indicateurs de l'assistant virtuel (Direction), s'il a eu de l'activité.
+  const agent = voitTout(c) ? await indicateursAgent({ du, au }) : null;
   const lien = (x: { periode?: Periode; dim?: Dimension }) => `?${new URLSearchParams({ periode: x.periode ?? periode, dim: x.dim ?? dim })}`;
   const dimensions = (Object.keys(DIMENSIONS) as Dimension[]).filter((d) => d !== 'referent' || voitTout(c));
 
@@ -95,6 +99,18 @@ export default async function Commercial({ searchParams }: { searchParams: Promi
         <Indicateur valeur={formaterMontant(t.facture)} libelle="CA facturé TTC" />
         <Indicateur valeur={formaterMontant(t.encaisse)} libelle="CA encaissé" />
       </section>
+
+      {agent && agent.conversationsPrises + agent.brouillons > 0 && (
+        <Carte titre="Assistant virtuel WhatsApp" actions={<Link href="/admin/agent" className="text-sm text-primary hover:underline">Détails</Link>}>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+            <Indicateur valeur={String(agent.conversationsPrises)} libelle="Conversations prises" detail={agent.brouillons ? `+ ${agent.brouillons} brouillon(s) en mode fantôme` : undefined} />
+            <Indicateur valeur={agent.tauxQualification === null ? '—' : `${agent.tauxQualification} %`} libelle="Qualification complète" detail={`${agent.qualificationsCompletes} conversation(s)`} />
+            <Indicateur valeur={String(agent.passages.reduce((s, p) => s + p.n, 0))} libelle="Passages à un conseiller" detail={agent.passages.slice(0, 2).map((p) => `${MOTIFS_PASSAGE[p.motif] ?? p.motif} : ${p.taux ?? 0} %`).join(' · ') || undefined} />
+            <Indicateur valeur={String(agent.bloques)} libelle="Messages bloqués" alerte={agent.bloques > 0} />
+            <Indicateur valeur={`${agent.devisAcceptes} / ${agent.dossiersAgent}`} libelle="Devis acceptés / dossiers de l’agent" />
+          </div>
+        </Carte>
+      )}
 
       <Carte titre="Ventilation">
         <nav aria-label="Ventiler par" className="-mt-1 mb-3 flex flex-wrap gap-1">
