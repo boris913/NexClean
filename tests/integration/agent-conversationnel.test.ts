@@ -189,6 +189,24 @@ describe.skipIf(!baseDisponible)('Agent conversationnel (intégration)', async (
     expect(appels).toBe(1);
   });
 
+  it('messages rapprochés : un message arrivé pendant la réflexion → pas de réponse au précédent', async () => {
+    await agent.changerModeAgent('permanent', dir);
+    agent.definirModeleAgent(async ({ messages }) => {
+      appels++;
+      // Pendant l'appel au modèle pour le 1er message, le client en envoie un second.
+      if (messages.length === 1) {
+        const c = await conv('+237696100009');
+        await getDb().insert(schema.messageWhatsapp).values({ conversationId: c.id, waId: 'wamid.I2', sens: 'entrant', origine: 'client', type: 'text', texte: 'Pour 3 chambres', horodatage: new Date('2026-11-12T22:31:00+01:00') });
+      }
+      return { content: [{ type: 'text', text: 'Bonsoir ! Combien de pièces ?', citations: null }] as never, stop_reason: 'end_turn', model: 'modele-simule' };
+    });
+    await recevoir('237696100009', 'wamid.I1', 'Bonsoir, ménage à Akwa', '2026-11-12T22:30:00');
+    expect(appels).toBe(1);
+    expect(envois).toHaveLength(0);
+    expect(await evenements((await conv('+237696100009')).id)).toHaveLength(0);
+    agent.definirModeleAgent(modele);
+  });
+
   it('RG-07 : coupé pour une conversation → l’agent ne répond plus, et c’est journalisé', async () => {
     await agent.changerModeAgent('permanent', dir);
     const c = await conv('+237696100008');
