@@ -46,6 +46,16 @@ export const modeleMessage = pgTable('modele_message', {
   langue: text('langue').notNull().default('fr'),
   texte: text('texte').notNull(),
   actif: boolean('actif').notNull().default(true),
+  // COM2-02 RG-03 : modèle approuvé par Meta (envoi hors fenêtre de 24 h).
+  /** Nom du modèle dans le WhatsApp Manager ; null = modèle interne seulement (texte prérempli). */
+  metaNom: text('meta_nom'),
+  metaLangue: text('meta_langue').notNull().default('fr'),
+  /** Variables du modèle interne passées dans l'ordre {{1}}, {{2}}… */
+  metaParametres: text('meta_parametres').array().notNull().default([]),
+  /** Synchronisés depuis l'API Meta. */
+  metaCategorie: text('meta_categorie'),
+  metaStatut: text('meta_statut'),
+  metaSynchroLe: timestamp('meta_synchro_le', { withTimezone: true }),
   creeLe: timestamp('cree_le', { withTimezone: true }).notNull().defaultNow(),
   modifieLe: timestamp('modifie_le', { withTimezone: true }).notNull().defaultNow(),
   modifiePar: text('modifie_par').references(() => user.id),

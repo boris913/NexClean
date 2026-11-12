@@ -63,6 +63,15 @@ export const HEURES_OUVREES_PAR_DEFAUT: HeuresOuvrees = [
   { debut: '08:00', fin: '17:00' },
 ];
 
+export const WA_ACCUSE_OUVERT = 'Bonjour, merci pour votre message ! NEXCLEAN a bien reçu votre demande (dossier {numero}). Un conseiller vous répond dans les plus brefs délais. Nos horaires : {horaires}.';
+export const WA_ACCUSE_FERME = 'Bonjour, merci pour votre message ! NEXCLEAN a bien reçu votre demande (dossier {numero}). Nous sommes actuellement fermés : nous vous répondons dès {ouverture}. Nos horaires : {horaires}.';
+export const WA_REPONSES_RAPIDES = [
+  { mots: ['horaire', 'horaires', 'ouvert', 'heure d ouverture'], reponse: 'Nos horaires : {horaires}.' },
+  { mots: ['zone', 'zones', 'ville', 'quartier', 'vous intervenez'], reponse: 'Nous intervenons à {zones}. Indiquez-nous votre quartier pour confirmer.' },
+  { mots: ['service', 'services', 'prestations', 'que faites vous'], reponse: 'Nos services : {services}. Dites-nous ce dont vous avez besoin !' },
+  { mots: ['suivi', 'mon dossier', 'ou en est', 'avancement'], reponse: 'Suivez votre dossier {numero} ici : {suivi}' },
+];
+
 const DEFINITIONS = {
   heures_ouvrees: { defaut: HEURES_OUVREES_PAR_DEFAUT, schema: z.array(plage.nullable()).length(7) },
   /** RG-06 : délai avant escalade d'un dossier non attribué, en heures ouvrées. */
@@ -91,6 +100,17 @@ const DEFINITIONS = {
   conditions_devis: { defaut: CONDITIONS_DEVIS_PAR_DEFAUT, schema: z.string().trim().min(10).max(5000) },
   /** QO-3 : minimum de facturation — prévu, non appliqué (null = désactivé). */
   minimum_facturation: { defaut: null as number | null, schema: z.number().int().min(0).max(10_000_000).nullable() },
+  // ─── WhatsApp, réponses automatiques (COM2-02 RG-06..10) ───
+  /** Accusé de réception pendant les heures ouvrées. Variables : {numero}, {horaires}. */
+  wa_accuse_ouvert: { defaut: WA_ACCUSE_OUVERT, schema: z.string().trim().min(10).max(1000) },
+  /** Accusé hors heures ouvrées. Variables : {numero}, {ouverture}, {horaires}. */
+  wa_accuse_ferme: { defaut: WA_ACCUSE_FERME, schema: z.string().trim().min(10).max(1000) },
+  /** Réponses rapides par mots-clés. Variables : {horaires}, {zones}, {services}, {suivi}, {numero}. Jamais de prix. */
+  wa_reponses_rapides: { defaut: WA_REPONSES_RAPIDES, schema: z.array(z.object({ mots: z.array(z.string().trim().min(2).max(40)).min(1).max(20), reponse: z.string().trim().min(5).max(1000) })).max(30) },
+  /** RG-08 : suspension des réponses automatiques après une réponse humaine, en heures. */
+  wa_suspension_heures: { defaut: 12, schema: z.number().int('Nombre entier').min(0).max(168) },
+  /** RG-10 : modèles marketing par client et par semaine. */
+  wa_plafond_marketing_semaine: { defaut: 1, schema: z.number().int('Nombre entier').min(0).max(14) },
   metiers: {
     defaut: METIERS_PAR_DEFAUT,
     schema: z.array(z.string().trim().min(2).max(80)).max(200).transform((l) => [...new Set(l)]),

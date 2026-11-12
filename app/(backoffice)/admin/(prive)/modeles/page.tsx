@@ -18,7 +18,7 @@ export default async function PageModeles() {
       <div className="space-y-3">
         <EditeurModele modele={null} />
         {modeles.map((m) => (
-          <EditeurModele key={`${m.id}-${m.modifieLe.getTime()}`} modele={{ id: m.id, nom: m.nom, types: m.types, texte: m.texte, actif: m.actif }} />
+          <EditeurModele key={`${m.id}-${m.modifieLe.getTime()}`} modele={{ id: m.id, nom: m.nom, types: m.types, texte: m.texte, actif: m.actif, metaNom: m.metaNom, metaLangue: m.metaLangue, metaParametres: m.metaParametres, metaStatut: m.metaStatut, metaCategorie: m.metaCategorie }} />
         ))}
       </div>
     </>

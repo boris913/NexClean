@@ -1,5 +1,6 @@
 // WhatsApp Cloud API, réception (specs/COM2-01, ADR 0025).
-import { bigserial, index, integer, jsonb, pgEnum, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import { bigserial, boolean, index, integer, jsonb, pgEnum, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import { user } from './auth';
 import { candidat } from './candidats';
 import { client, dossier } from './dossiers';
 
@@ -37,7 +38,10 @@ export const conversation = pgTable(
     /** Dossier auquel les messages sont rattachés (RG-06, RG-07). */
     dossierId: integer('dossier_id').references(() => dossier.id),
     dernierEntrantLe: timestamp('dernier_entrant_le', { withTimezone: true }),
+    /** Dernière réponse **humaine** (Back-Office ou téléphone) : les réponses automatiques n'y comptent pas. */
     dernierSortantLe: timestamp('dernier_sortant_le', { withTimezone: true }),
+    /** COM2-02 RG-08 : « actif » (réponses automatiques permises) ou « manuel » (reprise de la main). */
+    automate: text('automate').$type<'actif' | 'manuel'>().notNull().default('actif'),
     creeLe: timestamp('cree_le', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index('conversation_dossier_idx').on(t.dossierId), index('conversation_entrant_idx').on(t.dernierEntrantLe)],
@@ -70,6 +74,13 @@ export const messageWhatsapp = pgTable(
     texte: text('texte').notNull().default(''),
     media: jsonb('media').$type<MediaWhatsapp>(),
     horodatage: timestamp('horodatage', { withTimezone: true }).notNull(),
+    /** COM2-02 : réponse automatique (accusé, mot-clé, confirmation STOP). */
+    automatique: boolean('automatique').notNull().default(false),
+    /** Collaborateur qui a envoyé depuis le Back-Office. */
+    auteurId: text('auteur_id').references(() => user.id),
+    /** Modèle Meta envoyé, et sa catégorie (plafond marketing, RG-10). */
+    modele: text('modele'),
+    categorie: text('categorie').$type<'utility' | 'marketing' | 'authentication'>(),
     statut: statutMessageEnum('statut'),
     statutLe: timestamp('statut_le', { withTimezone: true }),
     erreur: text('erreur'),
@@ -77,3 +88,20 @@ export const messageWhatsapp = pgTable(
   },
   (t) => [index('message_whatsapp_conversation_idx').on(t.conversationId, t.horodatage)],
 );
+
+/** COM2-02 RG-09 : accord explicite aux messages marketing (et son retrait par STOP). */
+export const consentementWhatsapp = pgTable('consentement_whatsapp', {
+  numero: text('numero').primaryKey(),
+  accordLe: timestamp('accord_le', { withTimezone: true }),
+  formulation: text('formulation'),
+  canal: text('canal'),
+  retireLe: timestamp('retire_le', { withTimezone: true }),
+  majLe: timestamp('maj_le', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** État du numéro synchronisé depuis Meta (note de qualité, RG-10). */
+export const etatWhatsapp = pgTable('etat_whatsapp', {
+  cle: text('cle').primaryKey(),
+  valeur: jsonb('valeur').notNull(),
+  majLe: timestamp('maj_le', { withTimezone: true }).notNull().defaultNow(),
+});

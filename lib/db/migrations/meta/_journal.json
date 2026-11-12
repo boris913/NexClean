@@ -127,6 +127,13 @@
       "when": 1794415805123,
       "tag": "0017_whatsapp_reception",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1794417670663,
+      "tag": "0018_whatsapp_reponses",
+      "breakpoints": true
     }
   ]
 }
