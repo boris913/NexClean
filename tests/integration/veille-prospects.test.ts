@@ -65,6 +65,13 @@ describe.skipIf(!baseDisponible)('Veille prospects (intégration)', async () => 
     expect(r).toMatchObject({ issue: 'doublon', reference: 'P-0001' });
   });
 
+  it('sécurité : lien non http(s) refusé (affiché comme lien cliquable) ; lien sans protocole complété', async () => {
+    await expect(veille.ajouterPiste({ url: 'javascript:alert(document.cookie)', texte: 'Cherche gardien de nuit pour villa à Bastos, sérieux.' }, steph)).rejects.toThrow(/Lien invalide/);
+    extraction = analyse({ type: 'NET', ville: 'Douala' });
+    const r = await veille.ajouterPiste({ url: 'jumia.cm/annonce/77', texte: 'Nettoyage de bureaux à Akwa, deux fois par semaine.' }, steph);
+    expect((await lire((r as { pisteId: number }).pisteId)).url).toBe('https://jumia.cm/annonce/77');
+  });
+
   it('RG-05 (critère) : poste de comptable → écartée « hors services »', async () => {
     extraction = analyse({ pertinent: false, motif_ecart: 'hors_services', type: null, postes: ['comptable'], ville: 'Douala', score: 5 });
     const r = await veille.ajouterPiste({ url: null, texte: 'Entreprise à Akwa recrute un comptable confirmé, 5 ans d’expérience.' }, steph);
@@ -156,6 +163,8 @@ describe.skipIf(!baseDisponible)('Veille prospects (intégration)', async () => 
     const scores = toutes.map((x) => x.score ?? -1);
     expect(scores).toEqual([...scores].sort((a, b) => b - a));
     expect(await veille.listerPistes({ statut: 'toutes' }, autre)).toHaveLength(0);
+    // Ni action sur la piste d'un collègue.
+    await expect(veille.changerStatutPiste(toutes.find((x) => x.statut === 'nouvelle')!.id, 'retenue', null, autre)).rejects.toThrow(/autre collaborateur/);
     const ecartees = await veille.listerPistes({ statut: 'ecartee' }, steph);
     expect(ecartees.every((x) => x.statut === 'ecartee')).toBe(true);
   });
