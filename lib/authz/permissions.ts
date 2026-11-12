@@ -24,6 +24,8 @@ export const PERMISSIONS = {
   'finances.tableau_de_bord': ['finances', 'direction'],
   /** Tableau de bord commercial (COM1-02 RG-05) : un Référent n'y voit que ses Dossiers. */
   'commercial.tableau_de_bord': ['referent', 'direction'],
+  /** Messagerie WhatsApp (COM2-01 RG-10) : toutes les conversations. Un Référent voit celles de ses Dossiers. */
+  'messagerie.voir_tout': ['direction'],
   'export.donnees': ['finances', 'direction'],
   'tarifs.modifier': ['direction', 'admin'],
   'modeles.gerer': ['direction', 'admin'],

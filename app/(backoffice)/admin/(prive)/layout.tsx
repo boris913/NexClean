@@ -9,6 +9,7 @@ import { peut } from '@/lib/authz/permissions';
 import { ROLES } from '@/lib/domain/referentiels';
 import BoutonDeconnexion from './BoutonDeconnexion';
 import { compterNonLues } from '@/lib/notifications';
+import { compterNonTraitees, peutOuvrirMessagerie } from '@/lib/whatsapp/lecture';
 import { peutAccederVivier } from '@/lib/candidats/acces';
 import { LiensNav, MenuMobile, type GroupeNav, type LienNav } from '@/components/backoffice/Navigation';
 import { RechercheRapide } from '@/components/backoffice/RechercheRapide';
@@ -43,7 +44,7 @@ function Initiales({ nom }: { nom: string }) {
 export default async function LayoutPrive({ children }: { children: React.ReactNode }) {
   const c = await collaborateurCourant();
   if (!c) redirect('/admin/connexion');
-  const [nonLues, vivier] = await Promise.all([compterNonLues(c.id), peutAccederVivier(c)]);
+  const [nonLues, vivier, waNonTraitees] = await Promise.all([compterNonLues(c.id), peutAccederVivier(c), compterNonTraitees(c)]);
 
   const filtrer = (liens: (LienNav & { visible: boolean })[]) => liens.filter((l) => l.visible).map(({ visible: _, ...l }) => l);
   const groupes: GroupeNav[] = [
@@ -56,6 +57,7 @@ export default async function LayoutPrive({ children }: { children: React.ReactN
     {
       titre: 'Activité',
       liens: filtrer([
+        { href: '/admin/messagerie', libelle: 'Messagerie', icone: 'messagerie', badge: waNonTraitees, visible: peutOuvrirMessagerie(c) },
         { href: '/admin/dossiers', libelle: 'Dossiers', icone: 'dossiers', visible: peut(c.roles, 'dossier.voir_siens') || peut(c.roles, 'dossier.voir_tous') },
         { href: '/admin/agenda', libelle: 'Agenda', icone: 'agenda', visible: peut(c.roles, 'dossier.voir_siens') || peut(c.roles, 'dossier.voir_tous') },
         { href: '/admin/attribution', libelle: 'Attribution', icone: 'attribution', visible: peut(c.roles, 'dossier.reaffecter') },

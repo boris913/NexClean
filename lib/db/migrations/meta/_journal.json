@@ -120,6 +120,13 @@
       "when": 1794402080227,
       "tag": "0016_rapport_hebdomadaire",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1794415805123,
+      "tag": "0017_whatsapp_reception",
+      "breakpoints": true
     }
   ]
 }
