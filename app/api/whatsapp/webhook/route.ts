@@ -40,6 +40,9 @@ export async function POST(req: Request) {
     try {
       await traiterWebhooksEnAttente();
       await telechargerMediasEnAttente();
+      // COM3-01 RG-06 : qualification IA des demandes créées (sans effet si l'IA n'est pas configurée).
+      const { iaActive } = await import('@/lib/ia/client');
+      if (iaActive()) await (await import('@/lib/ia/copilote')).qualifierEnAttente(5);
     } catch (e) {
       console.error('[whatsapp] traitement différé', e);
     }

@@ -66,6 +66,8 @@ export async function listerDossiers(c: Demandeur, f: FiltresDossiers) {
       referentId: d.referentId,
       referentNom: referent.name,
       personnes: sql<number>`(select coalesce(sum(${schema.lignePoste.nombre}), 0) from ${schema.lignePoste} where ${schema.lignePoste.dossierId} = ${d.id})`.mapWith(Number),
+      // COM3-01 RG-07 : dernière classification IA (indicative, jamais utilisée pour l'attribution).
+      temperature: sql<'chaud' | 'tiede' | 'froid' | null>`(select s.contenu->>'temperature' from ${schema.suggestionIa} s where s.dossier_id = ${d.id} and s.tache = 'classification' order by s.cree_le desc limit 1)`,
     })
     .from(d)
     .innerJoin(schema.client, eq(schema.client.id, d.clientId))

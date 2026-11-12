@@ -34,6 +34,7 @@ import SectionDevis from './SectionDevis';
 import SectionFactures from './SectionFactures';
 import SectionFinances from './SectionFinances';
 import SectionRendezVous from './SectionRendezVous';
+import SectionCopilote from './SectionCopilote';
 
 /** MVP1-03 RG-06 : estimation enregistrée dans la Demande (preuve de ce qui a été affiché). */
 function estimationMontree(donnees: unknown): string | null {
@@ -165,6 +166,7 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
         <div className="grid gap-4 lg:grid-cols-3 lg:items-start">
           <div className="space-y-4 lg:col-span-2">
             {peutReaffecter && !d.referentId && reaffectation}
+            <SectionCopilote dossierId={d.id} traiter={traiter} derniereActionLe={d.derniereActionLe} />
             {traiter && <A.ChangerStatut dossierId={d.id} encaissementsIntegres={encaissementsIntegres} options={transitionsProposees(d.type, d.statut, direction, optionsTransition).map((s) => ({ code: s, libelle: STATUTS[s] }))} />}
             {traiter && optionsTransition.circuitDevis && ['en_qualification', 'devis_pret', 'devis_envoye'].includes(d.statut) && (
               <Alerte type="info">

@@ -30,8 +30,10 @@ export default function Repondre({
   modelesInternes,
   modelesMeta,
   documents,
+  iaDisponible = false,
 }: {
   conversationId: number;
+  iaDisponible?: boolean;
   documents: { id: number; libelle: string; texte: string }[];
   fenetreOuverte: boolean;
   finFenetre: string | null;
@@ -78,6 +80,24 @@ ${d.texte}` : d.texte));
               <option value="">Joindre un document (lien sécurisé vers l’espace de suivi)…</option>
               {documents.map((d) => <option key={d.id} value={d.id}>{d.libelle}</option>)}
             </select>
+          )}
+          {iaDisponible && (
+            <button
+              type="button"
+              disabled={envoi}
+              onClick={async () => {
+                setEnvoi(true);
+                const res = await actions.brouillonIa(conversationId);
+                setEnvoi(false);
+                if (res.ok) {
+                  setTexte(res.texte);
+                  setR(null);
+                } else setR({ ok: false, erreur: res.erreur });
+              }}
+              className="text-sm font-medium text-primary hover:underline disabled:opacity-50"
+            >
+              ✨ Suggérer une réponse (à relire avant envoi)
+            </button>
           )}
           <label htmlFor="reponse" className="sr-only">Votre réponse</label>
           <textarea id="reponse" required rows={3} maxLength={4096} value={texte} onChange={(e) => setTexte(e.target.value)} placeholder="Votre réponse au client…" className={classeChamp} />

@@ -17,6 +17,7 @@
     "build:scripts": "esbuild scripts/migrer.ts scripts/initialiser.ts scripts/purger-documents.ts scripts/taches.ts --bundle --platform=node --target=node24 --format=cjs --outdir=dist-scripts --out-extension:.js=.cjs --external:@node-rs/argon2 --log-level=warning"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
     "@node-rs/argon2": "^2.2.2",
     "better-auth": "^1.7.15",
     "drizzle-orm": "^0.45.4",

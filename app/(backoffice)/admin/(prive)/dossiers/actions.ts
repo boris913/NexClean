@@ -11,6 +11,7 @@ import type { Statut } from '@/lib/dossiers/statuts';
 import type { DossierType } from '@/lib/domain/referentiels';
 import type { Source } from '@/lib/acquisition/source';
 import * as rdv from '@/lib/rendezvous/service';
+import * as copilote from '@/lib/ia/copilote';
 import type { RdvStatut } from '@/lib/rendezvous/domaine';
 
 async function acteur() {
@@ -175,4 +176,41 @@ export async function cloturerRendezVous(dossierId: number, id: number, statut: 
     revalidatePath('/admin/agenda');
     return 'Rendez-vous clôturé.';
   });
+}
+
+// ─── Copilote IA (COM3-01) : l'IA propose, le référent valide ──
+
+export async function appliquerQualificationIa(dossierId: number, suggestionId: number) {
+  return executer(async () => {
+    const faits = await copilote.appliquerQualification(suggestionId, await acteur());
+    rafraichir(dossierId);
+    return `Qualification appliquée${faits.length ? ` (${faits.join(', ')})` : ''} ; le détail est ajouté en note.`;
+  });
+}
+
+export async function ignorerSuggestionIa(dossierId: number, suggestionId: number) {
+  return executer(async () => {
+    await copilote.ignorerSuggestion(suggestionId, await acteur());
+    rafraichir(dossierId);
+    return 'Suggestion ignorée.';
+  });
+}
+
+export async function resumerDossierIa(dossierId: number) {
+  return executer(async () => {
+    const r = await copilote.resumerDossier(dossierId, await acteur());
+    if (!r) throw new ErreurMetier('Suggestion indisponible pour le moment : réessayez plus tard.');
+    rafraichir(dossierId);
+    return 'Résumé mis à jour.';
+  });
+}
+
+export async function suggererRelanceIa(dossierId: number): Promise<{ ok: true; moment: string | null; message: string } | { ok: false; erreur: string }> {
+  try {
+    const r = await copilote.suggererRelance(dossierId, await acteur());
+    return r ? { ok: true, ...r } : { ok: false, erreur: 'Suggestion indisponible pour le moment : rédigez la relance vous-même.' };
+  } catch (e) {
+    if (e instanceof ErreurMetier) return { ok: false, erreur: e.message };
+    throw e;
+  }
 }

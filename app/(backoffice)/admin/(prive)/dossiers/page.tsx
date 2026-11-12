@@ -21,6 +21,8 @@ const tonStatut = (s: string) => (s === 'a_completer' ? 'orange' : s === 'refuse
 
 type Params = Record<string, string | undefined>;
 
+const TEMPERATURES = { chaud: 'chaud', tiede: 'tiède', froid: 'froid' } as const;
+
 export default async function PageDossiers({ searchParams }: { searchParams: Promise<Params> }) {
   const c = await exigerCollaborateur();
   const joursSansAction = await lireParametre('jours_sans_action');
@@ -173,7 +175,10 @@ export default async function PageDossiers({ searchParams }: { searchParams: Pro
                         {d.numero}
                       </Link>
                     </td>
-                    <td className="max-w-[14rem] truncate px-3 py-2 font-medium text-ink-900" title={d.clientNom}>{d.clientNom}</td>
+                    <td className="max-w-[14rem] truncate px-3 py-2 font-medium text-ink-900" title={d.clientNom}>
+                      {d.temperature && <span title={`Prospect ${TEMPERATURES[d.temperature]} (suggestion IA)`} className={`mr-1.5 inline-block h-2 w-2 rounded-full align-middle ${d.temperature === 'chaud' ? 'bg-red-500' : d.temperature === 'tiede' ? 'bg-amber-500' : 'bg-ocean-500'}`}><span className="sr-only">Prospect {TEMPERATURES[d.temperature]}</span></span>}
+                      {d.clientNom}
+                    </td>
                     <td className="whitespace-nowrap px-3 py-2 text-xs font-semibold text-ink-600"><abbr title={DOSSIER_TYPES[d.type]} className="no-underline">{d.type}</abbr></td>
                     <td className="px-3 py-2 text-right tabular-nums text-ink-600">{d.personnes > 0 ? d.personnes : '—'}</td>
                     <td className="max-w-[9rem] truncate px-3 py-2 text-ink-600">{d.ville ?? d.villeAutre ?? '—'}</td>

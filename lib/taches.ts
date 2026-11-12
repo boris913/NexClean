@@ -18,6 +18,8 @@ import { rappelerRendezVous } from '@/lib/rendezvous/service';
 import { genererRapportsHebdomadaires } from '@/lib/commercial/rapport-service';
 import { alerterConversationsNonTraitees, telechargerMediasEnAttente, traiterWebhooksEnAttente } from '@/lib/whatsapp/reception';
 import { synchroniserModeles, synchroniserQualite } from '@/lib/whatsapp/envoi';
+import { qualifierEnAttente } from '@/lib/ia/copilote';
+import { iaActive } from '@/lib/ia/client';
 
 const JOUR_MS = 24 * 60 * 60 * 1000;
 
@@ -122,7 +124,16 @@ export async function executerTaches(maintenant = new Date()) {
   } catch (e) {
     console.error('[whatsapp] synchronisation Meta', e);
   }
+  // COM3-01 RG-06 : qualification IA des nouvelles demandes (jamais bloquante).
+  let qualifiees = 0;
+  if (iaActive()) {
+    try {
+      qualifiees = await qualifierEnAttente(20, maintenant);
+    } catch (e) {
+      console.error('[ia] qualification', e);
+    }
+  }
   const emails = await envoyerNotificationsEnAttente(200);
-  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, devisExpires, soldesRelances, rendezVous, rapports, whatsapp, emails };
+  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, devisExpires, soldesRelances, rendezVous, rapports, whatsapp, qualifiees, emails };
 }
 

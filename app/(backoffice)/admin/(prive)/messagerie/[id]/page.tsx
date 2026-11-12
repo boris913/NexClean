@@ -15,6 +15,7 @@ import { automateSuspendu, fenetreOuverte, FENETRE_SERVICE_MS } from '@/lib/what
 import { listerModeles, contexteDossier } from '@/lib/modeles/service';
 import { rendreMessage } from '@/lib/modeles/variables';
 import { lireParametre } from '@/lib/parametres';
+import { iaActive } from '@/lib/ia/client';
 
 export const dynamic = 'force-dynamic';
 const STATUT = { envoye: 'envoyé', remis: 'remis', lu: 'lu', echec: 'échec' } as const;
@@ -107,6 +108,7 @@ export default async function Conversation({ params }: { params: Promise<{ id: s
             modelesInternes={internes.map((m) => ({ id: m.id, nom: m.nom, texte: rendreMessage(m.texte, ctx) }))}
             modelesMeta={modelesMeta.map((m) => ({ id: m.id, nom: m.nom, categorie: m.metaCategorie }))}
             documents={documents}
+            iaDisponible={iaActive()}
           />
         </Carte>
       )}
