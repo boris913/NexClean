@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Contrôles internes du serveur (M1-SOC-06), lancés chaque heure par cron :
 #   - espace disque libre < 20 % sur / ;
-#   - application ou base arrêtée / en mauvaise santé ;
+#   - application, base ou messagerie arrêtée / en mauvaise santé ;
 #   - aucune sauvegarde réussie depuis plus de 26 h (sauvegarde qui n'a pas tourné du tout).
 # Une alerte e-mail (alerte.sh) part au premier constat, puis au plus une fois par 24 h tant que
 # le problème dure, et un message de retour à la normale est envoyé quand il disparaît.
@@ -15,6 +15,7 @@ JOURNAL_SAUVEGARDE=/var/log/nexclean-sauvegarde.log
 MARQUE_SAUVEGARDE=/var/lib/nexclean-sauvegarde-ok   # touchée par sauvegarde.sh après chaque réussite
 APPLI=app-cwdhvioxedgfuqco8rrzjjpe
 BASE=db-cwdhvioxedgfuqco8rrzjjpe
+MESSAGERIE=nexclean-mail
 mkdir -p "$ETAT"
 
 # signaler <clé> <sujet> <texte> : alerte au plus une fois par 24 h pour une même clé.
@@ -43,9 +44,9 @@ else
   retablir disque "Espace disque revenu à la normale (${libre} % libre)"
 fi
 
-# 2. Conteneurs de l'application et de la base.
+# 2. Conteneurs de l'application, de la base et de la messagerie.
 sante() { docker ps --filter "name=^$1" --format '{{.Status}}' | head -1; }
-for c in "$APPLI" "$BASE"; do
+for c in "$APPLI" "$BASE" "$MESSAGERIE"; do
   s=$(sante "$c")
   if [ -z "$s" ] || [[ "$s" == *unhealthy* ]]; then
     signaler "conteneur-$c" "Conteneur arrêté ou en mauvaise santé : ${c%%-*}" "Le conteneur ${c}* est ${s:-absent}.

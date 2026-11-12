@@ -1,0 +1,23 @@
+# NEXCLEAN : transmission TCP des noms de la messagerie vers Stalwart, sans déchiffrer.
+# Stalwart gère lui-même son certificat (ACME TLS-ALPN-01) ; le 443 reste à Traefik pour
+# tout le reste du site. PROXY protocol : Stalwart voit la vraie adresse du client, ce qui
+# garde le bannissement automatique utile sur l'administration.
+# Installé dans /data/coolify/proxy/dynamic/.
+tcp:
+  routers:
+    nexclean-mail:
+      rule: "HostSNI(`mail.nexclean.xyz`) || HostSNI(`autoconfig.nexclean.xyz`) || HostSNI(`autodiscover.nexclean.xyz`) || HostSNI(`mta-sts.nexclean.xyz`) || HostSNI(`ua-auto-config.nexclean.xyz`)"
+      entryPoints: [https]
+      service: nexclean-mail
+      tls:
+        passthrough: true
+  services:
+    nexclean-mail:
+      loadBalancer:
+        serversTransport: nexclean-mail-proxy
+        servers:
+          - address: "nexclean-mail:443"
+  serversTransports:
+    nexclean-mail-proxy:
+      proxyProtocol:
+        version: 2
