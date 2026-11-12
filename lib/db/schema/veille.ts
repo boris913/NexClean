@@ -1,20 +1,41 @@
 // Veille prospects (specs/COM4-01, ADR 0027) : pistes repérées avant tout contact.
-import { bigserial, index, integer, pgEnum, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
-import { STATUTS_PISTE_CODES } from '@/lib/veille/domaine';
+import { bigserial, boolean, index, integer, pgEnum, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import { STATUTS_PISTE_CODES, TYPES_SOURCE_CODES } from '@/lib/veille/domaine';
 import { user } from './auth';
 import { dossierTypeEnum } from './collaborateurs';
 import { client, dossier } from './dossiers';
 import { quartier, ville } from './geo';
 
 export const statutPisteEnum = pgEnum('statut_piste', STATUTS_PISTE_CODES);
+export const typeSourceEnum = pgEnum('type_source_veille', TYPES_SOURCE_CODES);
+
+/** RG-04 : référentiel des sources de veille (Direction). */
+export const sourceVeille = pgTable('source_veille', {
+  id: serial('id').primaryKey(),
+  nom: text('nom').notNull(),
+  type: typeSourceEnum('type').notNull(),
+  /** Adresse du flux (RSS / Atom) ou de la page de la source. */
+  url: text('url'),
+  /** Requêtes surveillées (« femme de ménage Douala ») : filtre des éléments collectés. */
+  requetes: text('requetes').array().notNull().default([]),
+  frequenceHeures: integer('frequence_heures').notNull().default(12),
+  actif: boolean('actif').notNull().default(true),
+  derniereCollecteLe: timestamp('derniere_collecte_le', { withTimezone: true }),
+  dernierResultat: text('dernier_resultat'),
+  creeLe: timestamp('cree_le', { withTimezone: true }).notNull().defaultNow(),
+  majLe: timestamp('maj_le', { withTimezone: true }).notNull().defaultNow(),
+});
 
 /** RG-01 : une Piste. La référence `P-xxxx` découle de l'identifiant. */
 export const piste = pgTable(
   'piste',
   {
     id: serial('id').primaryKey(),
-    /** saisie_assistee, ou code d'une source automatisée (RG-04). */
+    /** saisie_assistee, ou type de la source automatisée (RG-04). */
     source: text('source').notNull(),
+    sourceId: integer('source_id').references(() => sourceVeille.id, { onDelete: 'set null' }),
+    /** RG-12 : requête de la source qui a produit la piste. */
+    requete: text('requete'),
     url: text('url'),
     /** RG-03 : URL normalisée, clé de déduplication. */
     urlNormalisee: text('url_normalisee').unique(),

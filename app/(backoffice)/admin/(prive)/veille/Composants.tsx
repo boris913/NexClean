@@ -54,13 +54,14 @@ export function AjouterPiste({ iaConfiguree }: { iaConfiguree: boolean }) {
   );
 }
 
-export function ActionsPiste({ piste, iaConfiguree }: { piste: { id: number; reference: string; statut: string; message: string | null; canalDefaut: CanalContact; relance: { ok: boolean; raison?: string } }; iaConfiguree: boolean }) {
+export function ActionsPiste({ piste, iaConfiguree }: { piste: { id: number; reference: string; statut: string; message: string | null; canalDefaut: CanalContact; relance: { ok: boolean; raison?: string }; contactEmail: string | null }; iaConfiguree: boolean }) {
   const [r, setR] = useState<ResultatAction | null>(null);
   const [envoi, setEnvoi] = useState(false);
   const [mode, setMode] = useState<'aucun' | 'ecarter' | 'contacter'>('aucun');
   const [canal, setCanal] = useState<CanalContact>(piste.canalDefaut);
   const [texte, setTexte] = useState(piste.message ?? '');
   const [copie, setCopie] = useState(false);
+  const [objet, setObjet] = useState('Votre recherche de personnel — NEXCLEAN');
   const lancer = async (f: () => Promise<ResultatAction>) => {
     setEnvoi(true);
     setR(await f());
@@ -160,6 +161,26 @@ export function ActionsPiste({ piste, iaConfiguree }: { piste: { id: number; ref
               </button>
             )}
           </div>
+          {canal === 'email' && piste.contactEmail && (
+            <div className="space-y-2 rounded-lg bg-ink-50 p-2.5">
+              <div>
+                <label htmlFor={`objet-${piste.id}`} className={classeLibelle}>Objet de l’e-mail à {piste.contactEmail}</label>
+                <input id={`objet-${piste.id}`} value={objet} onChange={(e) => setObjet(e.target.value)} className={classeChamp} />
+              </div>
+              <button
+                type="button"
+                disabled={envoi || !complet || !objet.trim()}
+                className={classeBouton('principal')}
+                onClick={async () => {
+                  if (!window.confirm(`Envoyer cet e-mail à ${piste.contactEmail} ? Les réponses arriveront sur votre adresse.`)) return;
+                  await lancer(() => actions.envoyerEmail(piste.id, objet, complet));
+                  setMode('aucun');
+                }}
+              >
+                Envoyer l’e-mail depuis le Back-Office
+              </button>
+            </div>
+          )}
           <div className="flex flex-wrap gap-2">
             <button
               type="button"

@@ -5,7 +5,7 @@
 import { executerTaches } from '@/lib/taches';
 
 executerTaches()
-  .then((r) => console.log(`Escalades : ${r.escalades} · dossiers sans action : ${r.sansAction} · comptes candidats supprimés : ${r.suppressionsCandidats} · candidats non attribués relancés : ${r.escaladesCandidats} · candidats non traités signalés : ${r.candidatsNonTraites} · rappels de rendez-vous : ${r.rendezVous.rappels} · rendez-vous à clôturer : ${r.rendezVous.aCloturer} · rapports hebdomadaires : ${r.rapports} · webhooks WhatsApp repris : ${r.whatsapp.webhooks} · médias : ${r.whatsapp.medias} · conversations sans réponse signalées : ${r.whatsapp.nonTraitees} · modèles Meta synchronisés : ${r.whatsapp.modeles} · qualité : ${r.whatsapp.qualite ?? '—'} · demandes qualifiées par l’IA : ${r.qualifiees} · pistes purgées : ${r.pistesPurgees} · e-mails envoyés : ${r.emails}`))
+  .then((r) => console.log(`Escalades : ${r.escalades} · dossiers sans action : ${r.sansAction} · comptes candidats supprimés : ${r.suppressionsCandidats} · candidats non attribués relancés : ${r.escaladesCandidats} · candidats non traités signalés : ${r.candidatsNonTraites} · rappels de rendez-vous : ${r.rendezVous.rappels} · rendez-vous à clôturer : ${r.rendezVous.aCloturer} · rapports hebdomadaires : ${r.rapports} · webhooks WhatsApp repris : ${r.whatsapp.webhooks} · médias : ${r.whatsapp.medias} · conversations sans réponse signalées : ${r.whatsapp.nonTraitees} · modèles Meta synchronisés : ${r.whatsapp.modeles} · qualité : ${r.whatsapp.qualite ?? '—'} · demandes qualifiées par l’IA : ${r.qualifiees} · pistes collectées : ${r.pistesCollectees} · pistes purgées : ${r.pistesPurgees} · e-mails envoyés : ${r.emails}`))
   .catch((e) => {
     console.error(e);
     process.exitCode = 1;

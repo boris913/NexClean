@@ -74,7 +74,7 @@ const datePublication = (s: string | null) => (s && /^\d{4}-\d{2}-\d{2}$/.test(s
  * par contact et besoin sur 30 jours ; un contact déjà client est signalé au lieu d'ouvrir une piste ;
  * hors services ou hors zone → écartée d'office.
  */
-export async function ajouterPiste(entree: z.input<typeof schemaNouvellePiste>, a: Acteur | null, source = 'saisie_assistee', maintenant = new Date()): Promise<IssueAjout> {
+export async function ajouterPiste(entree: z.input<typeof schemaNouvellePiste>, a: Acteur | null, source = 'saisie_assistee', maintenant = new Date(), collecte: { sourceId: number; requete: string | null; publieLe: Date | null } | null = null): Promise<IssueAjout> {
   const { url, texte } = schemaNouvellePiste.parse(entree);
   const db = getDb();
   const urlNormalisee = url ? normaliserUrl(url) : null;
@@ -127,7 +127,9 @@ export async function ajouterPiste(entree: z.input<typeof schemaNouvellePiste>, 
       url,
       urlNormalisee,
       extrait: texte,
-      publieLe: datePublication(analyse?.date_publication ?? null),
+      sourceId: collecte?.sourceId ?? null,
+      requete: collecte?.requete ?? null,
+      publieLe: collecte?.publieLe ?? datePublication(analyse?.date_publication ?? null),
       type,
       postes: (analyse?.postes ?? []).map((x) => x.trim().toLowerCase()).filter(Boolean).slice(0, 10),
       effectif: analyse?.effectif && analyse.effectif > 0 && analyse.effectif < 1000 ? analyse.effectif : null,
@@ -206,7 +208,7 @@ export async function enregistrerMessage(id: number, texte: string, a: Acteur): 
  * RG-08 : le collaborateur a envoyé lui-même le message sur le canal d'origine ; on enregistre
  * date, canal et texte. RG-10 : plafond quotidien par collaborateur, une seule relance après 5 jours.
  */
-export async function marquerContactee(id: number, e: { canal: CanalContact; texte: string }, a: Acteur, maintenant = new Date()): Promise<'premier' | 'relance'> {
+export async function marquerContactee(id: number, e: { canal: CanalContact; texte: string }, a: Acteur, maintenant = new Date(), envoyer?: (p: typeof schema.piste.$inferSelect) => Promise<void>): Promise<'premier' | 'relance'> {
   if (!(e.canal in CANAUX_CONTACT)) throw new ErreurMetier('Canal inconnu.');
   const texte = z.string().trim().min(10, 'Collez le texte envoyé.').max(3000).parse(e.texte);
   const db = getDb();
@@ -228,6 +230,8 @@ export async function marquerContactee(id: number, e: { canal: CanalContact; tex
       .from(schema.contactPiste)
       .where(and(eq(schema.contactPiste.collaborateurId, a.id), gte(schema.contactPiste.creeLe, debutJourDouala(maintenant))))) as [{ n: number }];
     if (n >= plafond) throw new ErreurMetier(`Plafond atteint : ${plafond} pistes contactées aujourd’hui.`);
+    // Envoi par le Back-Office (e-mail) après tous les contrôles ; en cas d'échec, rien n'est enregistré.
+    if (envoyer) await envoyer(p);
     await tx.insert(schema.contactPiste).values({ pisteId: id, type, canal: e.canal, texte, collaborateurId: a.id, creeLe: maintenant });
     await tx
       .update(schema.piste)
@@ -286,6 +290,8 @@ export async function listerPistes(f: FiltresPistes, a: Acteur, limite = 100) {
     .select({
       id: p.id,
       source: p.source,
+      sourceNom: schema.sourceVeille.nom,
+      requete: p.requete,
       url: p.url,
       extrait: p.extrait,
       publieLe: p.publieLe,
@@ -314,6 +320,7 @@ export async function listerPistes(f: FiltresPistes, a: Acteur, limite = 100) {
     .leftJoin(schema.ville, eq(schema.ville.id, p.villeId))
     .leftJoin(schema.quartier, eq(schema.quartier.id, p.quartierId))
     .leftJoin(schema.user, eq(schema.user.id, p.assigneA))
+    .leftJoin(schema.sourceVeille, eq(schema.sourceVeille.id, p.sourceId))
     .where(conditions.length ? and(...conditions) : undefined)
     .orderBy(sql`${p.score} desc nulls last`, desc(p.creeLe), asc(p.id))
     .limit(limite);
@@ -328,4 +335,21 @@ export async function purgerPistes(maintenant = new Date()): Promise<number> {
     .where(and(ne(schema.piste.statut, 'convertie'), lt(schema.piste.creeLe, new Date(maintenant.getTime() - jours * JOUR_MS))))
     .returning({ id: schema.piste.id });
   return r.length;
+}
+
+/**
+ * RG-08 : e-mail professionnel envoyé depuis le Back-Office, au nom de NEXCLEAN, réponse au
+ * collaborateur. Seulement à l'adresse publiée par l'auteur ; mêmes plafonds que tout contact.
+ */
+export async function envoyerEmailApproche(id: number, e: { objet: string; texte: string }, a: Acteur, maintenant = new Date()): Promise<'premier' | 'relance'> {
+  const objet = z.string().trim().min(3, 'Objet trop court').max(150).parse(e.objet);
+  const texte = z.string().trim().min(20, 'Message trop court').max(4000).parse(e.texte);
+  if (contientMontant(texte)) throw new ErreurMetier('Pas de prix ferme dans un premier message.');
+  const [moi] = await getDb().select({ email: schema.user.email, nom: schema.user.name }).from(schema.user).where(eq(schema.user.id, a.id));
+  return marquerContactee(id, { canal: 'email', texte: `${objet}\n\n${texte}` }, a, maintenant, async (p) => {
+    if (!p.contactEmail) throw new ErreurMetier('Aucune adresse e-mail publiée par l’auteur de cette piste.');
+    const { envoyerEmail, echapperHtml } = await import('@/lib/email');
+    const corps = `${texte}\n\n${moi?.nom ?? 'L’équipe'} — NEXCLEAN`;
+    await envoyerEmail({ to: p.contactEmail, subject: objet, text: corps, html: `<div style="font-family:sans-serif;white-space:pre-line">${echapperHtml(corps).replace(/(https:\/\/wa\.me\/[^\s<]+)/g, '<a href="$1">$1</a>')}</div>`, replyTo: moi?.email ?? undefined });
+  });
 }
