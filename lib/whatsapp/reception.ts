@@ -135,7 +135,7 @@ export async function appliquerMessage(m: MessageNormalise, maintenant = new Dat
     // COM3-02 : l'agent conversationnel passe en premier ; s'il ne prend pas la conversation (mode,
     // interrupteurs, STOP, réponse humaine récente…), les réponses automatiques de COM2-02 s'appliquent.
     const { agentRepond } = await import('@/lib/ia/agent');
-    if (await agentRepond(conversationId, m.texte, maintenant)) return;
+    if (await agentRepond(conversationId, m.texte, maintenant, m.waId)) return;
     const { entrantPrecedent, repondreAutomatiquement } = await import('./envoi');
     await repondreAutomatiquement(conversationId, m.texte, await entrantPrecedent(conversationId, m.waId), maintenant);
   }

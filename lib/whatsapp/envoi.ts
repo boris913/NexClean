@@ -309,7 +309,8 @@ export async function envoyerAuClient(
   const db = getDb();
   await db.insert(schema.conversation).values({ numero: p.numero, dossierId: p.dossierId }).onConflictDoNothing({ target: schema.conversation.numero });
   const [c] = await db.select().from(schema.conversation).where(eq(schema.conversation.numero, p.numero));
-  const conv = { id: c!.id, dossierId: c!.dossierId ?? p.dossierId };
+  // L'envoi est consigné sur le dossier du devis, même si la conversation suit un autre dossier du client.
+  const conv = { id: c!.id, dossierId: p.dossierId };
   try {
     if (fenetreOuverte(c!.dernierEntrantLe, maintenant)) {
       const waId = await posterMessage(p.numero, { type: 'text', text: { body: p.texte, preview_url: true } });
