@@ -3,9 +3,10 @@ import Link from 'next/link';
 import { MessageCircle } from 'lucide-react';
 import { exigerCollaborateur } from '@/lib/authz/session';
 import { listerConversations, peutOuvrirMessagerie } from '@/lib/whatsapp/lecture';
+import { peut } from '@/lib/authz/permissions';
 import { formaterTelephone } from '@/lib/telephone';
 import { libelleDuree } from '@/lib/commercial/indicateurs';
-import { classeSurface, EtatVide, Pastille, TitrePage } from '@/components/backoffice/ui';
+import { classeBouton, classeSurface, EtatVide, Pastille, TitrePage } from '@/components/backoffice/ui';
 import Rafraichir from './Rafraichir';
 
 export const metadata = { title: 'Messagerie' };
@@ -20,7 +21,13 @@ export default async function Messagerie({ searchParams }: { searchParams: Promi
   return (
     <div className="space-y-4">
       <Rafraichir />
-      <TitrePage titre="Messagerie" description="Messages reçus sur le WhatsApp commercial. Les réponses se font pour l’instant depuis le téléphone." />
+      <TitrePage titre="Messagerie" description="Messages reçus sur le WhatsApp commercial. Les réponses se font pour l’instant depuis le téléphone.">
+        {peut(c.roles, 'whatsapp.raccorder') && (
+          <Link href="/admin/messagerie/raccordement" className={classeBouton('secondaire')}>
+            Raccorder un numéro
+          </Link>
+        )}
+      </TitrePage>
       <nav aria-label="Filtre" className="flex w-fit gap-1 rounded-lg bg-ink-100/80 p-1">
         {(['toutes', 'non_traitees'] as const).map((f) => (
           <Link key={f} href={f === 'toutes' ? '?' : '?filtre=non_traitees'} aria-current={f === filtre ? 'page' : undefined} className={`rounded-md px-3 py-1.5 text-sm font-medium ${f === filtre ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-600 hover:text-ink-900'}`}>
