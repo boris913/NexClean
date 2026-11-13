@@ -23,6 +23,10 @@ const schema = z.object({
   WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
   WHATSAPP_WABA_ID: z.string().optional(),
   WHATSAPP_GRAPH_VERSION: z.string().default('v21.0'),
+  /** Raccordement d'un numéro par l'inscription intégrée de Meta (ADR 0025) : identifiant de l'application
+   *  et identifiant de la configuration « Facebook Login for Business ». Non secrets. */
+  WHATSAPP_APP_ID: z.string().regex(/^\d+$/).optional(),
+  WHATSAPP_CONFIG_ID: z.string().regex(/^\d+$/).optional(),
   // Copilote IA (COM3-01, ADR 0026). Absente : les fonctions IA sont masquées, tout fonctionne sans.
   /** Clé de l'API Claude (compte au nom de NEXCLEAN). */
   IA_API_KEY: z.string().optional(),

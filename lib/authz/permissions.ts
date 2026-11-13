@@ -28,6 +28,8 @@ export const PERMISSIONS = {
   'messagerie.voir_tout': ['direction'],
   /** COM3-02 : mode de l'agent conversationnel, base de connaissances, indicateurs de l'agent. */
   'agent.gerer': ['direction'],
+  /** ADR 0025 : raccorder un numéro WhatsApp à la Cloud API (inscription intégrée de Meta). */
+  'whatsapp.raccorder': ['direction'],
   /** COM4-01 : écran Veille (ajout, qualification, approche des pistes). */
   'veille.utiliser': ['referent', 'direction'],
   /** COM4-01 RG-04 : référentiel des sources de veille, pistes de tous les collaborateurs. */

@@ -29,3 +29,11 @@ L'ADR 0005 écartait l'API pour trois raisons : vérification d'entreprise, coû
 - Facturation Meta au message (modèles marketing / utilitaires payants ; réponses dans la fenêtre de service ouverte par le client, en principe gratuites). Grille Cameroun à vérifier au moment du devis.
 - Tout message à l'initiative de NEXCLEAN hors fenêtre de 24 h passe par un **modèle approuvé** et exige l'**accord préalable** du destinataire (opt-in). Le contact à froid sur WhatsApp est exclu (voir ADR 0027) : il dégrade la note de qualité du numéro et peut mener à sa suspension.
 - L'interface de canal de notification prévue par l'ADR 0005 reçoit une implémentation « WhatsApp API » ; le canal « WhatsApp-lien » reste disponible en repli.
+
+## Complément (novembre 2026) : voie de raccordement
+
+La documentation Meta réserve l'inscription des numéros de l'application WhatsApp Business (coexistence) à l'**inscription intégrée** (Embedded Signup), ouverte aux *Tech Providers* et *Solution Partners*. Un numéro de l'application ne peut pas être raccordé depuis la console comme le numéro de test : « Ajouter un numéro de téléphone » impose de supprimer le compte de l'application.
+
+Option retenue (A) : l'application Meta de NEXCLEAN suit le parcours *Tech Provider* et le Back-Office porte sa propre page d'inscription (Messagerie > Raccorder un numéro). Avant examen de l'application, Meta permet 10 inscriptions par semaine, réalisables par les administrateurs de l'application : suffisant pour le numéro commercial. Le jeton d'entreprise issu de l'inscription sert uniquement à finaliser (abonnement des webhooks, synchronisation des contacts et de l'historique dans les 24 h) et n'est pas conservé ; l'exploitation continue avec le jeton de l'utilisateur système, auquel le nouveau compte est attribué.
+
+Options écartées pour l'instant : partenaire officiel (abonnement mensuel), second numéro dédié (reste le repli du point 5).
