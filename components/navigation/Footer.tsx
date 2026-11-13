@@ -116,6 +116,7 @@ export default function Footer({ villes }: { villes: string }) {
         <Container className="flex flex-col items-center justify-between gap-2 py-3 text-xs sm:flex-row">
           <p>
             © {new Date().getFullYear()} {COMPANY.legalName}
+            {COMPANY.rccm && ` · RCCM ${COMPANY.rccm}`}
           </p>
           <ul className="flex flex-wrap justify-center gap-x-5">
             {FOOTER_LEGAL.map((lien) => (

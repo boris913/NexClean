@@ -17,7 +17,7 @@ export const COMPANY = {
   name: 'NEXCLEAN SARL',
   legalName: 'NEXCLEAN SARL',
   // Renseigner uniquement des informations officielles (laisser vide sinon : non affiché).
-  rccm: '',
+  rccm: 'CM-DLA-01-2026-B12-00529',
   niu: '',
   director: '',
   foundedYear: '',
