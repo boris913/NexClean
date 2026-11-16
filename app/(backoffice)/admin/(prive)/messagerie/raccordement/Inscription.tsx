@@ -74,8 +74,14 @@ export default function Inscription({ appId, configId, version }: { appId: strin
         void envoyer();
       },
       // Produits choisis dans la configuration Facebook Login for Business ; l'option de
-      // coexistence (application WhatsApp Business) est demandée explicitement.
-      { config_id: configId, response_type: 'code', override_default_response_type: true, extras: { setup: {}, featureType: 'whatsapp_business_app_onboarding' } },
+      // coexistence (application WhatsApp Business) est demandée explicitement. Version du parcours
+      // et format des messages alignés sur le lien généré par Meta pour cette configuration (v4, session v3).
+      {
+        config_id: configId,
+        response_type: 'code',
+        override_default_response_type: true,
+        extras: { setup: {}, version: 'v4', sessionInfoVersion: '3', featureType: 'whatsapp_business_app_onboarding' },
+      },
     );
   };
 
