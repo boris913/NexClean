@@ -69,6 +69,25 @@ describe.skipIf(!baseDisponible)('Formulaires de devis (intégration)', async ()
     expect(c!.type).toBe('entreprise');
   });
 
+  it('ADR 0022 §2 : formulaire abonnement → dossier ABO, client selon « Vous êtes », formule conservée', async () => {
+    const valeurs = { name: 'Résidence Les Palmiers', clientType: 'Entreprise / organisation', phone: '690 22 33 49', formula: 'Professionnels', siteType: 'Résidence', frequency: '8 passages par mois', need: 'Parties communes' };
+    const r = await soumettreDemandeDevis({ formId: 'demande-abonnement', valeurs, lieu, consentement: true }, { ip: ip() });
+    if (!r.ok) throw new Error(JSON.stringify(r));
+    expect(r.numero).toMatch(/^ABO-/);
+    const d = await dossier(r.numero);
+    expect([d.type, d.statut, d.secteur, d.description]).toEqual(['ABO', 'nouvelle_demande', 'Résidence', 'Parties communes']);
+    const [c] = await getDb().select().from(schema.client).where(eq(schema.client.id, d.clientId));
+    expect([c!.type, c!.nom]).toEqual(['entreprise', 'Résidence Les Palmiers']);
+    const [dem] = await getDb().select().from(schema.demande).where(eq(schema.demande.dossierId, d.id));
+    expect(dem!.formulaire).toBe('demande-abonnement');
+    expect((dem!.donnees as { valeurs: Record<string, string> }).valeurs).toMatchObject({ formula: 'Professionnels', frequency: '8 passages par mois' });
+
+    const p = await soumettreDemandeDevis({ formId: 'demande-abonnement', valeurs: { ...valeurs, name: 'Awa Ngo', clientType: 'Particulier', phone: '690 22 33 50', formula: 'Particuliers', siteType: 'Logement' }, lieu, consentement: true }, { ip: ip() });
+    if (!p.ok) throw new Error(JSON.stringify(p));
+    const [cp] = await getDb().select().from(schema.client).where(eq(schema.client.id, (await dossier(p.numero)).clientId));
+    expect([cp!.type, cp!.contact]).toEqual(['particulier', 'Awa Ngo']);
+  });
+
   it('RG-08 : anti-doublon — le même envoi deux fois donne le même numéro', async () => {
     const e = { formId: 'devis-pro', valeurs: { company: 'Doublon SA', sector: 'Commerce', contact: 'X', phone: '690 22 33 47', need: 'Vitrines' }, lieu, consentement: true };
     const a = await soumettreDemandeDevis(e, { ip: ip() });
