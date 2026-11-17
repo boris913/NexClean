@@ -1,6 +1,5 @@
 // Règles pures des candidatures (specs/MVP2-02 RG-07..12).
 import { describe, expect, it } from 'vitest';
-import { getJobBySlug } from '@/content/jobs-data';
 import { validerProfil } from '@/lib/candidats/domaine';
 import {
   MESSAGE_OFFRE_INCONNUE,
@@ -80,9 +79,9 @@ describe('Formulaire court (compte léger, RG-07)', () => {
 
 describe('Offres (cas limites)', () => {
   it('accepte une offre ouverte, refuse une offre pourvue ou inconnue', () => {
-    expect(refusOffre(getJobBySlug('agent-caisse-akwa'))).toBeNull();
-    expect(refusOffre(getJobBySlug('agent-nettoyage'))).toBe(MESSAGE_OFFRE_POURVUE);
-    expect(refusOffre(getJobBySlug('inexistante'))).toBe(MESSAGE_OFFRE_INCONNUE);
+    expect(refusOffre({ slug: 'agent-caisse-akwa', title: 'Agent de caisse', status: 'open' })).toBeNull();
+    expect(refusOffre({ slug: 'agent-nettoyage', title: 'Agent de nettoyage', status: 'closed' })).toBe(MESSAGE_OFFRE_POURVUE);
+    expect(refusOffre(undefined)).toBe(MESSAGE_OFFRE_INCONNUE);
     expect(MESSAGE_OFFRE_POURVUE).toBe('Offre pourvue — inscrivez-vous pour être contacté.');
   });
 });

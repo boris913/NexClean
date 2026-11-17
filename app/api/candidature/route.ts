@@ -6,7 +6,7 @@
 // WhatsApp qu'en cas d'erreur serveur (réponse 5xx ou réseau).
 //
 // Entrée multipart/form-data :
-//   offre        slug de l'offre (content/jobs-data.ts)
+//   offre        slug de l'offre (table offre, ADR 0013)
 //   motivation   facultatif (candidat connecté)
 //   donnees      JSON du formulaire court (BrouillonCandidature), visiteur seulement
 //   motDePasse   visiteur seulement

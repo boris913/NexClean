@@ -3,12 +3,12 @@ import { SITE_URL } from '@/lib/seo';
 import { getAllPostSlugs } from '@/lib/blog';
 import { servicePages } from '@/content/services-data';
 import { products } from '@/content/products-data';
-import { openJobs } from '@/content/jobs-data';
+import { offresOuvertes } from '@/lib/offres/publiques';
 import { lireCouverture } from '@/lib/geo/couverture';
 import { cheminVille } from '@/lib/geo/slug';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [slugs, { villes }] = await Promise.all([getAllPostSlugs(), lireCouverture()]);
+  const [slugs, { villes }, openJobs] = await Promise.all([getAllPostSlugs(), lireCouverture(), offresOuvertes()]);
   const now = new Date();
 
   const page = (

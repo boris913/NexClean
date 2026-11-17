@@ -116,7 +116,7 @@ export function validerCandidatureCourte(b: BrouillonCandidature): { ok: true; d
   return { ok: true, donnees: d };
 }
 
-/** Offre telle que lue dans `content/jobs-data.ts` (ADR 0023) : état utile à la candidature. */
+/** Offre telle que lue en base (ADR 0013) : état utile à la candidature. */
 export interface OffrePourCandidature {
   slug: string;
   title: string;

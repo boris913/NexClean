@@ -189,9 +189,8 @@ export const candidatDemandeReinitialisation = pgTable(
 );
 
 /**
- * Candidature à une offre (MVP2-02 RG-07..12). En MVP-2 les offres restent dans
- * `content/jobs-data.ts` : l'offre est référencée par son slug et son titre au moment de la
- * candidature (RG-08) ; le lien vers l'entité Offre viendra avec la migration (ADR 0013).
+ * Candidature à une offre (MVP2-02 RG-07..12). L'offre (table `offre`, ADR 0013) est référencée
+ * par son slug, figé dès la première publication, et son titre au moment de la candidature (RG-08).
  */
 export const candidature = pgTable(
   'candidature',

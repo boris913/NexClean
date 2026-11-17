@@ -7,6 +7,7 @@ import { journaliser } from '@/lib/audit';
 import { ErreurMetier } from '@/lib/collaborateurs/service';
 import { deriverStatutCandidat } from '@/lib/candidats/attribution';
 import { notifier } from '@/lib/notifications';
+import { fermerOffresSiLignePourvue } from '@/lib/offres/service';
 import { nomAffichable, STATUTS_PROPOSITION, type ModeAccord, type ModeConfirmation } from './domaine';
 
 type Db = ReturnType<typeof getDb>;
@@ -180,6 +181,8 @@ export async function confirmerPlacement(tx: Tx, placementId: number, c: Confirm
     .where(eq(schema.placement.id, placementId));
   await tx.update(schema.proposition).set({ statut: 'placee', majLe: maintenant }).where(and(eq(schema.proposition.id, pl.propositionId)));
   await deriverStatutCandidat(tx, pl.candidatId, 'place', `placement:${placementId}`);
+  // ADR 0013 §5 : la ligne de poste pourvue ferme ses offres publiées.
+  await fermerOffresSiLignePourvue(tx, pl.lignePosteId, maintenant);
   await evenementDossier(tx, pl.dossierId, 'placement', `${p.libelle} : prise de poste confirmée le ${c.datePriseDePoste} (${c.mode === 'client' ? `par le client — ${c.signataireNom?.trim()}, ${c.signataireFonction?.trim()}` : 'preuve jointe'})`, auteur, { placementId, statut: 'confirme' });
   await journaliser({ ...auditDe(auteur), action: 'placement.confirme', objetType: 'placement', objetId: placementId, apres: { statut: 'confirme', mode: c.mode, datePriseDePoste: c.datePriseDePoste } }, tx);
   await notifierCandidat(tx, pl.candidatId, { titre: 'Prise de poste confirmée', texte: `Votre prise de poste (${p.intitule}) est confirmée. Félicitations !`, lien: '/candidat/espace', cle: `placement_confirme:${placementId}` });
