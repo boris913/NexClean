@@ -28,6 +28,9 @@ import { estFinal } from '@/lib/dossiers/statuts';
 import { peutAccederVivier } from '@/lib/candidats/acces';
 import { lienTrouverCandidats } from '@/lib/candidats/recherche';
 import { offresDesLignes } from '@/lib/offres/service';
+import { candidaturesDuDossier, lienCandidaturesOffre } from '@/lib/candidats/candidatures';
+import { lienFicheCandidat } from '@/lib/candidats/attribution';
+import { STATUTS_CANDIDATURE } from '@/lib/candidats/formulaire-candidature';
 import { STATUTS_OFFRE } from '@/lib/offres/domaine';
 import { peut } from '@/lib/authz/permissions';
 import { quartiersGeolocalises } from '@/lib/candidats/vivier';
@@ -124,6 +127,8 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
       : null;
   // ADR 0013 §3 : offre publique pré-remplie depuis une ligne de poste (brouillon à relire).
   const offresLignes = trouver && peut(c.roles, 'offre.gerer') ? await offresDesLignes(fiche.lignes.map((l) => l.id)) : null;
+  // ADR 0015 §3 : candidatures reçues sur les offres liées aux lignes de ce Dossier.
+  const candidaturesLignes = trouver ? await candidaturesDuDossier(d.id, c) : [];
   // MVP2-03 : décompte « X placés / Y demandés » en résumé, dès l'exécution du dossier de recrutement.
   const recherche = onglet === 'resume' && d.type === 'REC' && ['execution', 'termine', 'cloture'].includes(phaseDe(d.statut)) ? await etatRecherche(d.id, c) : null;
   // MVP2-04 RG-08 : sur un dossier REC, les statuts du devis suivent l'onglet Devis (sauf mode transitoire).
@@ -314,6 +319,34 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
                   );
                 })}
               </ul>
+            </div>
+          )}
+          {trouver && candidaturesLignes.length > 0 && (
+            <div className="mt-4 pt-3 border-t border-ink-100">
+              <h3 className="text-sm font-semibold text-ink-900 mb-2">Candidatures reçues sur les offres ({candidaturesLignes.length})</h3>
+              <ul className="divide-y divide-ink-100 text-sm">
+                {candidaturesLignes.map((k) => (
+                  <li key={k.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                    <span className="min-w-0">
+                      <Link href={lienFicheCandidat(k.candidatId)} className="font-medium text-primary hover:underline">
+                        {k.prenom} {k.nom}
+                      </Link>
+                      <span className="text-ink-500"> · {k.offreTitre} · {formatHorodatage(k.creeLe)}{k.referentNom ? ` · ${k.referentNom}` : ''}</span>
+                    </span>
+                    <Pastille ton={k.statut === 'retenue' ? 'vert' : k.statut === 'refusee' ? 'rouge' : 'neutre'}>{STATUTS_CANDIDATURE[k.statut]}</Pastille>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-xs text-ink-500">
+                Le traitement (retenue / refusée) se fait dans{' '}
+                {[...new Map(candidaturesLignes.map((k) => [k.offreSlug, k.offreTitre])).entries()].map(([slug, titre], i) => (
+                  <span key={slug}>
+                    {i > 0 && ', '}
+                    <Link href={lienCandidaturesOffre(slug)} className="text-primary hover:underline">Candidatures — {titre}</Link>
+                  </span>
+                ))}
+                . Pour présenter un candidat au client, créez une Proposition depuis l’onglet Propositions.
+              </p>
             </div>
           )}
         </Carte>
