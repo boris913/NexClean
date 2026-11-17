@@ -7,6 +7,9 @@ import { offresOuvertes } from '@/lib/offres/publiques';
 import { lireCouverture } from '@/lib/geo/couverture';
 import { cheminVille } from '@/lib/geo/slug';
 
+// Généré à la demande : pré-généré au build (base injoignable), il omettrait les offres ouvertes.
+export const dynamic = 'force-dynamic';
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [slugs, { villes }, openJobs] = await Promise.all([getAllPostSlugs(), lireCouverture(), offresOuvertes()]);
   const now = new Date();

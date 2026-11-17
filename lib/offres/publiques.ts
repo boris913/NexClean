@@ -20,14 +20,23 @@ async function lireDepuisBase(): Promise<OffrePublique[]> {
 
 const lireEnCache = unstable_cache(lireDepuisBase, [TAG], { tags: [TAG], revalidate: 600 });
 
-/** Offres ouvertes d'abord (ordre choisi, puis les plus récentes), puis les fermées. */
-export async function offresPubliques(): Promise<OffrePublique[]> {
+/**
+ * Offres ouvertes d'abord (ordre choisi, puis les plus récentes), puis les fermées ; null si la base
+ * est injoignable. Au build de l'image la base n'est jamais joignable : une page pré-rendue ne doit
+ * donc pas afficher « aucune offre » à partir de ce null (voir EmploiSection), et /recrutement est
+ * rendue à la demande.
+ */
+export async function lireOffresPubliques(): Promise<OffrePublique[] | null> {
   try {
     return await lireEnCache();
   } catch (e) {
     console.error('Offres indisponibles', e);
-    return [];
+    return null;
   }
+}
+
+export async function offresPubliques(): Promise<OffrePublique[]> {
+  return (await lireOffresPubliques()) ?? [];
 }
 
 export async function offresOuvertes(): Promise<OffrePublique[]> {
