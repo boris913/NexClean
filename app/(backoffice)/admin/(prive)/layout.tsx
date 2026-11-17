@@ -67,6 +67,8 @@ export default async function LayoutPrive({ children }: { children: React.ReactN
         { href: '/admin/veille', libelle: 'Veille', icone: 'veille', visible: peut(c.roles, 'veille.utiliser') },
         { href: '/admin/commercial', libelle: 'Commercial', icone: 'commercial', visible: peut(c.roles, 'commercial.tableau_de_bord') },
         { href: '/admin/finances', libelle: 'Finances', icone: 'finances', visible: peut(c.roles, 'finances.tableau_de_bord') },
+        { href: '/admin/depenses', libelle: 'Dépenses', icone: 'depenses', visible: peut(c.roles, 'depense.saisir') },
+        { href: '/admin/pilotage', libelle: 'Pilotage', icone: 'pilotage', visible: peut(c.roles, 'finances.tableau_de_bord') },
       ]),
     },
     {
@@ -74,6 +76,7 @@ export default async function LayoutPrive({ children }: { children: React.ReactN
       liens: filtrer([
         { href: '/admin/collaborateurs', libelle: 'Collaborateurs', icone: 'collaborateurs', visible: peut(c.roles, 'collaborateurs.gerer') || peut(c.roles, 'collaborateurs.attributs') },
         { href: '/admin/referentiel', libelle: 'Référentiel', icone: 'referentiel', visible: peut(c.roles, 'referentiel.gerer') },
+        { href: '/admin/categories-depenses', libelle: 'Catégories de dépenses', icone: 'categories', visible: peut(c.roles, 'depense.categories') },
         { href: '/admin/agent', libelle: 'Assistant virtuel', icone: 'agent', visible: peut(c.roles, 'agent.gerer') },
         { href: '/admin/modeles', libelle: 'Modèles', icone: 'modeles', visible: peut(c.roles, 'modeles.gerer') },
         { href: '/admin/parametres', libelle: 'Paramètres', icone: 'parametres', visible: peut(c.roles, 'tarifs.modifier') },

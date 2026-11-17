@@ -29,7 +29,7 @@ Légende : ✅ fait · 🟡 partiel · ❌ à faire · ⏸ dépend d'un tiers ou
 | 0017 | Données personnelles candidats | 🟡 | **§4 : relance à 24 mois d'inactivité puis anonymisation automatique**, absente. **§6 : export des données du candidat (PDF / JSON)**, absent. Le reste est fait : consentements, accord par proposition, suppression à la demande, journalisation. |
 | 0018 | Rôles et permissions | ✅ | — |
 | 0019 | Attribution automatique | ✅ | — |
-| 0020 | Dépenses et indicateurs financiers | 🟡 | Sont faits : la numérotation des factures, les avoirs et la vue Finances des encaissements. **Manquent le module Dépenses, les indicateurs de la direction et l'export pour le comptable.** Ces indicateurs sont le résultat estimé, la trésorerie du mois, les impayés par ancienneté et la marge par dossier ou service. |
+| 0020 | Dépenses et indicateurs financiers | ✅ | Livré par POST-03 (`specs/POST-03-depenses-tableau-direction.md`) : module Dépenses (`/admin/depenses`, catégories paramétrables, justificatif, annulation motivée), tableau de bord direction (`/admin/pilotage`) avec les définitions du §2, export CSV pour le comptable. Reste l'import CSV des dépenses (« plus tard » dans l'ADR). Catégories initiales, tranches d'impayés et exclusion du crédit client de l'Encaissé : valeurs par défaut à confirmer par la Direction. |
 | 0021 | Référentiel géographique | ✅ | — |
 | 0022 | Formulaires « enregistrer puis WhatsApp » | ✅ | §2 livré par POST-02 (`specs/POST-02-formulaire-abonnement.md`) : le formulaire de `/abonnements` crée un Dossier ABO, affiche le numéro puis ouvre WhatsApp. |
 | 0023 | Phasage | — | Voir la liste « Après les MVP » au § 2. |
@@ -44,7 +44,7 @@ Légende : ✅ fait · 🟡 partiel · ❌ à faire · ⏸ dépend d'un tiers ou
 |---|---|---|
 | 1 | Offres administrables (0013) | ✅ cette branche |
 | 2 | Formulaire abonnement (0022) | ✅ POST-02 |
-| 3 | Tableau de bord direction, dépenses, exports (0020) | ❌ (vue Finances seulement) |
+| 3 | Tableau de bord direction, dépenses, exports (0020) | ✅ POST-03 |
 | 4 | Éditeur complet de modèles de documents | 🟡 Les textes et paramètres des PDF sont modifiables (MVP2-04). La mise en page reste fixe. |
 | 5 | Paiement en ligne Orange Money / MTN MoMo (0004) | ❌ |
 | 6 | Anonymisation automatique, export des données candidat (0017) | ❌ |
@@ -71,7 +71,7 @@ Chaque lot commence par une spec dans `specs/` (convention du dépôt), validée
 |---|---|---|---|---|---|
 | 1 | **POST-01 Finitions** ✅ | 0002, 0015 | S | — | Fait : candidatures aux offres liées visibles dans l'onglet Postes du Dossier ; `vercel.json` retiré ; tests d'intégration de la fermeture automatique liée au Dossier. |
 | 2 | **POST-02 Formulaire abonnement** ✅ | 0022 §2 | S | — | Fait. Même circuit que les devis MVP1-04 : formulaire sur `/abonnements` qui crée Demande et Dossier de type abonnement, affiche le numéro puis ouvre WhatsApp, avec repli WhatsApp en cas d'échec. Le type de dossier et `SERVICE_ABO` existent déjà. |
-| 3 | **POST-03 Dépenses et tableau de bord direction** | 0020 | L | Liste des catégories de dépenses (Direction) | Saisie des dépenses avec justificatif, par Finances et Direction. Les indicateurs reprennent exactement les définitions de l'ADR 0020 : facturé, encaissé, impayés par ancienneté, dépenses, résultat estimé, trésorerie, marge par dossier ou service. Ajout de l'export CSV pour le comptable (droit `export.donnees`, journalisé). |
+| 3 | **POST-03 Dépenses et tableau de bord direction** ✅ | 0020 | L | Liste des catégories de dépenses (Direction) | Fait. Saisie des dépenses avec justificatif par Finances et Direction (`depense.saisir`), catégories gérées par Direction et Admin (`depense.categories`, liste initiale semée par la migration `0025_depenses`), annulation motivée plutôt que suppression. Page *Pilotage* : facturé (avoirs déduits), encaissé, impayés par ancienneté, dépenses, résultat estimé, trésorerie, marge par dossier et par service, calculés en SQL. Export CSV comptable (`export.donnees`, journalisé). À confirmer par la Direction : catégories, tranches d'ancienneté, crédit client exclu de l'Encaissé. |
 | 4 | **POST-04 Données candidats** | 0017 §4, §6 | M | Texte de relance validé | Tâche planifiée : relance à 24 mois d'inactivité (WhatsApp ou e-mail), puis anonymisation et suppression des fichiers à 30 jours sans réponse, en conservant les placements et pièces financières pseudonymisés. Ajout de l'export « Mes données » en JSON et PDF depuis l'espace candidat. Aucun profil n'atteint 24 mois avant fin 2028, mais l'export est une obligation dès maintenant. |
 | 5 | **POST-05 Éditeur de modèles de documents** | 0023 #4 | M | — | Blocs de texte, ordre des sections et mentions par type de document. Versionnement des modèles et aperçu PDF avant enregistrement. |
 | 6 | **POST-06 Paiement en ligne** | 0004 §3–4 | L | Choix de l'agrégateur, contrat, KYC NEXCLEAN | Commence par l'interface prestataire (demande de paiement, notification signée), qui manque depuis la V1. Viennent ensuite le branchement d'un agrégateur Orange Money / MTN MoMo et le paiement depuis la page de suivi. Un paiement confirmé crée l'Encaissement de façon idempotente. |

@@ -16,3 +16,4 @@ export * from './ia';
 export * from './agent';
 export * from './veille';
 export * from './offres';
+export * from './depenses';
