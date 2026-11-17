@@ -10,6 +10,7 @@ import { DOSSIER_TYPES } from '@/lib/domain/referentiels';
 import { dateLocale, estApresHuitHeuresUnJourOuvre, prochaineEscalade } from '@/lib/dossiers/heures-ouvrees';
 import { STATUTS_FINAUX } from '@/lib/dossiers/statuts';
 import { executerSuppressionsDues } from '@/lib/candidats/service';
+import { appliquerConservation } from '@/lib/candidats/conservation';
 import { alerterCandidatsNonTraites, escaladerCandidatsNonAttribues } from '@/lib/candidats/escalade';
 import { alerterEcheancesRecherche, signalerAccordsSansReponse } from '@/lib/propositions/service';
 import { expirerDevis } from '@/lib/devis/service';
@@ -104,6 +105,8 @@ export async function executerTaches(maintenant = new Date()) {
   const sansAction = await signalerSansAction(maintenant);
   // MVP2-01 RG-16 : suppressions de comptes candidats arrivées à échéance.
   const suppressionsCandidats = await executerSuppressionsDues(maintenant);
+  // POST-04 (ADR 0017 §4) : relance à 24 mois d'inactivité, anonymisation 30 jours plus tard sans réponse.
+  const conservationCandidats = await appliquerConservation(maintenant);
   // MVP2-02 RG-03 : candidats non attribués (Direction) et nouveaux candidats non traités (référent).
   const escaladesCandidats = await escaladerCandidatsNonAttribues(maintenant);
   const candidatsNonTraites = await alerterCandidatsNonTraites(maintenant);
@@ -147,6 +150,6 @@ export async function executerTaches(maintenant = new Date()) {
   // ADR 0013 : offres dont la date limite de candidature est passée → fermées (site à jour sous 10 min).
   const offresEchues = await fermerOffresEchues(maintenant);
   const emails = await envoyerNotificationsEnAttente(200);
-  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, devisExpires, soldesRelances, rendezVous, rapports, whatsapp, qualifiees, pistesCollectees, pistesPurgees, offresEchues, emails };
+  return { escalades, sansAction, suppressionsCandidats, conservationCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, devisExpires, soldesRelances, rendezVous, rapports, whatsapp, qualifiees, pistesCollectees, pistesPurgees, offresEchues, emails };
 }
 

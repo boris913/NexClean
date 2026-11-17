@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { CheckCircle2, FileText } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { exigerAccesVivier } from '@/lib/candidats/acces-page';
+import { anonymisationPrevueLe, MODELE_RELANCE_INACTIVITE } from '@/lib/candidats/donnees';
 import { DISPONIBILITES, HORAIRES, STATUTS_CANDIDAT, STATUT_CANDIDAT_CODES, type StatutCandidat } from '@/lib/candidats/domaine';
 import {
   ELEMENTS_VERIFICATION,
@@ -52,6 +53,11 @@ const LIBELLE_ACTION: Record<string, string> = {
   'candidat.justificatif_ajoute': 'Justificatif ajouté',
   'candidat.suppression_demandee': 'Suppression des données demandée',
   'candidat.donnees_supprimees': 'Données supprimées',
+  'candidat.relance_inactivite': 'Relance : profil inactif depuis 2 ans',
+  'candidat.relance_inactivite_annulee': 'Relance d’inactivité annulée',
+  'candidat.conservation_confirmee': 'Réponse à la relance notée (profil conservé)',
+  'candidat.anonymise': 'Données anonymisées (inactivité)',
+  'candidat.export_donnees': 'Export « Mes données »',
 };
 
 const STATUT_CANDIDATURE: Record<string, string> = { recue: 'Reçue', retenue: 'Retenue', refusee: 'Refusée' };
@@ -86,7 +92,11 @@ export default async function PageCandidat({ params }: { params: Promise<{ id: s
     return (
       <>
         <TitrePage titre={fiche.pseudonyme} retour={{ href: '/admin/candidats', libelle: 'Candidats' }} />
-        <Alerte type="info">Les données de ce candidat ont été supprimées le {dateCourte(fiche.supprimeLe)} à sa demande. Seul le pseudonyme est conservé.</Alerte>
+        <Alerte type="info">
+          {fiche.motif === 'inactivite'
+            ? `Les données de ce candidat ont été anonymisées le ${dateCourte(fiche.supprimeLe)} : profil inactif depuis 2 ans, sans réponse à la relance. Seul le pseudonyme est conservé.`
+            : `Les données de ce candidat ont été supprimées le ${dateCourte(fiche.supprimeLe)} à sa demande. Seul le pseudonyme est conservé.`}
+        </Alerte>
       </>
     );
   }
@@ -153,6 +163,16 @@ export default async function PageCandidat({ params }: { params: Promise<{ id: s
           <Alerte type="info">
             Le candidat a demandé une réinitialisation de son mot de passe le {formatHorodatage(fiche.demandeReinitialisation.creeLe)}.{' '}
             <a href="#reinitialisation" className="underline">Traiter la demande</a>
+          </Alerte>
+        )}
+        {k.relanceInactiviteLe && !suppressionEnCours && k.conservationConfirmeeLe && k.conservationConfirmeeLe > k.relanceInactiviteLe && (
+          <Alerte type="info">Réponse à la relance d’inactivité notée le {dateCourte(k.conservationConfirmeeLe)} : le profil est conservé.</Alerte>
+        )}
+        {k.relanceInactiviteLe && !suppressionEnCours && !(k.conservationConfirmeeLe && k.conservationConfirmeeLe > k.relanceInactiviteLe) && (
+          <Alerte>
+            Profil inactif depuis 2 ans : relance envoyée le {dateCourte(k.relanceInactiviteLe)} (modèle WhatsApp « {MODELE_RELANCE_INACTIVITE.nom} »). Sans connexion ni mise à jour d’ici le{' '}
+            {dateCourte(anonymisationPrevueLe(k.relanceInactiviteLe))}, les données seront anonymisées automatiquement.
+            {traiter && <A.ConfirmerConservation candidatId={k.id} />}
           </Alerte>
         )}
         {k.compteLeger && <Alerte type="info">Compte léger créé par une candidature : profil incomplet, à faire compléter (modèle « Compléter votre profil »).</Alerte>}

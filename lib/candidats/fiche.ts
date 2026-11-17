@@ -143,7 +143,15 @@ export async function lireFicheCandidat(candidatId: number, a: ActeurVivier) {
   const [c] = await db.select().from(schema.candidat).where(eq(schema.candidat.id, candidatId));
   if (!c) return null;
   await journaliser({ acteurType: 'collaborateur', acteurId: a.id, ip: a.ip ?? null, action: 'candidat.fiche_consultee', objetType: 'candidat', objetId: candidatId });
-  if (c.supprimeLe) return { supprime: true as const, id: c.id, pseudonyme: pseudonyme(c.id), supprimeLe: c.supprimeLe };
+  if (c.supprimeLe) {
+    // POST-04 RG-05 : distinguer l'anonymisation pour inactivité de la suppression demandée.
+    const [anonymise] = await db
+      .select({ id: schema.journalAudit.id })
+      .from(schema.journalAudit)
+      .where(and(eq(schema.journalAudit.action, 'candidat.anonymise'), eq(schema.journalAudit.objetType, 'candidat'), eq(schema.journalAudit.objetId, String(candidatId))))
+      .limit(1);
+    return { supprime: true as const, id: c.id, pseudonyme: pseudonyme(c.id), supprimeLe: c.supprimeLe, motif: anonymise ? ('inactivite' as const) : ('demande' as const) };
+  }
 
   const nomsDe = async <T extends { id: number; nom: string }>(table: typeof schema.arrondissement | typeof schema.quartier, ids: number[]) =>
     ids.length ? ((await db.select({ id: table.id, nom: table.nom }).from(table).where(inArray(table.id, ids))) as T[]) : [];
