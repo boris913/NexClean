@@ -27,18 +27,25 @@ const p = schema.proposition;
 const pl = schema.placement;
 const k = schema.candidature;
 
+/**
+ * Identifiant du candidat de la requête externe, toujours qualifié. Dans une sélection sur une
+ * seule table, Drizzle réécrit les colonnes en noms non qualifiés : `${c.id}` deviendrait `"id"`,
+ * qui, dans une sous-requête sur `proposition`, désignerait `proposition.id` (corrélation perdue).
+ */
+const idCandidat = sql`${sql.identifier('candidat')}.${sql.identifier('id')}`;
+
 /** RG-01 : dernière activité, calculée en base (greatest ignore les valeurs nulles). */
 const activite = sql<Date>`greatest(
   ${c.creeLe}, ${c.profilMisAJourLe}, ${c.derniereConnexionLe}, ${c.conservationConfirmeeLe},
-  (select max(${k.creeLe}) from ${k} where ${k.candidatId} = ${c.id}),
-  (select max(${p.reponseLe}) from ${p} where ${p.candidatId} = ${c.id}),
-  (select max(${pl.confirmeLe}) from ${pl} where ${pl.candidatId} = ${c.id})
+  (select max(${k.creeLe}) from ${k} where ${k.candidatId} = ${idCandidat}),
+  (select max(${p.reponseLe}) from ${p} where ${p.candidatId} = ${idCandidat}),
+  (select max(${pl.confirmeLe}) from ${pl} where ${pl.candidatId} = ${idCandidat})
 )`.mapWith(c.creeLe);
 
 /** RG-06 : Proposition en cours ou Placement annoncé non encore confirmé. */
 const processusActif = sql<boolean>`(
-  exists (select 1 from ${p} where ${p.candidatId} = ${c.id} and ${inArray(p.statut, [...STATUTS_EN_COURS])})
-  or exists (select 1 from ${pl} where ${pl.candidatId} = ${c.id} and ${eq(pl.statut, 'annonce')})
+  exists (select 1 from ${p} where ${p.candidatId} = ${idCandidat} and ${inArray(p.statut, [...STATUTS_EN_COURS])})
+  or exists (select 1 from ${pl} where ${pl.candidatId} = ${idCandidat} and ${eq(pl.statut, 'annonce')})
 )`.mapWith(Boolean);
 
 const colonnes = {

@@ -300,7 +300,7 @@ describe.skipIf(!baseDisponible)('Fiche candidat (intégration)', async () => {
       expect(pourDossier.some((m) => m.nom === 'Bienvenue candidat')).toBe(false);
       expect(pourDossier.some((m) => m.nom === 'Premier contact')).toBe(true);
       const candidats = await fiche.listerModelesCandidat();
-      expect(candidats.map((m) => m.nom)).toEqual(['Bienvenue candidat', 'Compléter votre profil', 'Lien de réinitialisation']);
+      expect(candidats.map((m) => m.nom)).toEqual(['Bienvenue candidat', 'Compléter votre profil', 'Lien de réinitialisation', 'Relance inactivité']);
     });
 
     it('un message préparé depuis la fiche est noté au journal', async () => {
