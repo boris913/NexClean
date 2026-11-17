@@ -92,7 +92,7 @@ describe('Conservation — décision (RG-02..07)', () => {
 describe('Conservation — textes (RG-03)', () => {
   it('le modèle WhatsApp est un modèle candidat et la migration le crée à l’identique', () => {
     expect(estModeleCandidat(MODELE_RELANCE_INACTIVITE.texte)).toBe(true);
-    const migration = readFileSync('lib/db/migrations/0025_donnees_candidats.sql', 'utf8').replace(/\r\n/g, '\n');
+    const migration = readFileSync('lib/db/migrations/0027_donnees_candidats.sql', 'utf8').replace(/\r\n/g, '\n');
     expect(migration).toContain(`('${MODELE_RELANCE_INACTIVITE.nom}', '{}', '${MODELE_RELANCE_INACTIVITE.texte.replace(/'/g, "''")}')`);
   });
 
