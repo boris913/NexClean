@@ -6,7 +6,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Banknote, Bell, Bot, Briefcase, CalendarDays, MessageCircle, TrendingUp, ClipboardList, FolderOpen, LayoutDashboard, MapPin, Menu, MessageSquare, Radar, ScrollText, Settings, ShieldCheck, Shuffle, UserCog, Users, X, type LucideIcon } from 'lucide-react';
+import { Banknote, Bell, Bot, Briefcase, CalendarDays, MessageCircle, TrendingUp, ClipboardList, FolderOpen, LayoutDashboard, MapPin, Megaphone, Menu, MessageSquare, Radar, ScrollText, Settings, ShieldCheck, Shuffle, UserCog, Users, X, type LucideIcon } from 'lucide-react';
 
 export const ICONES = {
   accueil: LayoutDashboard,
@@ -20,6 +20,7 @@ export const ICONES = {
   veille: Radar,
   candidats: Users,
   candidatures: Briefcase,
+  offres: Megaphone,
   finances: Banknote,
   collaborateurs: UserCog,
   referentiel: MapPin,

@@ -19,6 +19,8 @@ export const PERMISSIONS = {
   'candidat.reaffecter': ['direction'],
   /** Désigner le référent responsable d'une offre (MVP2-02 RG-10). */
   'offre.responsables': ['direction'],
+  /** Créer, modifier, publier et fermer les offres (ADR 0013). Pour un Référent : service Recrutement requis. */
+  'offre.gerer': ['referent', 'direction'],
   'encaissement.enregistrer': ['referent', 'finances', 'direction'],
   'remboursement.valider': ['direction'],
   'finances.tableau_de_bord': ['finances', 'direction'],

@@ -6,7 +6,8 @@ import { peut } from '@/lib/authz/permissions';
 import { listerCandidatures, type FiltresCandidatures } from '@/lib/candidats/candidatures';
 import { STATUTS_CANDIDATURE, type StatutCandidature } from '@/lib/candidats/formulaire-candidature';
 import { lienFicheCandidat } from '@/lib/candidats/attribution';
-import { jobs } from '@/content/jobs-data';
+import { listerOffres } from '@/lib/offres/service';
+import { peutAccederVivier } from '@/lib/candidats/acces';
 import { formatHorodatage } from '@/lib/audit-lecture';
 import { classeBouton, classeChamp, classeLibelle, EtatVide, Pagination, Pastille, TitrePage } from '@/components/backoffice/ui';
 import { TraiterCandidature } from './Elements';
@@ -27,13 +28,19 @@ export default async function PageCandidatures({ searchParams }: { searchParams:
     attribution: p.attribution === 'aucune' || p.attribution === 'moi' ? p.attribution : undefined,
     page: Number(p.page) || 1,
   };
-  const { lignes, suivante, page, direction } = await listerCandidatures(c, filtres);
+  const [{ lignes, suivante, page, direction }, offres, gereOffres] = await Promise.all([listerCandidatures(c, filtres), listerOffres(), peutAccederVivier(c, 'offre.gerer')]);
+  const jobs = offres.filter((o) => o.statut !== 'brouillon').map((o) => ({ slug: o.slug, title: o.titre, status: o.statut === 'publiee' ? 'open' : 'closed' }));
   const lienPage = (n: number) => `?${new URLSearchParams({ ...(Object.fromEntries(Object.entries(p).filter(([, v]) => v)) as Record<string, string>), page: String(n) })}`;
   const titreOffre = (slug: string) => jobs.find((j) => j.slug === slug)?.title;
 
   return (
     <>
       <TitrePage titre={direction ? 'Candidatures' : 'Mes candidatures'} description="Candidatures reçues sur les offres publiées du site.">
+        {gereOffres && (
+          <Link href="/admin/offres" className={classeBouton('principal')}>
+            Gérer les offres
+          </Link>
+        )}
         {peut(c.roles, 'offre.responsables') && (
           <Link href="/admin/candidatures/offres" className={classeBouton('secondaire')}>
             Responsables des offres

@@ -11,7 +11,6 @@ import { ErreurMetier } from '@/lib/collaborateurs/service';
 import { choisirReferent, evaluerCandidats } from '@/lib/dossiers/attribution';
 import { validerFichier } from '@/lib/fichiers/validation';
 import { idsDirection, notifier } from '@/lib/notifications';
-import { getJobBySlug, jobs } from '@/content/jobs-data';
 import { peutAccederVivier, type DemandeurVivier } from './acces';
 import { attribuerCandidat } from './attribution';
 import { CONSENTEMENTS, schemaMotDePasse, type TypeConsentement } from './domaine';
@@ -36,9 +35,16 @@ const TYPES_CV = ['pdf', 'docx', 'jpeg', 'png'];
 
 export const lienCandidaturesOffre = (slug: string) => `/admin/candidatures?offre=${encodeURIComponent(slug)}`;
 
-/** Offre ouverte de `content/jobs-data.ts`, ou ErreurMetier (inconnue, pourvue). */
-function offreOuverte(slug: string) {
-  const offre = getJobBySlug(slug);
+/** Offre en base (ADR 0013), lue sans cache : un brouillon est traité comme inconnu. */
+async function lireOffrePourCandidature(slug: string) {
+  const [o] = await getDb().select({ slug: schema.offre.slug, title: schema.offre.titre, statut: schema.offre.statut }).from(schema.offre).where(eq(schema.offre.slug, slug));
+  if (!o || o.statut === 'brouillon') return undefined;
+  return { slug: o.slug, title: o.title, status: o.statut === 'publiee' ? ('open' as const) : ('closed' as const) };
+}
+
+/** Offre publiée, ou ErreurMetier (inconnue, pourvue). */
+async function offreOuverte(slug: string) {
+  const offre = await lireOffrePourCandidature(slug);
   const refus = refusOffre(offre);
   if (refus) throw new ErreurMetier(refus);
   return offre!;
@@ -103,8 +109,8 @@ async function creerCandidature(tx: Tx, candidatId: number, offre: { slug: strin
 
 /** RG-07 : candidat connecté — bouton « Postuler », motivation facultative. */
 export async function postuler(candidatId: number, slug: string, motivationSaisie: unknown, ip: string | null, maintenant = new Date()) {
-  const offre = offreOuverte(slug);
-  const motivation = schemaMotivation.parse(typeof motivationSaisie === 'string' ? motivationSaisie : '');
+  const offre = await offreOuverte(slug);
+  const motivation =schemaMotivation.parse(typeof motivationSaisie === 'string' ? motivationSaisie : '');
   return getDb().transaction(async (tx) => {
     const [c] = await tx.select({ suppression: schema.candidat.suppressionDemandeeLe }).from(schema.candidat).where(eq(schema.candidat.id, candidatId)).for('update');
     if (!c || c.suppression) throw new ErreurMetier('Compte introuvable.');
@@ -140,7 +146,7 @@ export async function postulerAvecCompteLeger(
   contexte: { ip: string | null },
   maintenant = new Date(),
 ): Promise<{ candidatId: number; candidatureId: number; cvEnregistre: boolean; erreurCv?: string }> {
-  const offre = offreOuverte(slug);
+  const offre = await offreOuverte(slug);
   const v = validerCandidatureCourte(brouillon);
   if (!v.ok) throw new ErreurMetier(Object.values(v.erreurs)[0] ?? 'Formulaire incomplet.');
   const mdp = schemaMotDePasse.safeParse(motDePasse);
@@ -357,7 +363,8 @@ export async function lireResponsablesOffres(): Promise<Record<string, { id: str
 /** Désigne les responsables d'une offre (remplace la liste), journalisé. Réservé à la Direction. */
 export async function definirResponsablesOffre(slug: string, userIds: string[], a: ActeurCandidatures): Promise<void> {
   if (!peut(a.roles, 'offre.responsables')) throw new ErreurMetier('Réservé à la Direction.');
-  if (!jobs.some((j) => j.slug === slug)) throw new ErreurMetier('Offre inconnue.');
+  const [o] = await getDb().select({ id: schema.offre.id }).from(schema.offre).where(eq(schema.offre.slug, slug));
+  if (!o) throw new ErreurMetier('Offre inconnue.');
   const ids = [...new Set(userIds)];
   const eligibles = new Set((await collaborateursEligiblesOffre()).map((u) => u.id));
   if (ids.some((id) => !eligibles.has(id))) throw new ErreurMetier('Seuls la Direction et les référents ayant le service Recrutement peuvent suivre une offre.');

@@ -23,6 +23,7 @@ import { archiverPdfFactureSansEchec } from '@/lib/devis/facturation';
 import { attribuerAutomatiquement, signalerSiReferentIneligible } from './attribution';
 import { declencherEnvoi, notifier } from '@/lib/notifications';
 import { revoquerAccesNonPlaces } from '@/lib/propositions/revocation';
+import { fermerOffresDuDossier } from '@/lib/offres/service';
 
 type Tx = Parameters<Parameters<ReturnType<typeof getDb>['transaction']>[0]>[0];
 
@@ -305,6 +306,8 @@ export async function changerStatut(dossierId: number, vers: Statut, commentaire
     if (estFinal(vers) && d.type === 'REC') {
       const n = await revoquerAccesNonPlaces(tx, dossierId);
       if (n) await journaliser({ acteurType: 'systeme', action: 'proposition.acces_revoque', objetType: 'dossier', objetId: dossierId, details: { propositions: n, motif: 'fermeture du dossier' } }, tx);
+      // ADR 0013 §5 : un Dossier fermé ferme ses offres publiées.
+      await fermerOffresDuDossier(tx, dossierId, `Dossier fermé (${STATUTS[vers]})`);
     }
   });
   if (factureAArchiver !== null) await archiverPdfFactureSansEchec(factureAArchiver);

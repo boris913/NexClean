@@ -27,6 +27,9 @@ import { rendreMessage } from '@/lib/modeles/variables';
 import { estFinal } from '@/lib/dossiers/statuts';
 import { peutAccederVivier } from '@/lib/candidats/acces';
 import { lienTrouverCandidats } from '@/lib/candidats/recherche';
+import { offresDesLignes } from '@/lib/offres/service';
+import { STATUTS_OFFRE } from '@/lib/offres/domaine';
+import { peut } from '@/lib/authz/permissions';
 import { quartiersGeolocalises } from '@/lib/candidats/vivier';
 import { etatRecherche, lienOngletPropositions } from '@/lib/propositions/service';
 import SectionPropositions from './SectionPropositions';
@@ -119,6 +122,8 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
     onglet === 'postes' && d.type === 'REC' && fiche.lignes.length > 0 && (await peutAccederVivier(c))
       ? { villeId: d.villeId, quartierId: d.quartierId, quartierGeolocalise: !!d.quartierId && (await quartiersGeolocalises([d.quartierId])).has(d.quartierId) }
       : null;
+  // ADR 0013 §3 : offre publique pré-remplie depuis une ligne de poste (brouillon à relire).
+  const offresLignes = trouver && peut(c.roles, 'offre.gerer') ? await offresDesLignes(fiche.lignes.map((l) => l.id)) : null;
   // MVP2-03 : décompte « X placés / Y demandés » en résumé, dès l'exécution du dossier de recrutement.
   const recherche = onglet === 'resume' && d.type === 'REC' && ['execution', 'termine', 'cloture'].includes(phaseDe(d.statut)) ? await etatRecherche(d.id, c) : null;
   // MVP2-04 RG-08 : sur un dossier REC, les statuts du devis suivent l'onglet Devis (sauf mode transitoire).
@@ -283,6 +288,31 @@ export default async function PageDossier({ params, searchParams }: { params: Pr
                     </Link>
                   </li>
                 ))}
+              </ul>
+            </div>
+          )}
+          {offresLignes && (
+            <div className="mt-4 pt-3 border-t border-ink-100">
+              <h3 className="text-sm font-semibold text-ink-900 mb-2">Offres publiques</h3>
+              <ul className="space-y-2 text-sm">
+                {fiche.lignes.map((l) => {
+                  const liees = offresLignes.filter((o) => o.lignePosteId === l.id);
+                  return (
+                    <li key={l.id} className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span className="text-ink-800">{l.intitule} :</span>
+                      {liees.map((o) => (
+                        <Link key={o.id} href={`/admin/offres/${o.id}`} className="text-primary hover:underline">
+                          {STATUTS_OFFRE[o.statut]} — {o.titre}
+                        </Link>
+                      ))}
+                      {!estFinal(d.statut) && !liees.some((o) => o.statut !== 'fermee') && (
+                        <Link href={`/admin/offres/nouvelle?ligne=${l.id}`} className="text-primary hover:underline">
+                          + Créer une offre
+                        </Link>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}

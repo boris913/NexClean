@@ -9,7 +9,7 @@ import type { Metadata } from 'next';
 import { BRAND, CONTACT, SOCIAL_MEDIA, FAQ, PAYMENT_TERMS, getWhatsAppLink } from '@/lib/constants';
 import { services, getServiceHref, type Service } from '@/content/services-data';
 import { products, type Product } from '@/content/products-data';
-import type { Job } from '@/content/jobs-data';
+import type { OffrePublique as Job } from '@/lib/offres/domaine';
 import type { Couverture } from '@/lib/geo/couverture';
 
 export const SITE_URL = 'https://nexclean.xyz';
@@ -327,7 +327,7 @@ export const productSchema = (p: Product) => {
 };
 
 // ─── Schema.org — JobPosting ─────────────────────────────────
-// Source des offres : content/jobs-data.ts (ADR 0023), type `Job`.
+// Source des offres : table `offre` (ADR 0013), vue publique `OffrePublique`.
 
 const echapperHtml = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -357,7 +357,7 @@ export function typeEmploi(contrat: string): string | undefined {
 }
 
 /**
- * JSON-LD `JobPosting` d'une offre de `content/jobs-data.ts`, pour `/recrutement/[slug]`.
+ * JSON-LD `JobPosting` d'une offre publiée, pour `/recrutement/[slug]`.
  * Renvoie null pour une offre fermée (page en noindex, l'offre ne doit plus être diffusée).
  * `hiringOrganization` = NEXCLEAN : les offres issues d'un dossier client sont anonymisées (ADR 0013).
  * `datePosted` est requis par Google : il n'est émis que si l'offre porte `datePosted`.

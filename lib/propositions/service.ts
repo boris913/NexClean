@@ -48,6 +48,7 @@ import {
 import { chargerProposition, confirmerPlacement, enregistrerAccord, evenementDossier, lienPropositionsDossier, notifierCandidat, type AuteurEffet, type Tx } from './effets';
 import { cheminAcces, empreinteJeton, genererJetonAcces } from './jetons';
 import { revoquerAccesNonPlaces, revoquerLiensProposition } from './revocation';
+import { fermerOffresDuDossier } from '@/lib/offres/service';
 import { archiverPdfFactureSansEchec, facturerCloture, type ResultatFacturation } from '@/lib/devis/facturation';
 import { archiverAttestation } from '@/lib/documents/archivage';
 import { appliquerClotureFinanciere } from '@/lib/encaissements/regularisation';
@@ -1024,6 +1025,8 @@ export async function cloturerRecherche(dossierId: number, motif: string | null,
     }
     // RG-23 : accès client révoqué pour les candidats non placés (sauf remplacements en cours).
     await revoquerAccesNonPlacesHorsRemplacements(tx, dossierId, maintenant);
+    // ADR 0013 §5 : les offres publiées des lignes du Dossier se ferment avec la recherche.
+    await fermerOffresDuDossier(tx, dossierId, 'Recherche clôturée', maintenant);
     // MVP2-04 RG-18 (ADR 0010) : montant final (commission figée × placements retenus) et facture
     // de solde ou avoir, dans la même transaction que la clôture.
     const auteur: AuteurEffet = { type: 'collaborateur', id: a.id, ip: a.ip ?? null };

@@ -4,13 +4,13 @@ import Card from '@/components/ui/Card';
 import Section from '@/components/ui/Section';
 import SectionHeader from '@/components/ui/SectionHeader';
 import { EMPLOI_EN_TETE } from '@/content/home-data';
-import { openJobs } from '@/content/jobs-data';
+import { offresOuvertes } from '@/lib/offres/publiques';
 
 const NOMBRE_OFFRES = 3;
 
-/** Offres récentes : même source que /recrutement (`content/jobs-data.ts`), dans l'ordre de publication du fichier. */
-export default function EmploiSection() {
-  const offres = openJobs.slice(0, NOMBRE_OFFRES);
+/** Offres récentes : même source et même ordre que /recrutement (offres publiées en base, ADR 0013). */
+export default async function EmploiSection() {
+  const offres = (await offresOuvertes()).slice(0, NOMBRE_OFFRES);
   return (
     <Section id="emploi" labelledBy="emploi-titre" className="scroll-mt-20">
       <SectionHeader

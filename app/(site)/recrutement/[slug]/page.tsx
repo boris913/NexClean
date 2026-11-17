@@ -1,4 +1,4 @@
-// Fiche d'une offre (content/jobs-data.ts, ADR 0023) et candidature (MVP2-02 RG-07, RG-12).
+// Fiche d'une offre (en base, ADR 0013) et candidature (MVP2-02 RG-07, RG-12).
 // Rendue à la demande : l'encadré « Postuler » dépend de la session candidat.
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -20,7 +20,7 @@ import JsonLd from '@/components/ui/JsonLd';
 import PageHero from '@/components/ui/PageHero';
 import Section from '@/components/ui/Section';
 import SectionHeader from '@/components/ui/SectionHeader';
-import { getJobBySlug, openJobs } from '@/content/jobs-data';
+import { offreParSlug, offresOuvertes } from '@/lib/offres/publiques';
 import { jobPostingSchema, pageMetadata } from '@/lib/seo';
 import { listesLieux, type ListesLieux } from '@/lib/geo/service';
 import { candidatConnecte } from '@/lib/candidats/session';
@@ -43,7 +43,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const job = getJobBySlug(slug);
+  const job = await offreParSlug(slug);
   if (!job) return {};
   const meta = pageMetadata({
     title: `${job.title} — Offre d'emploi`,
@@ -63,10 +63,10 @@ export default async function JobDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const job = getJobBySlug(slug);
+  const job = await offreParSlug(slug);
   if (!job) notFound();
 
-  const otherOpenJobs = openJobs.filter((j) => j.slug !== job.slug).slice(0, 3);
+  const otherOpenJobs = (await offresOuvertes()).filter((j) => j.slug !== job.slug).slice(0, 3);
   const profileItems = job.profile ?? job.requirements;
   const schema = jobPostingSchema(job);
 

@@ -6,7 +6,7 @@ import IconBadge from '@/components/ui/IconBadge';
 import PageHero from '@/components/ui/PageHero';
 import Section from '@/components/ui/Section';
 import SectionHeader from '@/components/ui/SectionHeader';
-import { jobs, openJobs } from '@/content/jobs-data';
+import { offresPubliques } from '@/lib/offres/publiques';
 import { lireCouverture } from '@/lib/geo/couverture';
 import { pageMetadata } from '@/lib/seo';
 import { MENTION_GRATUITE } from '@/lib/candidats/domaine';
@@ -27,8 +27,10 @@ const values = [
   { icon: Heart, title: 'Soin du détail', text: 'La qualité de votre travail fait votre réputation.' },
 ];
 
-export default function RecrutementPage() {
-  const sortedJobs = [...openJobs, ...jobs.filter((j) => j.status === 'closed')];
+export default async function RecrutementPage() {
+  // Déjà triées : ouvertes d'abord, puis fermées (lib/offres/publiques.ts).
+  const sortedJobs = await offresPubliques();
+  const openJobs = sortedJobs.filter((j) => j.status === 'open');
 
   return (
     <>

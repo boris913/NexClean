@@ -22,6 +22,7 @@ import { qualifierEnAttente } from '@/lib/ia/copilote';
 import { iaActive } from '@/lib/ia/client';
 import { purgerPistes } from '@/lib/veille/service';
 import { collecterSourcesDues } from '@/lib/veille/sources';
+import { fermerOffresEchues } from '@/lib/offres/service';
 
 const JOUR_MS = 24 * 60 * 60 * 1000;
 
@@ -143,7 +144,9 @@ export async function executerTaches(maintenant = new Date()) {
     console.error('[veille] collecte', e);
   }
   const pistesPurgees = await purgerPistes(maintenant);
+  // ADR 0013 : offres dont la date limite de candidature est passée → fermées (site à jour sous 10 min).
+  const offresEchues = await fermerOffresEchues(maintenant);
   const emails = await envoyerNotificationsEnAttente(200);
-  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, devisExpires, soldesRelances, rendezVous, rapports, whatsapp, qualifiees, pistesCollectees, pistesPurgees, emails };
+  return { escalades, sansAction, suppressionsCandidats, escaladesCandidats, candidatsNonTraites, accordsSansReponse, echeancesRecherche, devisExpires, soldesRelances, rendezVous, rapports, whatsapp, qualifiees, pistesCollectees, pistesPurgees, offresEchues, emails };
 }
 

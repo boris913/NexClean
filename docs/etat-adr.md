@@ -1,0 +1,88 @@
+# État des ADR et plan du reste à faire
+
+Point au 2026-11-13, après le lot « Offres administrables » (ADR 0013, branche `feat/offres-administrables`).
+
+**Méthode.** Les décisions de chaque ADR ont été comparées au code : schéma, `lib/`, écrans, tâches planifiées, scripts. Les ADR couverts par des lots déjà fusionnés (specs MVP1-*, MVP2-*, COM*) sont marqués comme faits d'après ces lots. Ils n'ont pas été revérifiés critère par critère. Les ADR partiels ou non faits ont été vérifiés un par un.
+
+Légende : ✅ fait · 🟡 partiel · ❌ à faire · ⏸ dépend d'un tiers ou d'une décision extérieure.
+
+## 1. État par ADR
+
+| ADR | Sujet | État | Ce qui manque |
+|---|---|---|---|
+| 0001 | Application unique Next.js | ✅ | Le service du Back-Office sur `app.nexclean.xyz` est prévu en option (« pourra »). Il n'est pas fait et n'est pas nécessaire. |
+| 0002 | Hébergement VPS / Coolify | 🟡 | Sauvegarde, test de restauration, surveillance et alertes sont présents (`scripts/vps/`). Reste : retirer `vercel.json`, devenu obsolète d'après l'ADR. Le durcissement du serveur (pare-feu, fail2ban, SSH par clé) se vérifie sur le VPS, pas dans le dépôt. |
+| 0003 | Stockage interne des documents | ✅ | — |
+| 0004 | Encaissement manuel, paiement en ligne plus tard | 🟡 | La saisie manuelle est faite (MVP2-05). **Manque l'interface de prestataire de paiement (§3)**, prévue dès la V1 mais absente du code. Reste aussi l'agrégateur Orange Money / MTN MoMo (§4). |
+| 0005 | Messagerie V1 | ✅ | WhatsApp API livrée par l'ADR 0025. Reste : SMS (hors V1). L'« interface de canal de notification » n'est pas formalisée en tant que telle, ce qui reste sans impact tant qu'il n'y a pas de SMS. |
+| 0006 | Demande / Dossier / Client | ✅ | — |
+| 0007 | Cycles de statuts | ✅ | — |
+| 0008 | Commission de placement | ✅ | — |
+| 0009 | Acompte | ✅ | — |
+| 0010 | Placements partiels, ajustements | ✅ | — |
+| 0011 | Placement confirmé | ✅ | — |
+| 0012 | Mise à disposition | ✅ V1 · ⏸ suite | Le type de dossier existe. Le modèle métier attend l'agrément et son cadre juridique. |
+| 0013 | Offres publiées | ✅ | **Livré sur cette branche.** Voir § 3. |
+| 0014 | Suivi client par lien | ✅ | — |
+| 0015 | Candidat, Candidature, Proposition | 🟡 | Il manque le §3 : « Candidature visible dans le Dossier lié à l'Offre ». C'est faisable maintenant que l'Offre est liée à la Ligne de poste. |
+| 0016 | Authentification | ✅ | Reste l'OTP par SMS (lot ultérieur prévu par l'ADR). |
+| 0017 | Données personnelles candidats | 🟡 | **§4 : relance à 24 mois d'inactivité puis anonymisation automatique**, absente. **§6 : export des données du candidat (PDF / JSON)**, absent. Le reste est fait : consentements, accord par proposition, suppression à la demande, journalisation. |
+| 0018 | Rôles et permissions | ✅ | — |
+| 0019 | Attribution automatique | ✅ | — |
+| 0020 | Dépenses et indicateurs financiers | 🟡 | Sont faits : la numérotation des factures, les avoirs et la vue Finances des encaissements. **Manquent le module Dépenses, les indicateurs de la direction et l'export pour le comptable.** Ces indicateurs sont le résultat estimé, la trésorerie du mois, les impayés par ancienneté et la marge par dossier ou service. |
+| 0021 | Référentiel géographique | ✅ | — |
+| 0022 | Formulaires « enregistrer puis WhatsApp » | 🟡 | **§2 : le formulaire Abonnement n'est pas fait.** `/abonnements` ne propose encore qu'un lien WhatsApp direct, sans Demande ni Dossier. |
+| 0023 | Phasage | — | Voir la liste « Après les MVP » au § 2. |
+| 0024 | Sessions candidats séparées | ✅ | — |
+| 0025 | WhatsApp Cloud API | ✅ code · ⏸ mise en service | Le passage sur le numéro commercial dépend de Meta et de l'accord écrit de NEXCLEAN. |
+| 0026 | Assistance IA, agent | ✅ | — |
+| 0027 | Veille prospects | ✅ | — |
+
+## 2. Liste « Après les MVP » de l'ADR 0023
+
+| # | Lot | État |
+|---|---|---|
+| 1 | Offres administrables (0013) | ✅ cette branche |
+| 2 | Formulaire abonnement (0022) | ❌ |
+| 3 | Tableau de bord direction, dépenses, exports (0020) | ❌ (vue Finances seulement) |
+| 4 | Éditeur complet de modèles de documents | 🟡 Les textes et paramètres des PDF sont modifiables (MVP2-04). La mise en page reste fixe. |
+| 5 | Paiement en ligne Orange Money / MTN MoMo (0004) | ❌ |
+| 6 | Anonymisation automatique, export des données candidat (0017) | ❌ |
+| 7 | API WhatsApp Business, SMS (0005) | ✅ WhatsApp (COM2) · ❌ SMS |
+| 8 | Mise à disposition (0012) | ⏸ agrément |
+| 9 | Traduction anglaise | ❌ |
+
+## 3. Lot livré : offres administrables (ADR 0013)
+
+- Écran **Offres d'emploi** (`/admin/offres`). On peut créer une offre, qui naît en brouillon, la modifier, la publier, la fermer avec un motif, la rouvrir, ou supprimer un brouillon. Accès : Direction et Référents du service Recrutement.
+- **Brouillon pré-rempli depuis une ligne de poste**, via l'onglet Postes du Dossier REC. Il est anonymisé et le salaire n'est pas repris.
+- **Fermeture automatique** dans quatre cas : la ligne est pourvue, le Dossier est fermé, la recherche est clôturée, ou la date limite est passée.
+- **Reprise des 8 offres** de `content/jobs-data.ts` par la migration `0024_offres` (4 publiées, 4 fermées). Le fichier est supprimé.
+- Le site public (`/recrutement`, fiche d'offre, accueil, sitemap, JSON-LD) lit la base. Il se met à jour aussitôt après une action manuelle.
+- Écart à l'ADR et règles de mise en œuvre : voir la section « Mise en œuvre » de l'ADR 0013.
+
+**Au déploiement :** la migration s'applique d'elle-même au démarrage du conteneur (`docker-entrypoint.sh`). Ensuite, vérifier que `/recrutement` affiche les 4 offres ouvertes et que `/admin/offres` les liste.
+
+## 4. Plan du reste à faire
+
+Chaque lot commence par une spec dans `specs/` (convention du dépôt), validée avant le code. Tailles indicatives (convention de `specs/README.md`) : S < 1 semaine, M 1–2 semaines, L 2–4 semaines, tests compris.
+
+| Ordre | Lot | ADR | Taille | Dépend de | Contenu |
+|---|---|---|---|---|---|
+| 1 | **POST-01 Finitions** | 0002, 0015 | S | — | Candidatures aux offres liées visibles dans l'onglet Postes du Dossier. Retrait de `vercel.json`. Tests d'intégration du service des offres (base de test). |
+| 2 | **POST-02 Formulaire abonnement** | 0022 §2 | S | — | Même circuit que les devis MVP1-04 : formulaire sur `/abonnements` qui crée Demande et Dossier de type abonnement, affiche le numéro puis ouvre WhatsApp, avec repli WhatsApp en cas d'échec. Le type de dossier et `SERVICE_ABO` existent déjà. |
+| 3 | **POST-03 Dépenses et tableau de bord direction** | 0020 | L | Liste des catégories de dépenses (Direction) | Saisie des dépenses avec justificatif, par Finances et Direction. Les indicateurs reprennent exactement les définitions de l'ADR 0020 : facturé, encaissé, impayés par ancienneté, dépenses, résultat estimé, trésorerie, marge par dossier ou service. Ajout de l'export CSV pour le comptable (droit `export.donnees`, journalisé). |
+| 4 | **POST-04 Données candidats** | 0017 §4, §6 | M | Texte de relance validé | Tâche planifiée : relance à 24 mois d'inactivité (WhatsApp ou e-mail), puis anonymisation et suppression des fichiers à 30 jours sans réponse, en conservant les placements et pièces financières pseudonymisés. Ajout de l'export « Mes données » en JSON et PDF depuis l'espace candidat. Aucun profil n'atteint 24 mois avant fin 2028, mais l'export est une obligation dès maintenant. |
+| 5 | **POST-05 Éditeur de modèles de documents** | 0023 #4 | M | — | Blocs de texte, ordre des sections et mentions par type de document. Versionnement des modèles et aperçu PDF avant enregistrement. |
+| 6 | **POST-06 Paiement en ligne** | 0004 §3–4 | L | Choix de l'agrégateur, contrat, KYC NEXCLEAN | Commence par l'interface prestataire (demande de paiement, notification signée), qui manque depuis la V1. Viennent ensuite le branchement d'un agrégateur Orange Money / MTN MoMo et le paiement depuis la page de suivi. Un paiement confirmé crée l'Encaissement de façon idempotente. |
+| 7 | **POST-07 SMS / OTP** | 0005, 0016 | M | Choix du fournisseur SMS | Canal SMS derrière une interface de canal de notification, et OTP candidat en complément du mot de passe. |
+| 8 | **POST-08 Traduction anglaise** | 0023 #9 | L | Textes traduits fournis | Site public d'abord : routage `/en`, contenus, métadonnées et `hreflang`. Le Back-Office reste en français. |
+| — | Mise à disposition | 0012 | à chiffrer | Agrément | Attend la confirmation du cadre juridique. |
+| — | Sous-domaine `app.` | 0001 | S | Décision | Facultatif. |
+
+**Ordre conseillé.** Les lots 1 et 2 sont rapides et sans dépendance. Le lot 3 répond au besoin de pilotage de la direction. Le lot 4 couvre une obligation sur les données personnelles. Les lots 6 et 7 dépendent de choix de fournisseurs, à lancer en parallèle dès maintenant pour ne pas attendre le développement.
+
+**Décisions à prendre avant de démarrer :**
+- Lot 3 : liste initiale des catégories de dépenses, et qui saisit les dépenses (Finances seule, ou Direction aussi comme le prévoit l'ADR).
+- Lot 6 : agrégateur retenu. La comparaison porte sur les commissions, les délais de reversement, le KYC et la qualité des webhooks.
+- Lot 7 : fournisseur SMS et budget mensuel.

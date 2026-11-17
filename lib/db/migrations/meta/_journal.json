@@ -169,6 +169,13 @@
       "when": 1794442399645,
       "tag": "0023_veille_sources",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1794585213961,
+      "tag": "0024_offres",
+      "breakpoints": true
     }
   ]
 }
