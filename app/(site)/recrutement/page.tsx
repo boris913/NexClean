@@ -11,6 +11,10 @@ import { lireCouverture } from '@/lib/geo/couverture';
 import { pageMetadata } from '@/lib/seo';
 import { MENTION_GRATUITE } from '@/lib/candidats/domaine';
 
+// Rendue à la demande : pré-rendue au build (base injoignable), la page afficherait « aucune offre »
+// jusqu'à la régénération. Les données restent en cache 10 min (lib/offres/publiques.ts).
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata(): Promise<Metadata> {
   const { libelle: villes } = await lireCouverture();
   return pageMetadata({

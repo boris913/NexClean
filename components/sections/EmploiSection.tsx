@@ -4,13 +4,16 @@ import Card from '@/components/ui/Card';
 import Section from '@/components/ui/Section';
 import SectionHeader from '@/components/ui/SectionHeader';
 import { EMPLOI_EN_TETE } from '@/content/home-data';
-import { offresOuvertes } from '@/lib/offres/publiques';
+import { lireOffresPubliques } from '@/lib/offres/publiques';
 
 const NOMBRE_OFFRES = 3;
 
 /** Offres récentes : même source et même ordre que /recrutement (offres publiées en base, ADR 0013). */
 export default async function EmploiSection() {
-  const offres = (await offresOuvertes()).slice(0, NOMBRE_OFFRES);
+  const toutes = await lireOffresPubliques();
+  // Base injoignable (accueil pré-rendu au build, incident) : pas de section plutôt qu'un faux « aucune offre ».
+  if (toutes === null) return null;
+  const offres = toutes.filter((o) => o.status === 'open').slice(0, NOMBRE_OFFRES);
   return (
     <Section id="emploi" labelledBy="emploi-titre" className="scroll-mt-20">
       <SectionHeader
