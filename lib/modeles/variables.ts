@@ -66,5 +66,8 @@ export const estModeleDevis = (texte: string) => variablesDe(texte).some((v) => 
 /** Modèle de relance d'un solde impayé (MVP2-05) : il utilise au moins une variable `solde.*`. */
 export const estModeleSolde = (texte: string) => variablesDe(texte).some((v) => v.startsWith('solde.'));
 
+/** Remplace les variables `{{x}}` par leur valeur ; une valeur absente donne une chaîne vide. */
+export const remplacerVariables = (texte: string, valeurs: Readonly<Record<string, string | null | undefined>>) => texte.replace(RE, (_, v: string) => (Object.hasOwn(valeurs, v) ? (valeurs[v] ?? '') : ''));
+
 /** Remplace les variables ; une valeur absente donne une chaîne vide. */
-export const rendreMessage = (texte: string, ctx: ContexteMessage) => texte.replace(RE, (_, v: string) => ctx[v as Variable] ?? '');
+export const rendreMessage = (texte: string, ctx: ContexteMessage) => remplacerVariables(texte, ctx);

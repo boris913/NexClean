@@ -17,3 +17,4 @@ export * from './agent';
 export * from './veille';
 export * from './offres';
 export * from './depenses';
+export * from './modeles-documents';

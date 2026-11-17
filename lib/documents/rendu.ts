@@ -9,6 +9,8 @@ import { ErreurMetier } from '@/lib/collaborateurs/service';
 import { lireParametre } from '@/lib/parametres';
 import { MOYENS_PAIEMENT, NATURES_ENCAISSEMENT } from '@/lib/encaissements/domaine';
 import { pdfAccuseReception, pdfDevis, pdfFacture, pdfRecu, type ClientDocument } from './modeles';
+// POST-05 RG-11 : modèle de document en vigueur à la date de référence de chaque document.
+import { modeleEnVigueur } from './versions';
 
 /** Client d'un Dossier (coordonnées courantes ; la facture, elle, porte un client figé). */
 async function clientDuDossier(dossierId: number): Promise<{ numeroDossier: string; creeLe: Date; type: string; client: ClientDocument } | null> {
@@ -63,6 +65,8 @@ export async function genererPdfDevis(devisId: number): Promise<Uint8Array> {
     conditionsParticulieres: d.conditionsParticulieres,
     mentionsLegales: d.mentionsLegales,
     deductionCredit: d.type === 'devis' ? d.deductionCredit : 0,
+    // Le PDF est produit à « Valider et envoyer » puis archivé : modèle en vigueur à l'envoi.
+    modele: await modeleEnVigueur('devis', d.envoyeLe ?? new Date()),
   });
 }
 
@@ -94,6 +98,8 @@ export async function genererPdfFacture(factureId: number): Promise<Uint8Array> 
     mentionsLegales: x.mentionsLegales,
     // MVP2-05 RG-12 : la déduction figée sur le devis figure sur la facture d'acompte (règlement).
     deductionCredit: x.type === 'acompte' ? (devis?.deductionCredit ?? 0) : 0,
+    // ADR 0020 §3 : une facture régénérée garde le modèle de son émission.
+    modele: await modeleEnVigueur(x.type === 'avoir' ? 'avoir' : 'facture', x.emiseLe),
   });
 }
 
@@ -131,6 +137,7 @@ export async function genererPdfRecu(encaissementId: number): Promise<Uint8Array
     devis: devis ? { numero: devis.numero, version: devis.version } : null,
     situation: base ? { ...base, totalRegle } : null,
     mentionsLegales: await lireParametre('mentions_legales'),
+    modele: await modeleEnVigueur('recu', e.creeLe),
   });
 }
 
@@ -143,5 +150,12 @@ export async function genererAccuseReception(dossierId: number): Promise<Uint8Ar
   if (!dossier) throw new ErreurMetier('Dossier introuvable.');
   if (dossier.type !== 'REC') throw new ErreurMetier('L’accusé de réception concerne les dossiers de recrutement.');
   const postes = await getDb().select({ intitule: schema.lignePoste.intitule, nombre: schema.lignePoste.nombre }).from(schema.lignePoste).where(eq(schema.lignePoste.dossierId, dossierId)).orderBy(asc(schema.lignePoste.ordre));
-  return pdfAccuseReception({ numeroDossier: dossier.numeroDossier, creeLe: dossier.creeLe, client: dossier.client, postes, mentionsLegales: await lireParametre('mentions_legales') });
+  return pdfAccuseReception({
+    numeroDossier: dossier.numeroDossier,
+    creeLe: dossier.creeLe,
+    client: dossier.client,
+    postes,
+    mentionsLegales: await lireParametre('mentions_legales'),
+    modele: await modeleEnVigueur('accuse_reception', dossier.creeLe),
+  });
 }
