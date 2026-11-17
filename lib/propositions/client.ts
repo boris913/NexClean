@@ -11,6 +11,7 @@ import { env } from '@/lib/env';
 import { ErreurMetier } from '@/lib/collaborateurs/service';
 import { notifier } from '@/lib/notifications';
 import { lireParametre } from '@/lib/parametres';
+import { modeleEnVigueur } from '@/lib/documents/versions';
 import { getStockage } from '@/lib/fichiers/stockage';
 import { EXPIRATION_SUIVI_MS } from '@/lib/dossiers/service';
 import { estFinal, type Statut } from '@/lib/dossiers/statuts';
@@ -558,6 +559,8 @@ export async function donneesAttestation(placementId: number): Promise<(DonneesA
     garantieJours,
     confirmation,
     mentionsLegales: await lireParametre('mentions_legales'),
+    // POST-05 RG-11 : document vivant (établi à chaque téléchargement) → modèle en vigueur maintenant.
+    modele: await modeleEnVigueur('attestation', new Date()),
   };
 }
 

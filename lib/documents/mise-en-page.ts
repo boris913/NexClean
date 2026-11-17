@@ -106,7 +106,11 @@ export interface EnTete {
   titre: string;
   /** Lignes de référence sous le titre (numéro, date…), alignées à droite. */
   references: string[];
+  /** Sous-titre sous « NEXCLEAN » (modèle de document, POST-05) ; absent = sous-titre d'origine, vide = aucun. */
+  sousTitre?: string;
 }
+
+export const SOUS_TITRE_PAR_DEFAUT = 'Nettoyage, recrutement et services';
 
 // Symbole du logo (tuile 96 × 96, public/images/brand/logo-symbole.svg), tracé en vectoriel.
 const LOGO_TUILE = 'M26 0H70C84.36 0 96 11.64 96 26V70C96 84.36 84.36 96 70 96H26C11.64 96 0 84.36 0 70V26C0 11.64 11.64 0 26 0Z';
@@ -128,7 +132,8 @@ export function dessinerEnTete(page: PDFPage, p: Polices, e: EnTete, marge = MAR
   let y = height - marge - 16;
   dessinerSymbole(page, marge, y + 18, 32);
   page.drawText('NEXCLEAN', { x: marge + 40, y, size: 22, font: p.gras, color: COULEURS.marque });
-  page.drawText(normaliserTexte('Nettoyage, recrutement et services', p.normal), { x: marge + 40, y: y - 15, size: TAILLE_MIN, font: p.normal, color: COULEURS.gris });
+  const sousTitre = (e.sousTitre ?? SOUS_TITRE_PAR_DEFAUT).trim();
+  if (sousTitre) page.drawText(normaliserTexte(sousTitre, p.normal), { x: marge + 40, y: y - 15, size: TAILLE_MIN, font: p.normal, color: COULEURS.gris });
   const titre = normaliserTexte(e.titre, p.gras);
   const tailleTitre = Math.max(TAILLE_MIN, Math.min(15, (width / 2 - marge) / Math.max(1, p.gras.widthOfTextAtSize(titre, 1))));
   page.drawText(titre, { x: droite - p.gras.widthOfTextAtSize(titre, tailleTitre), y: y + 4, size: tailleTitre, font: p.gras, color: COULEURS.encre });

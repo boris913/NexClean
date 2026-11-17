@@ -2,6 +2,7 @@
 // poste (RG-15). Module sans dépendance serveur (pdf-lib), testable unitairement.
 import { degrees, PDFDocument, rgb, StandardFonts, type PDFFont, type PDFPage } from 'pdf-lib';
 import { couperLignes, dessinerEnTete, dessinerPied, lignesPied, normaliserTexte, TAILLE_MIN } from '@/lib/documents/mise-en-page';
+import { gabarit, piedDePage, rendreSections, type ContenuModele } from '@/lib/documents/personnalisation';
 
 // Normalisation WinAnsi et mise en page partagées avec les autres documents (lib/documents).
 export { normaliserTexte };
@@ -69,6 +70,8 @@ export interface DonneesAttestation {
   fuseau?: string;
   /** Mentions légales (paramètre `mentions_legales`), en pied de page comme sur les autres documents. */
   mentionsLegales?: string | null;
+  /** POST-05 : modèle « attestation » en vigueur à la date d'établissement ; absent = modèle d'origine. */
+  modele?: Partial<ContenuModele> | null;
 }
 
 const jourLong = (d: Date, fuseau: string) => new Intl.DateTimeFormat('fr-FR', { timeZone: fuseau, dateStyle: 'long' }).format(d);
@@ -96,9 +99,16 @@ export async function genererAttestation(d: DonneesAttestation): Promise<Uint8Ar
   const ecrire = (texte: string, o: { taille?: number; police?: PDFFont; couleur?: ReturnType<typeof rgb>; apres?: number } = {}) => {
     const police = o.police ?? normal;
     const taille = Math.max(TAILLE_MIN, o.taille ?? 11);
-    for (const ligne of couperLignes(normaliserTexte(texte, police), police, taille, largeur)) {
-      page.drawText(ligne, { x: marge, y, size: taille, font: police, color: o.couleur ?? encre });
-      y -= taille * 1.45;
+    // Retours à la ligne des blocs du modèle (POST-05) conservés ; ligne vide = demi-interligne.
+    for (const paragraphe of texte.replace(/\r\n?/g, '\n').split('\n')) {
+      if (!paragraphe.trim()) {
+        y -= taille * 0.6;
+        continue;
+      }
+      for (const ligne of couperLignes(normaliserTexte(paragraphe, police), police, taille, largeur)) {
+        page.drawText(ligne, { x: marge, y, size: taille, font: police, color: o.couleur ?? encre });
+        y -= taille * 1.45;
+      }
     }
     y -= o.apres ?? 6;
   };
@@ -111,37 +121,56 @@ export async function genererAttestation(d: DonneesAttestation): Promise<Uint8Ar
     y -= 26;
   };
 
-  // En-tête commun des documents NEXCLEAN (lib/documents/mise-en-page.ts).
-  y = dessinerEnTete(page, { normal, gras }, { titre: 'ATTESTATION', references: [`Dossier n° ${d.numeroDossier}`, `Établie le ${jourLong(d.etablieLe ?? new Date(), fuseau)}`] }, marge) - 12;
-  ecrire('Attestation de prise de poste', { taille: 18, police: gras, apres: 18 });
-
   const datePrevue = dateIsoLongue(d.datePrevue);
   const nomComplet = `${d.candidatPrenom.trim()} ${d.candidatNom.trim()}`.trim();
-  ecrire(`Je soussigné(e), représentant(e) de ${d.client}${d.contact?.trim() ? ` (interlocuteur : ${d.contact.trim()})` : ''}, atteste que :`, { apres: 12 });
-  champ('Candidat(e)', nomComplet);
-  champ('Poste', d.poste);
-  champ('Date de prise de poste prévue', datePrevue);
-  champ('Date effective de prise de poste', d.confirmation ? dateIsoLongue(d.confirmation.datePriseDePoste) : null);
-  y -= 4;
-  ecrire(`a bien pris son poste au sein de ${d.client}, dans le cadre du recrutement réalisé par NEXCLEAN (dossier n° ${d.numeroDossier}).`, { apres: 14 });
-  ecrire(
-    `Garantie de remplacement : si la personne placée quitte son poste dans les ${d.garantieJours} jours suivant la date effective de prise de poste, NEXCLEAN propose un remplacement sans commission supplémentaire.`,
-    { taille: 10, couleur: gris, apres: 26 },
-  );
+  const g = gabarit('attestation', d.modele, {
+    'dossier.numero': d.numeroDossier,
+    'client.nom': d.client,
+    'client.designation': `${d.client}${d.contact?.trim() ? ` (interlocuteur : ${d.contact.trim()})` : ''}`,
+    'candidat.nom_complet': nomComplet,
+    'poste.intitule': d.poste,
+    'poste.date_prevue': datePrevue,
+    'garantie.jours': String(d.garantieJours),
+  });
 
-  ecrire('Le client', { police: gras, taille: 12, apres: 10 });
-  champ('Nom du signataire', d.confirmation?.signataireNom ?? null);
-  champ('Fonction', d.confirmation?.signataireFonction ?? null);
-  champ('Date', d.confirmation ? jourLong(d.confirmation.confirmeLe, fuseau) : null);
-  if (d.confirmation) {
-    ecrire(`Prise de poste confirmée en ligne sur la page de suivi NEXCLEAN le ${jourLong(d.confirmation.confirmeLe, fuseau)}.`, { taille: 10, couleur: gris });
-  } else {
-    page.drawText(normaliserTexte('Signature et cachet :', gras), { x: marge, y, size: 11, font: gras, color: encre });
-    y -= 12;
-    page.drawRectangle({ x: marge, y: y - 90, width: 260, height: 90, borderColor: gris, borderWidth: 0.6 });
-  }
+  // En-tête commun des documents NEXCLEAN (lib/documents/mise-en-page.ts).
+  y = dessinerEnTete(page, { normal, gras }, { titre: 'ATTESTATION', references: [`Dossier n° ${d.numeroDossier}`, `Établie le ${jourLong(d.etablieLe ?? new Date(), fuseau)}`], sousTitre: g.texte('entete') }, marge) - 12;
 
-  // Pied de page commun : mentions légales, à la taille minimale (RG-20).
-  dessinerPied(page, { normal, gras }, lignesPied({ normal, gras }, d.mentionsLegales?.trim() || 'NEXCLEAN', largeur), null, marge);
+  rendreSections(g, {
+    corps: () => {
+      ecrire(g.texte('titre'), { taille: 18, police: gras, apres: 18 });
+      ecrire(g.texte('declaration'), { apres: 12 });
+      champ('Candidat(e)', nomComplet);
+      champ('Poste', d.poste);
+      champ('Date de prise de poste prévue', datePrevue);
+      champ('Date effective de prise de poste', d.confirmation ? dateIsoLongue(d.confirmation.datePriseDePoste) : null);
+      y -= 4;
+      ecrire(g.texte('constat'), { apres: 14 });
+    },
+    garantie: () => {
+      const t = g.texte('garantie');
+      if (t.trim()) ecrire(t, { taille: 10, couleur: gris, apres: 26 });
+    },
+    complement: () => {
+      const t = g.texte('complement');
+      if (t.trim()) ecrire(t, { taille: 10, apres: 14 });
+    },
+    signature: () => {
+      ecrire(g.texte('signature_titre'), { police: gras, taille: 12, apres: 10 });
+      champ('Nom du signataire', d.confirmation?.signataireNom ?? null);
+      champ('Fonction', d.confirmation?.signataireFonction ?? null);
+      champ('Date', d.confirmation ? jourLong(d.confirmation.confirmeLe, fuseau) : null);
+      if (d.confirmation) {
+        ecrire(`Prise de poste confirmée en ligne sur la page de suivi NEXCLEAN le ${jourLong(d.confirmation.confirmeLe, fuseau)}.`, { taille: 10, couleur: gris });
+      } else {
+        page.drawText(normaliserTexte('Signature et cachet :', gras), { x: marge, y, size: 11, font: gras, color: encre });
+        y -= 12;
+        page.drawRectangle({ x: marge, y: y - 90, width: 260, height: 90, borderColor: gris, borderWidth: 0.6 });
+      }
+    },
+  });
+
+  // Pied de page commun : mentions légales (et complément du modèle), à la taille minimale (RG-20).
+  dessinerPied(page, { normal, gras }, lignesPied({ normal, gras }, piedDePage(d.mentionsLegales?.trim() || 'NEXCLEAN', g.texte('pied')), largeur), null, marge);
   return doc.save();
 }
