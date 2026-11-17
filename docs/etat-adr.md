@@ -1,6 +1,6 @@
 # État des ADR et plan du reste à faire
 
-Point au 2026-11-13, après le lot « Offres administrables » (ADR 0013, branche `feat/offres-administrables`).
+Point au 2026-11-13, après le lot « Offres administrables » (ADR 0013, PR #42). Mis à jour le 2026-11-17 avec le lot POST-01 « Finitions ».
 
 **Méthode.** Les décisions de chaque ADR ont été comparées au code : schéma, `lib/`, écrans, tâches planifiées, scripts. Les ADR couverts par des lots déjà fusionnés (specs MVP1-*, MVP2-*, COM*) sont marqués comme faits d'après ces lots. Ils n'ont pas été revérifiés critère par critère. Les ADR partiels ou non faits ont été vérifiés un par un.
 
@@ -11,7 +11,7 @@ Légende : ✅ fait · 🟡 partiel · ❌ à faire · ⏸ dépend d'un tiers ou
 | ADR | Sujet | État | Ce qui manque |
 |---|---|---|---|
 | 0001 | Application unique Next.js | ✅ | Le service du Back-Office sur `app.nexclean.xyz` est prévu en option (« pourra »). Il n'est pas fait et n'est pas nécessaire. |
-| 0002 | Hébergement VPS / Coolify | 🟡 | Sauvegarde, test de restauration, surveillance et alertes sont présents (`scripts/vps/`). Reste : retirer `vercel.json`, devenu obsolète d'après l'ADR. Le durcissement du serveur (pare-feu, fail2ban, SSH par clé) se vérifie sur le VPS, pas dans le dépôt. |
+| 0002 | Hébergement VPS / Coolify | ✅ | Sauvegarde, test de restauration, surveillance et alertes sont présents (`scripts/vps/`). `vercel.json` est retiré (POST-01). Le durcissement du serveur (pare-feu, fail2ban, SSH par clé) se vérifie sur le VPS, pas dans le dépôt. La page Mentions légales cite encore Vercel comme hébergeur. |
 | 0003 | Stockage interne des documents | ✅ | — |
 | 0004 | Encaissement manuel, paiement en ligne plus tard | 🟡 | La saisie manuelle est faite (MVP2-05). **Manque l'interface de prestataire de paiement (§3)**, prévue dès la V1 mais absente du code. Reste aussi l'agrégateur Orange Money / MTN MoMo (§4). |
 | 0005 | Messagerie V1 | ✅ | WhatsApp API livrée par l'ADR 0025. Reste : SMS (hors V1). L'« interface de canal de notification » n'est pas formalisée en tant que telle, ce qui reste sans impact tant qu'il n'y a pas de SMS. |
@@ -24,7 +24,7 @@ Légende : ✅ fait · 🟡 partiel · ❌ à faire · ⏸ dépend d'un tiers ou
 | 0012 | Mise à disposition | ✅ V1 · ⏸ suite | Le type de dossier existe. Le modèle métier attend l'agrément et son cadre juridique. |
 | 0013 | Offres publiées | ✅ | **Livré sur cette branche.** Voir § 3. |
 | 0014 | Suivi client par lien | ✅ | — |
-| 0015 | Candidat, Candidature, Proposition | 🟡 | Il manque le §3 : « Candidature visible dans le Dossier lié à l'Offre ». C'est faisable maintenant que l'Offre est liée à la Ligne de poste. |
+| 0015 | Candidat, Candidature, Proposition | ✅ | §3 livré par POST-01 : les candidatures aux offres liées aux lignes de poste s'affichent dans l'onglet Postes du Dossier (accès au vivier requis). |
 | 0016 | Authentification | ✅ | Reste l'OTP par SMS (lot ultérieur prévu par l'ADR). |
 | 0017 | Données personnelles candidats | 🟡 | **§4 : relance à 24 mois d'inactivité puis anonymisation automatique**, absente. **§6 : export des données du candidat (PDF / JSON)**, absent. Le reste est fait : consentements, accord par proposition, suppression à la demande, journalisation. |
 | 0018 | Rôles et permissions | ✅ | — |
@@ -69,7 +69,7 @@ Chaque lot commence par une spec dans `specs/` (convention du dépôt), validée
 
 | Ordre | Lot | ADR | Taille | Dépend de | Contenu |
 |---|---|---|---|---|---|
-| 1 | **POST-01 Finitions** | 0002, 0015 | S | — | Candidatures aux offres liées visibles dans l'onglet Postes du Dossier. Retrait de `vercel.json`. Tests d'intégration du service des offres (base de test). |
+| 1 | **POST-01 Finitions** ✅ | 0002, 0015 | S | — | Fait : candidatures aux offres liées visibles dans l'onglet Postes du Dossier ; `vercel.json` retiré ; tests d'intégration de la fermeture automatique liée au Dossier. |
 | 2 | **POST-02 Formulaire abonnement** | 0022 §2 | S | — | Même circuit que les devis MVP1-04 : formulaire sur `/abonnements` qui crée Demande et Dossier de type abonnement, affiche le numéro puis ouvre WhatsApp, avec repli WhatsApp en cas d'échec. Le type de dossier et `SERVICE_ABO` existent déjà. |
 | 3 | **POST-03 Dépenses et tableau de bord direction** | 0020 | L | Liste des catégories de dépenses (Direction) | Saisie des dépenses avec justificatif, par Finances et Direction. Les indicateurs reprennent exactement les définitions de l'ADR 0020 : facturé, encaissé, impayés par ancienneté, dépenses, résultat estimé, trésorerie, marge par dossier ou service. Ajout de l'export CSV pour le comptable (droit `export.donnees`, journalisé). |
 | 4 | **POST-04 Données candidats** | 0017 §4, §6 | M | Texte de relance validé | Tâche planifiée : relance à 24 mois d'inactivité (WhatsApp ou e-mail), puis anonymisation et suppression des fichiers à 30 jours sans réponse, en conservant les placements et pièces financières pseudonymisés. Ajout de l'export « Mes données » en JSON et PDF depuis l'espace candidat. Aucun profil n'atteint 24 mois avant fin 2028, mais l'export est une obligation dès maintenant. |

@@ -308,6 +308,36 @@ export async function listerCandidatures(a: ActeurCandidatures, f: FiltresCandid
 }
 
 /**
+ * ADR 0015 §3 : candidatures aux offres liées aux lignes de poste d'un Dossier, affichées dans
+ * l'onglet Postes. Accès au vivier requis (la visibilité du Dossier est vérifiée par la page).
+ */
+export async function candidaturesDuDossier(dossierId: number, a: DemandeurVivier) {
+  if (!(await peutAccederVivier(a))) return [];
+  const k = schema.candidature;
+  return getDb()
+    .select({
+      id: k.id,
+      statut: k.statut,
+      creeLe: k.creeLe,
+      offreId: schema.offre.id,
+      offreSlug: schema.offre.slug,
+      offreTitre: schema.offre.titre,
+      lignePosteId: schema.offre.lignePosteId,
+      candidatId: schema.candidat.id,
+      nom: schema.candidat.nom,
+      prenom: schema.candidat.prenom,
+      referentNom: schema.user.name,
+    })
+    .from(k)
+    .innerJoin(schema.offre, eq(schema.offre.slug, k.offreSlug))
+    .innerJoin(schema.lignePoste, eq(schema.lignePoste.id, schema.offre.lignePosteId))
+    .innerJoin(schema.candidat, eq(schema.candidat.id, k.candidatId))
+    .leftJoin(schema.user, eq(schema.user.id, k.referentId))
+    .where(and(eq(schema.lignePoste.dossierId, dossierId), isNull(schema.candidat.supprimeLe)))
+    .orderBy(asc(schema.lignePoste.ordre), desc(k.creeLe), desc(k.id));
+}
+
+/**
  * RG-09 : reçue → retenue / refusée, journalisé. Un Référent ne traite que ses candidatures ; la
  * Direction toutes. « Retenue » ne crée rien en MVP2-02 (la Proposition viendra avec MVP2-03).
  */
