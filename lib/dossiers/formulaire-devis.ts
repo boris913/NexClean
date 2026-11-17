@@ -48,6 +48,8 @@ export const SERVICE_ABO = 'Entretien Régulier (Abonnement)';
 
 export function typeDossierPour(formId: string, valeurs: Record<string, string>): DossierType {
   if (formId === 'devis-espaces-verts') return 'EV';
+  // ADR 0022 §2 : toute demande d'abonnement (y compris espaces verts) est un Dossier ABO.
+  if (formId === 'demande-abonnement') return 'ABO';
   if (formId === 'devis') {
     if (valeurs.service === SERVICE_EV) return 'EV';
     if (valeurs.service === SERVICE_ABO) return 'ABO';

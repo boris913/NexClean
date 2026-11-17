@@ -75,8 +75,31 @@ export const greenSpacesQuoteForm = {
   ] satisfies FormField[],
 } satisfies ConfigDevis;
 
+/** Formules affichées sur /abonnements (components/sections/SubscriptionsSection.tsx). */
+export const FORMULES_ABONNEMENT = ['Particuliers', 'Professionnels', 'Espaces verts'] as const;
+
+/** Formulaire abonnement (ADR 0022 §2, POST-02) : même circuit « enregistrer puis WhatsApp », Dossier ABO. */
+export const subscriptionForm = {
+  formId: 'demande-abonnement',
+  subject: "Demande d'abonnement d'entretien",
+  note: 'Vous serez redirigé vers WhatsApp pour construire votre formule avec un conseiller.',
+  fields: [
+    { name: 'name', label: 'Nom / Entreprise', required: true },
+    { name: 'clientType', label: 'Vous êtes', type: 'select', required: true, options: ['Particulier', 'Entreprise / organisation'] },
+    { name: 'phone', label: 'Téléphone / WhatsApp', type: 'tel', required: true, placeholder: '+237 6XX XXX XXX' },
+    { name: 'formula', label: 'Formule', type: 'select', required: true, options: [...FORMULES_ABONNEMENT, 'Je ne sais pas encore'] },
+    { name: 'siteType', label: 'Site à entretenir', type: 'select', required: true, options: ['Logement', 'Bureaux', 'Commerce', 'Restaurant / hôtel', 'Résidence', 'Jardin / espace vert', 'Plusieurs sites', 'Autre'] },
+    { name: 'location', label: 'Ville / quartier', type: 'lieu', required: true, messageCombine: true },
+    { name: 'frequency', label: 'Fréquence souhaitée', type: 'select', required: true, options: ['4 passages par mois', '8 passages par mois', 'Plusieurs passages par semaine', 'Tous les jours', 'Toutes les 2 semaines', 'À définir'] },
+    { name: 'surface', label: 'Surface approximative', placeholder: 'ex. 120 m²' },
+    { name: 'date', label: 'Début souhaité', type: 'date' },
+    { name: 'need', label: 'Précisions', type: 'textarea', full: true, placeholder: 'Pièces ou zones à entretenir, horaires, contraintes…' },
+  ] satisfies FormField[],
+} satisfies ConfigDevis;
+
 export const FORMULAIRES_DEVIS: Record<string, ConfigDevis> = {
   [generalQuoteForm.formId]: generalQuoteForm,
   [proQuoteForm.formId]: proQuoteForm,
   [greenSpacesQuoteForm.formId]: greenSpacesQuoteForm,
+  [subscriptionForm.formId]: subscriptionForm,
 };

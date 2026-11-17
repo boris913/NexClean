@@ -35,7 +35,9 @@ export async function soumettreDemandeDevis(entree: unknown, ctx: { ip: string |
       ? { type: 'entreprise' as const, nom: valeurs.company!, contact: valeurs.contact ?? null }
       : config.formId === 'devis-espaces-verts'
         ? { type: SITES_ORGANISATION.includes(valeurs.siteType ?? '') ? ('entreprise' as const) : ('particulier' as const), nom: valeurs.name!, contact: null }
-        : { type: 'particulier' as const, nom: valeurs.name!, contact: valeurs.name! };
+        : config.formId === 'demande-abonnement'
+          ? { type: valeurs.clientType === 'Particulier' ? ('particulier' as const) : ('entreprise' as const), nom: valeurs.name!, contact: valeurs.clientType === 'Particulier' ? valeurs.name! : null }
+          : { type: 'particulier' as const, nom: valeurs.name!, contact: valeurs.name! };
 
   const r = await creerDemande({
     type,

@@ -6,6 +6,11 @@ import SubscriptionsSection from '@/components/sections/SubscriptionsSection';
 import PricingSection from '@/components/sections/PricingSection';
 import FAQSection from '@/components/sections/FAQSection';
 import CTASection from '@/components/sections/CTASection';
+import Card from '@/components/ui/Card';
+import Section from '@/components/ui/Section';
+import SectionHeader from '@/components/ui/SectionHeader';
+import WhatsAppForm from '@/components/forms/WhatsAppForm';
+import { subscriptionForm } from '@/components/forms/quote-forms';
 import { PAYMENT_TERMS, WHATSAPP_MESSAGES, getWhatsAppLink } from '@/lib/constants';
 import { pageMetadata } from '@/lib/seo';
 
@@ -44,21 +49,35 @@ export default function AbonnementsPage() {
         subtitle="Des passages réguliers à tarif préférentiel, pour votre logement, vos locaux ou vos espaces verts."
         breadcrumb={[{ name: 'Abonnements' }]}
       >
-        <Button href={getWhatsAppLink(WHATSAPP_MESSAGES.abonnements)} size="lg" whatsappIcon>
+        <Button href="#demande-abonnement" size="lg">
           Demander une formule
         </Button>
-        <Button href="/contact" variant="outline" size="lg">
-          Faire une demande
+        <Button href={getWhatsAppLink(WHATSAPP_MESSAGES.abonnements)} variant="outline" size="lg" whatsappIcon>
+          Écrire sur WhatsApp
         </Button>
       </PageHero>
       <SubscriptionsSection title="Nos formules" subtitle="Passages planifiés à l'avance, pour chaque type de site." showDetailsLink={false} />
       <PricingSection />
+      <Section id="demande-abonnement" tone="muted" container="narrow" labelledBy="demande-abonnement-titre" className="scroll-mt-24">
+        <SectionHeader
+          id="demande-abonnement-titre"
+          align="center"
+          title="Demander une formule d’abonnement"
+          intro="Votre demande est enregistrée avec un numéro de suivi, puis un conseiller construit la formule avec vous sur WhatsApp."
+          className="!mb-8"
+        />
+        <Card>
+          <WhatsAppForm {...subscriptionForm} submitLabel="Envoyer ma demande d’abonnement" />
+        </Card>
+      </Section>
       <FAQSection items={subscriptionFaq} />
       <CTASection
         title="Construisons votre formule"
         subtitle="Dites-nous ce que vous souhaitez entretenir et à quelle fréquence."
         whatsappLabel="Demander une formule"
         whatsappMessage={WHATSAPP_MESSAGES.abonnements}
+        formHref="#demande-abonnement"
+        formLabel="Remplir le formulaire"
       />
     </>
   );

@@ -1,6 +1,6 @@
 // Formulaires de devis (specs/MVP1-04) : non-régression du message, type de dossier, validation.
 import { describe, expect, it } from 'vitest';
-import { generalQuoteForm, greenSpacesQuoteForm, proQuoteForm, FORMULAIRES_DEVIS } from '@/components/forms/quote-forms';
+import { generalQuoteForm, greenSpacesQuoteForm, proQuoteForm, subscriptionForm, FORMULAIRES_DEVIS, FORMULES_ABONNEMENT } from '@/components/forms/quote-forms';
 import { construireMessage, typeDossierPour, validerDevis } from '@/lib/dossiers/formulaire-devis';
 
 /** Libellés du message avant migration (relevés dans l'ancien quote-forms.ts). */
@@ -61,6 +61,19 @@ describe('Type de dossier (RG-04)', () => {
   it('devis pro → NET, espaces verts → EV', () => {
     expect(typeDossierPour('devis-pro', {})).toBe('NET');
     expect(typeDossierPour('devis-espaces-verts', {})).toBe('EV');
+  });
+  it('ADR 0022 §2 : demande d’abonnement → ABO, quelle que soit la formule', () => {
+    expect(typeDossierPour('demande-abonnement', { formula: 'Particuliers' })).toBe('ABO');
+    expect(typeDossierPour('demande-abonnement', { formula: 'Espaces verts' })).toBe('ABO');
+  });
+  it('formulaire abonnement : formules alignées sur la page, champs obligatoires contrôlés', () => {
+    const formules = subscriptionForm.fields.find((f) => f.name === 'formula')!.options!;
+    expect(formules).toEqual([...FORMULES_ABONNEMENT, 'Je ne sais pas encore']);
+    const ok = validerDevis(subscriptionForm, { valeurs: valeursCompletes('demande-abonnement'), lieu: { villeId: null, villeAutre: 'Douala', quartierId: null, quartierAutre: 'Akwa' }, consentement: true });
+    expect(ok.ok).toBe(true);
+    const ko = validerDevis(subscriptionForm, { valeurs: { name: 'Awa', phone: '690000001' }, lieu: {}, consentement: true });
+    expect(ko.ok).toBe(false);
+    if (!ko.ok) expect(Object.keys(ko.erreurs)).toEqual(expect.arrayContaining(['clientType', 'formula', 'siteType', 'frequency', 'location.ville']));
   });
   it('les services EV / ABO existent bien dans la liste du formulaire', () => {
     const options = generalQuoteForm.fields.find((f) => f.name === 'service')!.options!;
