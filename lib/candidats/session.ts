@@ -34,12 +34,15 @@ export async function ouvrirSession(candidatId: number, resterConnecte: boolean,
   });
 }
 
+/** POST-04 RG-01 : une visite avec une session ouverte compte comme une connexion (au plus une écriture par heure). */
+const INTERVALLE_VISITE_MS = 60 * 60 * 1000;
+
 /** Candidat connecté, ou null (session absente, expirée, ou compte en cours de suppression). */
 export async function candidatConnecte(): Promise<{ id: number; prenom: string; nom: string } | null> {
   const jeton = (await cookies()).get(COOKIE_CANDIDAT)?.value;
   if (!jeton) return null;
   const [ligne] = await getDb()
-    .select({ id: schema.candidat.id, prenom: schema.candidat.prenom, nom: schema.candidat.nom })
+    .select({ id: schema.candidat.id, prenom: schema.candidat.prenom, nom: schema.candidat.nom, derniereConnexionLe: schema.candidat.derniereConnexionLe })
     .from(schema.candidatSession)
     .innerJoin(schema.candidat, eq(schema.candidat.id, schema.candidatSession.candidatId))
     .where(
@@ -50,7 +53,12 @@ export async function candidatConnecte(): Promise<{ id: number; prenom: string; 
         isNull(schema.candidat.supprimeLe),
       ),
     );
-  return ligne ?? null;
+  if (!ligne) return null;
+  const maintenant = new Date();
+  if (!ligne.derniereConnexionLe || maintenant.getTime() - ligne.derniereConnexionLe.getTime() > INTERVALLE_VISITE_MS) {
+    await getDb().update(schema.candidat).set({ derniereConnexionLe: maintenant }).where(eq(schema.candidat.id, ligne.id));
+  }
+  return { id: ligne.id, prenom: ligne.prenom, nom: ligne.nom };
 }
 
 /** Pour les pages et actions de l'espace candidat : renvoie vers la connexion sans session valide. */

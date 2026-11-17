@@ -31,6 +31,7 @@ import {
   type ProfilValide,
   type TypeConsentement,
 } from './domaine';
+import { TEXTES_CONSERVATION } from './donnees';
 
 export const MESSAGE_DEJA_INSCRIT = 'Ce numéro a déjà un compte.';
 export const MESSAGE_SUPPRESSION_EN_COURS =
@@ -538,78 +539,121 @@ async function pseudonymiserTraces(tx: Tx, candidatId: number, prenom: string, n
 }
 
 /**
- * Exécute les suppressions arrivées à échéance (tâche planifiée). Profil, expériences, documents,
- * consentements, sessions, jetons et notifications du candidat sont supprimés ; il ne reste qu'un
- * pseudonyme (« Candidat #8F3A ») pour les Propositions et Placements conservés (MVP2-03, cas
- * limites). Les captures d'accord WhatsApp et preuves de placement sont des pièces de preuve
- * conservées ; ni les Propositions ni les Placements ne recopient de coordonnées du candidat.
- * Le journal d'audit est conservé.
+ * Motif de l'effacement : suppression demandée par le candidat (MVP2-01 RG-15..18) ou
+ * anonymisation après 24 mois d'inactivité sans réponse à la relance (POST-04 RG-05).
  */
-export async function executerSuppressionsDues(maintenant = new Date()): Promise<number> {
+export type MotifEffacement = 'demande' | 'inactivite';
+
+/**
+ * Efface les données d'un candidat. Profil, expériences, documents (en base puis sur le
+ * stockage), consentements, sessions, jetons et notifications du candidat sont supprimés ; il ne
+ * reste qu'un pseudonyme (« Candidat #8F3A ») pour les Propositions et Placements conservés
+ * (MVP2-03, cas limites). Les captures d'accord WhatsApp et preuves de placement sont des pièces
+ * de preuve conservées ; ni les Propositions ni les Placements ne recopient de coordonnées du
+ * candidat. Le journal d'audit est conservé.
+ * Candidatures : supprimées à la demande (MVP2-01 RG-17) ; conservées sans la motivation (texte
+ * libre) en cas d'anonymisation (POST-04 RG-05), le candidat n'étant plus identifiable.
+ * `garde` est évaluée dans la transaction, la ligne du candidat verrouillée : si elle renvoie
+ * false, rien n'est effacé et la fonction renvoie false.
+ */
+export async function effacerDonneesCandidat(
+  c: { id: number; email: string | null; prenom: string; nom: string },
+  maintenant: Date,
+  motif: MotifEffacement,
+  garde?: (tx: Tx) => Promise<boolean>,
+): Promise<boolean> {
   const db = getDb();
-  const dus = await db
+  const documents = await db.transaction(async (tx) => {
+    const [verrou] = await tx.select({ supprimeLe: schema.candidat.supprimeLe }).from(schema.candidat).where(eq(schema.candidat.id, c.id)).for('update');
+    // Exécutions concurrentes de la tâche : la seconde ne refait rien.
+    if (!verrou || verrou.supprimeLe) return null;
+    if (garde && !(await garde(tx))) return null;
+    // Documents lus sous verrou : un dépôt concurrent ne laisse pas de fichier orphelin.
+    const docs = await tx.delete(schema.candidatDocument).where(eq(schema.candidatDocument.candidatId, c.id)).returning({ cle: schema.candidatDocument.cle });
+    await tx.delete(schema.candidatExperience).where(eq(schema.candidatExperience.candidatId, c.id));
+    await tx.delete(schema.candidatConsentement).where(eq(schema.candidatConsentement.candidatId, c.id));
+    await tx.delete(schema.candidatSession).where(eq(schema.candidatSession.candidatId, c.id));
+    await tx.delete(schema.candidatJeton).where(eq(schema.candidatJeton.candidatId, c.id));
+    await tx.delete(schema.candidatDemandeReinitialisation).where(eq(schema.candidatDemandeReinitialisation.candidatId, c.id));
+    if (motif === 'demande') {
+      // RG-17 : les Candidatures sont supprimées (MVP2-02).
+      await tx.delete(schema.candidature).where(eq(schema.candidature.candidatId, c.id));
+    } else {
+      await tx.update(schema.candidature).set({ motivation: null }).where(eq(schema.candidature.candidatId, c.id));
+    }
+    await tx.delete(schema.notificationCandidat).where(eq(schema.notificationCandidat.candidatId, c.id));
+    await pseudonymiserTraces(tx, c.id, c.prenom, c.nom);
+    await tx
+      .update(schema.candidat)
+      .set({
+        telephone: null,
+        whatsapp: null,
+        email: null,
+        nom: pseudonyme(c.id),
+        prenom: '',
+        villeAutre: null,
+        arrondissementId: null,
+        quartierId: null,
+        quartierAutre: null,
+        repere: null,
+        zonesTouteVille: false,
+        zonesArrondissementIds: [],
+        zonesQuartierIds: [],
+        metiers: [],
+        secteurs: [],
+        typesContrat: [],
+        salaireMin: null,
+        salaireMax: null,
+        niveauEtudes: null,
+        qualifications: null,
+        competences: [],
+        disponibilite: null,
+        disponibleLe: null,
+        preavis: null,
+        horaires: [],
+        statut: 'indisponible',
+        statutAvantIndisponible: null,
+        motDePasse: null,
+        supprimeLe: maintenant,
+      })
+      .where(eq(schema.candidat.id, c.id));
+    await journaliser(
+      motif === 'demande'
+        ? { acteurType: 'systeme', action: 'candidat.donnees_supprimees', objetType: 'candidat', objetId: c.id, details: { documents: docs.length } }
+        : { acteurType: 'systeme', action: 'candidat.anonymise', objetType: 'candidat', objetId: c.id, details: { motif: 'inactivite', documents: docs.length } },
+      tx,
+    );
+    return docs;
+  });
+  if (!documents) return false;
+  for (const d of documents) await getStockage().supprimer(d.cle);
+  // RG-18 (MVP2-01) et POST-04 RG-05 : e-mail à l'exécution si une adresse existait (lue avant l'effacement).
+  if (c.email) {
+    const contenu =
+      motif === 'demande'
+        ? {
+            subject: 'Vos données ont été supprimées — NEXCLEAN',
+            text: `Bonjour ${c.prenom},\n\nComme vous l'avez demandé, votre compte candidat NEXCLEAN et vos données (profil, CV, justificatifs) ont été supprimés. Les copies de sauvegarde sont effacées sous 30 jours.\n\nNEXCLEAN SARL`,
+          }
+        : TEXTES_CONSERVATION.emailAnonymisation(c.prenom);
+    await envoyerEmail({ to: c.email, ...contenu, html: texteVersHtml(contenu.text) }).catch(() => {});
+  }
+  return true;
+}
+
+/** Texte d'e-mail simple → HTML (paragraphes, retours à la ligne, liens laissés en texte). */
+export const texteVersHtml = (texte: string) =>
+  texte
+    .split('\n\n')
+    .map((p) => `<p>${echapperHtml(p).replace(/\n/g, '<br>')}</p>`)
+    .join('');
+
+/** Exécute les suppressions demandées arrivées à échéance (tâche planifiée, MVP2-01 RG-16, RG-17). */
+export async function executerSuppressionsDues(maintenant = new Date()): Promise<number> {
+  const dus = await getDb()
     .select({ id: schema.candidat.id, email: schema.candidat.email, prenom: schema.candidat.prenom, nom: schema.candidat.nom })
     .from(schema.candidat)
     .where(and(lte(schema.candidat.suppressionPrevueLe, maintenant), isNull(schema.candidat.supprimeLe)));
-  for (const c of dus) {
-    const documents = await db.select({ cle: schema.candidatDocument.cle }).from(schema.candidatDocument).where(eq(schema.candidatDocument.candidatId, c.id));
-    await db.transaction(async (tx) => {
-      await tx.delete(schema.candidatDocument).where(eq(schema.candidatDocument.candidatId, c.id));
-      await tx.delete(schema.candidatExperience).where(eq(schema.candidatExperience.candidatId, c.id));
-      await tx.delete(schema.candidatConsentement).where(eq(schema.candidatConsentement.candidatId, c.id));
-      await tx.delete(schema.candidatSession).where(eq(schema.candidatSession.candidatId, c.id));
-      await tx.delete(schema.candidatJeton).where(eq(schema.candidatJeton.candidatId, c.id));
-      await tx.delete(schema.candidatDemandeReinitialisation).where(eq(schema.candidatDemandeReinitialisation.candidatId, c.id));
-      // RG-17 : les Candidatures sont supprimées (MVP2-02).
-      await tx.delete(schema.candidature).where(eq(schema.candidature.candidatId, c.id));
-      await tx.delete(schema.notificationCandidat).where(eq(schema.notificationCandidat.candidatId, c.id));
-      await pseudonymiserTraces(tx, c.id, c.prenom, c.nom);
-      await tx
-        .update(schema.candidat)
-        .set({
-          telephone: null,
-          whatsapp: null,
-          email: null,
-          nom: pseudonyme(c.id),
-          prenom: '',
-          villeAutre: null,
-          arrondissementId: null,
-          quartierId: null,
-          quartierAutre: null,
-          repere: null,
-          zonesTouteVille: false,
-          zonesArrondissementIds: [],
-          zonesQuartierIds: [],
-          metiers: [],
-          secteurs: [],
-          typesContrat: [],
-          salaireMin: null,
-          salaireMax: null,
-          niveauEtudes: null,
-          qualifications: null,
-          competences: [],
-          disponibilite: null,
-          disponibleLe: null,
-          preavis: null,
-          horaires: [],
-          statut: 'indisponible',
-          statutAvantIndisponible: null,
-          motDePasse: null,
-          supprimeLe: maintenant,
-        })
-        .where(eq(schema.candidat.id, c.id));
-      await journaliser({ acteurType: 'systeme', action: 'candidat.donnees_supprimees', objetType: 'candidat', objetId: c.id, details: { documents: documents.length } }, tx);
-    });
-    for (const d of documents) await getStockage().supprimer(d.cle);
-    // RG-18 : e-mail à l'exécution si une adresse existait (lue avant l'effacement).
-    if (c.email) {
-      await envoyerEmail({
-        to: c.email,
-        subject: 'Vos données ont été supprimées — NEXCLEAN',
-        text: `Bonjour ${c.prenom},\n\nComme vous l'avez demandé, votre compte candidat NEXCLEAN et vos données (profil, CV, justificatifs) ont été supprimés. Les copies de sauvegarde sont effacées sous 30 jours.\n\nNEXCLEAN SARL`,
-        html: `<p>Bonjour ${echapperHtml(c.prenom)},</p><p>Comme vous l'avez demandé, votre compte candidat NEXCLEAN et vos données (profil, CV, justificatifs) ont été supprimés. Les copies de sauvegarde sont effacées sous 30 jours.</p><p>NEXCLEAN SARL</p>`,
-      }).catch(() => {});
-    }
-  }
+  for (const c of dus) await effacerDonneesCandidat(c, maintenant, 'demande');
   return dus.length;
 }

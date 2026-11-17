@@ -7,6 +7,7 @@ import { exigerAccesVivier } from '@/lib/candidats/acces-page';
 import { changerStatutCandidat } from '@/lib/candidats/attribution';
 import { STATUTS_CANDIDAT, type StatutCandidat } from '@/lib/candidats/domaine';
 import * as fiche from '@/lib/candidats/fiche';
+import { confirmerConservation as confirmerConservationCandidat } from '@/lib/candidats/conservation';
 import { ErreurMetier } from '@/lib/collaborateurs/service';
 import type { ResultatAction } from '@/components/backoffice/ui';
 
@@ -59,6 +60,15 @@ export async function changerNumero(id: number, numero: string, elements: string
     await fiche.changerNumeroCandidat(id, numero, elements, await acteur());
     rafraichir(id);
     return 'Numéro modifié. Le candidat doit se reconnecter avec son nouveau numéro.';
+  });
+}
+
+/** POST-04 RG-04 : le candidat a répondu à la relance d'inactivité (WhatsApp) : profil conservé. */
+export async function confirmerConservation(id: number) {
+  return executer(async () => {
+    await confirmerConservationCandidat(id, await acteur());
+    rafraichir(id);
+    return 'Réponse notée : le profil est conservé et la relance sera levée.';
   });
 }
 

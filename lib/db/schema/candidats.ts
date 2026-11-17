@@ -71,7 +71,13 @@ export const candidat = pgTable(
     canalInscription: text('canal_inscription').notNull().default('site'),
     creeLe: timestamp('cree_le', { withTimezone: true }).notNull().defaultNow(),
     profilMisAJourLe: timestamp('profil_mis_a_jour_le', { withTimezone: true }).notNull().defaultNow(),
+    /** Dernière connexion, ou dernière visite de l'espace avec une session ouverte (POST-04 RG-01). */
     derniereConnexionLe: timestamp('derniere_connexion_le', { withTimezone: true }),
+    // Conservation (ADR 0017 §4, specs/POST-04)
+    /** Relance « profil inactif depuis 24 mois » en cours ; null si aucune (ou annulée). */
+    relanceInactiviteLe: timestamp('relance_inactivite_le', { withTimezone: true }),
+    /** Le référent a noté que le candidat a répondu à la relance (WhatsApp) : vaut activité. */
+    conservationConfirmeeLe: timestamp('conservation_confirmee_le', { withTimezone: true }),
     // Suppression des données (RG-15..18)
     suppressionDemandeeLe: timestamp('suppression_demandee_le', { withTimezone: true }),
     suppressionPrevueLe: timestamp('suppression_prevue_le', { withTimezone: true }),

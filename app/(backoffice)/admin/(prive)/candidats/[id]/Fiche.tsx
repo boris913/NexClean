@@ -205,6 +205,20 @@ export function ChangerNumero({ candidatId, infos }: { candidatId: number; infos
   );
 }
 
+// ─── Relance d'inactivité (POST-04 RG-04) ─────────────────────
+
+export function ConfirmerConservation({ candidatId }: { candidatId: number }) {
+  const { lancer, envoi, retour } = useAction();
+  return (
+    <div className="mt-2 space-y-2">
+      {retour}
+      <button type="button" disabled={envoi} onClick={() => lancer(() => actions.confirmerConservation(candidatId))} className={classeBouton('secondaire')}>
+        Le candidat a répondu
+      </button>
+    </div>
+  );
+}
+
 // ─── Réaffectation (Direction) ────────────────────────────────
 
 export function Reaffecter({ candidatId, referentActuel, referents }: { candidatId: number; referentActuel: string | null; referents: { id: string; nom: string; charge: number; raisons: string[] }[] }) {

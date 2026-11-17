@@ -53,7 +53,10 @@ export default function ConfidentialitePage() {
       <p>
         Ces données servent exclusivement à étudier votre candidature et à vous recontacter. Elles sont accessibles uniquement
         aux personnes chargées du recrutement chez NEXCLEAN, ne sont jamais publiées et ne sont pas cédées à des tiers.
-        Elles sont conservées au maximum <strong>2 ans</strong> après le dernier contact, sauf demande de suppression de votre part.
+        Après <strong>2 ans</strong> sans connexion ni mise à jour de votre part, nous vous demandons si vous souhaitez garder
+        votre profil ; sans réponse sous 30 jours, il est anonymisé et vos documents sont supprimés. Vous pouvez aussi demander
+        la suppression de vos données à tout moment. Les placements réalisés sont conservés sous un pseudonyme, pour nos
+        obligations comptables.
       </p>
 
       <h2>Mesure d&apos;audience</h2>

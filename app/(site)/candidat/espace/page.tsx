@@ -3,8 +3,9 @@
 // client l'a autorisé), retours des clients sur les profils.
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { AlertTriangle, FileText, User } from 'lucide-react';
-import Button from '@/components/ui/Button';
+import { AlertTriangle, Download, FileText, User } from 'lucide-react';
+import Button, { buttonClasses } from '@/components/ui/Button';
+import { MAX_EXPORTS_PAR_JOUR } from '@/lib/candidats/donnees';
 import { cardClasses } from '@/components/ui/Card';
 import { lireEspace } from '@/lib/candidats/service';
 import { lireCandidaturesCandidat } from '@/lib/candidats/candidatures';
@@ -179,6 +180,24 @@ export default async function PageEspace() {
               </Link>
             </p>
           )}
+        </div>
+
+        <div className={carte}>
+          <h2 className={`${titreCarte} flex items-center gap-2`}>
+            <Download className="w-4 h-4" /> Mes données
+          </h2>
+          <p className="text-sm text-ink-600">
+            Téléchargez une copie de toutes les données que NEXCLEAN conserve à votre sujet : profil, consentements, candidatures, propositions, placements et notifications. Le format PDF se lit facilement ; le format JSON se réutilise dans un autre service.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <a href="/candidat/espace/mes-donnees?format=pdf" download className={buttonClasses({ variant: 'outline', fullWidth: true })}>
+              Télécharger (PDF)
+            </a>
+            <a href="/candidat/espace/mes-donnees?format=json" download className={buttonClasses({ variant: 'outline', fullWidth: true })}>
+              Télécharger (JSON)
+            </a>
+          </div>
+          <p className="text-xs text-muted">{MAX_EXPORTS_PAR_JOUR} téléchargements au plus par 24 heures. Vos CV et justificatifs se téléchargent un par un dans « Mes documents ».</p>
         </div>
 
         <div className="flex flex-col gap-3 pt-2">
