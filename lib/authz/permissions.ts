@@ -23,7 +23,12 @@ export const PERMISSIONS = {
   'offre.gerer': ['referent', 'direction'],
   'encaissement.enregistrer': ['referent', 'finances', 'direction'],
   'remboursement.valider': ['direction'],
+  /** Tableau de bord direction et vue Finances (POST-03, ADR 0020 §2). */
   'finances.tableau_de_bord': ['finances', 'direction'],
+  /** POST-03 RG-01 : saisir, modifier et annuler les dépenses, lire leurs justificatifs. */
+  'depense.saisir': ['finances', 'direction'],
+  /** POST-03 RG-02 : liste des catégories de dépenses (comme le référentiel). */
+  'depense.categories': ['direction', 'admin'],
   /** Tableau de bord commercial (COM1-02 RG-05) : un Référent n'y voit que ses Dossiers. */
   'commercial.tableau_de_bord': ['referent', 'direction'],
   /** Messagerie WhatsApp (COM2-01 RG-10) : toutes les conversations. Un Référent voit celles de ses Dossiers. */
