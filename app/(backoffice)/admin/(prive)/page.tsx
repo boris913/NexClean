@@ -63,7 +63,7 @@ export default async function Accueil({ searchParams }: { searchParams: Promise<
     { href: '/admin/dossiers', icone: FolderOpen, titre: peut(c.roles, 'dossier.voir_tous') ? 'Dossiers' : 'Mes dossiers', visible: peut(c.roles, 'dossier.voir_siens') || peut(c.roles, 'dossier.voir_tous') },
     { href: '/admin/collaborateurs', icone: UserCog, titre: 'Collaborateurs', visible: peut(c.roles, 'collaborateurs.gerer') || peut(c.roles, 'collaborateurs.attributs') },
     { href: '/admin/referentiel', icone: MapPin, titre: 'Référentiel géographique', visible: peut(c.roles, 'referentiel.gerer') },
-    { href: '/admin/modeles', icone: MessageSquare, titre: 'Modèles de messages', visible: peut(c.roles, 'modeles.gerer') },
+    { href: '/admin/modeles', icone: MessageSquare, titre: 'Modèles de messages et de documents', visible: peut(c.roles, 'modeles.gerer') },
     { href: '/admin/parametres', icone: Settings, titre: 'Paramètres', visible: peut(c.roles, 'tarifs.modifier') },
     { href: '/admin/journal', icone: ScrollText, titre: "Journal d'audit", visible: peut(c.roles, 'audit.consulter') },
     { href: '/admin/securite', icone: ShieldCheck, titre: 'Ma sécurité', visible: true },

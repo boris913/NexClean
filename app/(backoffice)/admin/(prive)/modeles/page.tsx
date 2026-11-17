@@ -3,6 +3,7 @@ import { exigerCollaborateur } from '@/lib/authz/session';
 import { listerModeles } from '@/lib/modeles/service';
 import { TitrePage } from '@/components/backoffice/ui';
 import EditeurModele from './EditeurModele';
+import OngletsModeles from './OngletsModeles';
 
 export const metadata = { title: 'Modèles de messages' };
 
@@ -11,7 +12,8 @@ export default async function PageModeles() {
   const modeles = await listerModeles();
   return (
     <>
-      <TitrePage titre="Modèles de messages WhatsApp" />
+      <TitrePage titre="Modèles" />
+      <OngletsModeles actif="messages" />
       <p className="text-sm text-ink-600 mb-4">
         Proposés dans chaque dossier, ou sur la fiche candidat pour les modèles qui utilisent des variables « candidat » (« Envoyer sur WhatsApp »). Le référent peut modifier le texte avant l’envoi ; aucun message n’est envoyé automatiquement.
       </p>
